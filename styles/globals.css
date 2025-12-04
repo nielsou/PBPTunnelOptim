@@ -1,0 +1,10 @@
+/* Fichier: styles/globals.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ajoutez la règle de police ici */
+* {
+  font-family: 'Inter', system-ui, sans-serif; 
+}

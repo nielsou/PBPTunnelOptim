@@ -856,7 +856,7 @@ export default function PhotoboothQuoteForm() {
         { id: 'numerique', name: 'CineBooth Numérique', priceHT: 245, desc: 'Envoi numérique des photos et vidéos. Pas d\'impression physique.' },
         { id: '150', name: 'CineBooth 150 impressions', priceHT: 329, desc: '150 impressions incluses, qualité professionnelle.' },
         { id: '300', name: 'CineBooth 300 impressions', priceHT: 370, desc: '300 impressions incluses, idéal pour les événements de taille moyenne.' },
-        { id: 'illimite', name: 'StarBooth Pro - Illimité', priceHT: 412, desc: 'L'ultra haut de gamme m'iniaturisé. Impressions illimitées. Parfait pour les grands événements.' },
+        { id: 'illimite', name: 'StarBooth Pro - Illimité', priceHT: 412, desc: "L'ultra haut de gamme m'iniaturisé. Impressions illimitées. Parfait pour les grands événements." },
       ];
       
       const baseDeliveryPriceHT = formData.ecoModel === 'illimite' ? 70 : 50;
