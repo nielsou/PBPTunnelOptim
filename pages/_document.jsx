@@ -1,4 +1,4 @@
-// Fichier: pages/_document.jsx
+// pages/_document.jsx (CORRIGÉ)
 
 import { Html, Head, Main, NextScript } from 'next/document';
 
@@ -6,16 +6,17 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* Intégration des polices Inter */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        
-        {/* La ligne Tailwind CDN n'est PAS nécessaire si vous l'avez configuré localement */}
-        {/* <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> */}
+
+        <script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&loading=async&libraries=places`} async
+          defer
+        ></script>
       </Head>
-      {/* Appliquer les classes de style du <body> */}
-      <body className="min-h-screen bg-zinc-950 text-white antialiased">
+      {/* CORRECTION : Suppression de bg-zinc-950 et text-white */}
+      <body className="min-h-screen antialiased">
         <Main />
         <NextScript />
       </body>

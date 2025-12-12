@@ -1,5 +1,6 @@
-import PhotoboothQuoteForm from '../components/PhotoboothQuoteForm'
+// pages/index.jsx
+import PhotoboothQuoteForm from '../src/PhotoboothQuoteForm'; // ⬅️ CORRECTION DU CHEMIN
 
 export default function Home() {
-  return <PhotoboothQuoteForm /> //comment
+  return <PhotoboothQuoteForm />; // comment
 }
