@@ -1,17 +1,16 @@
 // src/PhotoboothQuoteForm.jsx
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ChevronRight, ChevronLeft, Check, User, Calendar, Settings, DollarSign, Wand2, Truck } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { ChevronRight, ChevronLeft, Check, RefreshCcw } from 'lucide-react'; // Ajout RefreshCcw
 import { useQuoteLogic } from './hooks/useQuoteLogic';
-import { customColor, TVA_RATE } from './constants'; // Ajout de TVA_RATE
+import { customColor } from './constants'; 
 
 import { Step1Contact } from './components/steps/Step1Contact';
 import { Step2Event } from './components/steps/Step2Event';
 import { Step3Config } from './components/steps/Step3Config';
 import { Step4Recap } from './components/steps/Step4Recap';
 
-
-// ⬅️ MODIFICATION 1 : showMessage DÉPLACÉ EN DEHORS
+// (Garder showMessage inchangé)
 const showMessage = (message) => {
     const alertElement = document.getElementById('custom-alert');
     if (alertElement) {
@@ -20,8 +19,6 @@ const showMessage = (message) => {
       setTimeout(() => {
         alertElement.style.display = 'none';
       }, 5000);
-    } else {
-      console.warn("Alerte UI non initialisée.");
     }
 };
 
@@ -36,27 +33,65 @@ export default function PhotoboothQuoteForm() {
         handlePrev,
         handleSubmit,
         isStepValid,
-        resetForm
+        isSubmitting, // Récupération
+        isSubmitted,  // Récupération
+        resetForm     // Récupération
     } = useQuoteLogic(); 
 
-    const pricingData = calculatePrice; // Utilise le résultat de useMemo
+    const pricingData = calculatePrice; 
     
-    // Gestion du défilement
     useEffect(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [currentStep]);
+    }, [currentStep, isSubmitted]); // Scroll up aussi au succès
 
+    // 1. ÉCRAN DE SUCCÈS
+    if (isSubmitted) {
+        return (
+            <div className='min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 font-sans text-gray-900 flex items-center justify-center'>
+                <div className='bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-green-100 max-w-2xl w-full text-center space-y-8'>
+                    <div className='w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6'>
+                         <Check className='w-12 h-12 text-green-600' />
+                    </div>
+                    
+                    <h2 className='text-4xl font-extrabold text-green-800'>Merci pour votre confiance !</h2>
+                    
+                    <p className='text-xl text-gray-700 leading-relaxed'>
+                        Votre demande a été traitée avec succès. 🚀
+                    </p>
+                    
+                    <div className='bg-blue-50 p-6 rounded-xl text-left border-l-4 border-blue-500 shadow-sm'>
+                        <h3 className='font-bold text-blue-900 text-lg mb-2'>Et maintenant ?</h3>
+                        <p className='text-blue-800'>
+                            Vous allez recevoir un email d'ici quelques instants à l'adresse <strong>{formData.email}</strong>.
+                            <br /><br />
+                            Celui-ci contient votre <strong>devis officiel (PDF)</strong> ainsi qu'un lien sécurisé pour effectuer le règlement de l'acompte directement en ligne et bloquer la machine pour votre date.
+                        </p>
+                    </div>
 
+                    <div className='pt-8'>
+                        <button
+                            onClick={resetForm}
+                            className='w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center space-x-3 shadow-lg mx-auto'
+                        >
+                            <RefreshCcw className='w-5 h-5' />
+                            <span>Effectuer une nouvelle demande</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // (Le reste du rendu pour le formulaire normal)
     const renderStep = () => {
         switch (currentStep) {
             case 1:
-                return <Step1Contact formData={formData} setFormData={setFormData} customColor={customColor} />;
+                return <Step1Contact formData={formData} setFormData={setFormData} customColor={customColor} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
             case 2:
                 return <Step2Event formData={formData} setFormData={setFormData} customColor={customColor} />;
             case 3:
                 return <Step3Config formData={formData} setFormData={setFormData} pricingData={pricingData} customColor={customColor} />;
             case 4:
-                // ⬅️ MODIFICATION 2 : PASSAGE DE showMessage AU Step4Recap
                 return <Step4Recap 
                             formData={formData}
                             pricingData={pricingData} 
@@ -64,35 +99,26 @@ export default function PhotoboothQuoteForm() {
                             handleSubmit={handleSubmit} 
                             handleEditRequest={() => setCurrentStep(1)} 
                             showMessage={showMessage} 
+                            isSubmitting={isSubmitting} // Passer la prop
                         />;
             default:
                 return null;
         }
     };
 
-
     return (
-        // ⬅️ FIX FOND NOIR: Applique le fond clair au composant principal
         <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 font-sans text-gray-900'>
-            <div id="custom-alert"></div>
+            <div id="custom-alert" className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-xl z-50 hidden"></div>
             <div className='max-w-4xl mx-auto'>
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center" style={{ color: customColor }}>
                     Devis Express Photobooth
                 </h1>
-
-                {/* Barre d'étapes (omitted for brevity) */}
-                {/* ... */}
                 
-                {/* Contenu du formulaire */}
                 <div className='bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-gray-100'>
-                    
-                    {/* Rendu des Étapes */}
                     {renderStep()}
 
-                    {/* Boutons de navigation (seulement pour les étapes 1 à 3) */}
                     {currentStep < 4 && (
                         <div className='flex justify-between mt-10 pt-6 border-t border-gray-200'>
-                            {/* Bouton Précédent */}
                             {currentStep > 1 ? (
                                 <button
                                     onClick={handlePrev}
@@ -105,7 +131,6 @@ export default function PhotoboothQuoteForm() {
                                 <div />
                             )}
 
-                            {/* Bouton Suivant */}
                             <button
                                 onClick={handleNext}
                                 disabled={!isStepValid()}

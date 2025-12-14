@@ -1,59 +1,82 @@
 // pages/api/create-thirdparty.js
 
-// 🚨 CORRECTION 1 & 2 : Utiliser le bon domaine et l'endpoint /companies
-const AXONAUT_API_BASE_URL = 'https://axonaut.com/api/v2';
-
-// La clé DOIT être chargée par Next.js à partir du fichier .env.local
-const AXONAUT_API_KEY = process.env.AXONAUT_API_KEY; 
-
 export default async function handler(req, res) {
-  
-  // 1. Autoriser uniquement les requêtes POST
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Méthode non autorisée. Seul POST est supporté.' });
-  }
-
-  // 2. Vérification de la clé API
-  if (!AXONAUT_API_KEY) {
-    console.error("AXONAUT_API_KEY n'est pas définie. Échec de la configuration du proxy.");
-    return res.status(500).json({ error: "Erreur de configuration du serveur : Clé API Axonaut manquante." });
-  }
-  
-  const thirdPartyBody = req.body;
-  // 🚩 Correction de l'endpoint : utilisation de /companies
-  const url = `${AXONAUT_API_BASE_URL}/companies`; 
-  
-  try {
-    // 3. Appel au serveur Axonaut
-    const axonautResponse = await fetch(url, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        // 🚨 CORRECTION 3 : La clé doit être transmise via le Header 'userApiKey'
-        'userApiKey': AXONAUT_API_KEY, 
-      },
-      body: JSON.stringify(thirdPartyBody),
-    });
-
-    const data = await axonautResponse.json();
-    
-    // 4. Gérer les statuts de réponse non 2xx d'Axonaut
-    if (!axonautResponse.ok) {
-        console.error("Erreur Axonaut (API Route):", axonautResponse.status, data);
-        // Transmettre l'erreur Axonaut directement au frontend avec le statut correct
-        return res.status(axonautResponse.status).json({ 
-            error: data.message || "Échec de la création du tiers Axonaut.",
-            details: data 
-        });
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: 'Method Not Allowed' });
     }
 
-    // 5. Succès (Tiers créé)
-    // Code 201 (Created) est plus précis que 200 (OK) pour la création.
-    return res.status(201).json(data); 
+    const AXONAUT_API_KEY = process.env.AXONAUT_API_KEY; 
+    const BASE_URL = 'https://axonaut.com/api/v2';
+    
+    const headers = {
+        'Content-Type': 'application/json',
+        'userApiKey': AXONAUT_API_KEY
+    };
 
-  } catch (error) {
-    // Si Axonaut plante ou si le fetch échoue côté serveur (DNS, réseau, timeout)
-    console.error('Erreur réseau interne ou échec du fetch (Proxy):', error);
-    return res.status(500).json({ error: `Erreur interne du proxy : ${error.message}` });
-  }
+    const companyData = req.body; 
+
+    try {
+        // --- LOG : Données reçues du Frontend ---
+        console.log("📥 [API Route] Données reçues (Payload):", JSON.stringify(companyData, null, 2));
+
+        // --- 1. RECHERCHE EMAIL (Anti-doublon) ---
+        const contactEmail = companyData.employees?.[0]?.email;
+        let existingCompanyId = null;
+
+        if (contactEmail) {
+            console.log(`🔍 [Axonaut] Recherche doublon pour l'email : ${contactEmail}`);
+            const searchResponse = await fetch(`${BASE_URL}/employees?email=${encodeURIComponent(contactEmail)}`, {
+                method: 'GET',
+                headers: headers
+            });
+
+            if (searchResponse.ok) {
+                const employees = await searchResponse.json();
+                if (employees && employees.length > 0) {
+                    existingCompanyId = employees[0].company_id;
+                    console.log(`✅ [Axonaut] Société existante trouvée (ID: ${existingCompanyId})`);
+                }
+            }
+        }
+
+        // --- 2. ACTION (PATCH ou POST) ---
+        let axonautResponse;
+        
+        if (existingCompanyId) {
+            console.log(`🔄 [Axonaut] Envoi PATCH vers /companies/${existingCompanyId}`);
+            axonautResponse = await fetch(`${BASE_URL}/companies/${existingCompanyId}`, {
+                method: 'PATCH',
+                headers: headers,
+                body: JSON.stringify(companyData)
+            });
+        } else {
+            console.log(`➕ [Axonaut] Envoi POST vers /companies`);
+            axonautResponse = await fetch(`${BASE_URL}/companies`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(companyData)
+            });
+        }
+
+        if (!axonautResponse.ok) {
+            const errorText = await axonautResponse.text();
+            console.error(`❌ [Axonaut] Erreur API (${axonautResponse.status}):`, errorText);
+            throw new Error(errorText || `Erreur Axonaut ${axonautResponse.status}`);
+        }
+
+        const finalData = await axonautResponse.json();
+
+        // --- LOG : Réponse complète d'Axonaut ---
+        // C'est ici que tu verras tout le JSON retourné par Axonaut dans tes logs serveur
+        console.log("📤 [Axonaut] Réponse complète (Full JSON):", JSON.stringify(finalData, null, 2));
+
+        res.status(200).json(finalData);
+
+    } catch (error) {
+        console.error('❌ [API Route] Erreur fatale:', error.message);
+        res.status(500).json({ 
+            error: "Erreur lors de la synchronisation Axonaut", 
+            details: error.message 
+        });
+    }
 }
