@@ -8,6 +8,18 @@ import {
 } from '../constants';
 
 /**
+ * Fonction utilitaire pour formater une date en RFC3339 (requis par Axonaut).
+ */
+const toRfc3339 = (date) => {
+    const isoString = date.toISOString();
+    const offset = date.getTimezoneOffset();
+    const sign = offset <= 0 ? '+' : '-';
+    const hours = Math.floor(Math.abs(offset) / 60).toString().padStart(2, '0');
+    const minutes = (Math.abs(offset) % 60).toString().padStart(2, '0');
+    return isoString.replace(/\.\d{3}Z$/, `${sign}${hours}:${minutes}`);
+};
+
+/**
  * Génère le corps JSON pour la création d'un tiers.
  * Gère le parsing d'adresse (CP/Ville) et nettoie les civilités.
  */
@@ -24,7 +36,7 @@ export function generateAxonautThirdPartyBody(formData) {
     // --- Parsing Adresse (Regex & Découpage) ---
     let zipCode = '';
     let city = '';
-    let streetOnly = fullAddressString; // Par défaut, on garde tout si on échoue à parser
+    let streetOnly = fullAddressString; 
 
     if (fullAddressString) {
         // Regex : Cherche 5 chiffres (CP) suivis d'espaces puis du texte (Ville)
@@ -33,19 +45,14 @@ export function generateAxonautThirdPartyBody(formData) {
         if (addressMatch) {
             zipCode = addressMatch[1];
             city = addressMatch[2].trim();
-
-            // 💡 MODIFICATION : On récupère tout ce qui est AVANT le code postal
-            // addressMatch.index donne la position du début du code postal dans la chaîne
             const partBeforeZip = fullAddressString.substring(0, addressMatch.index).trim();
-            
-            // On nettoie les éventuelles virgules qui traînent à la fin (ex: "35 Rue Cuvier, ")
             streetOnly = partBeforeZip.replace(/,\s*$/, '');
         }
     }
 
     let thirdPartyBody = {
         name: isPro ? formData.companyName : formData.fullName,
-        address_street: streetOnly || 'Adresse non spécifiée', // Rue uniquement
+        address_street: streetOnly || 'Adresse non spécifiée', 
         address_zip_code: zipCode || '75000', 
         address_city: city || 'Paris',       
         address_country: 'France',
@@ -59,13 +66,10 @@ export function generateAxonautThirdPartyBody(formData) {
         employees: [],
     };
 
-    // 2. Ajout conditionnel du champ 'address_contact_name' UNIQUEMENT si c'est un PRO
     if (isPro) {
-        // Si société => Nom de la société, sinon (fallback) => "Société (Nom Prénom)"
         thirdPartyBody.address_contact_name = formData.fullName;
     }
 
-    // Ajout du contact (Sans civilité)
     if (formData.fullName && formData.email) {
         thirdPartyBody.employees.push({
             firstname: firstName,
@@ -90,7 +94,6 @@ export const createAxonautThirdParty = async (formData) => {
     const thirdPartyBody = generateAxonautThirdPartyBody(formData);
     const PROXY_URL = '/api/create-thirdparty';
     
-    // LOG 1 : Envoi Tiers
     console.log("SERVICE: Envoi Tiers...", JSON.stringify(thirdPartyBody, null, 2));
 
     try {
@@ -105,7 +108,6 @@ export const createAxonautThirdParty = async (formData) => {
         if (!response.ok) throw new Error(data.details?.message || data.error || "Erreur création tiers");
         if (!data.id) throw new Error("ID manquant retour Axonaut");
 
-        // LOG 2 : Succès Tiers
         console.log(`✅ SERVICE: Tiers OK. ID: ${data.id}`);
 
         return { companyId: data.id }; 
@@ -131,7 +133,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         acomptePct, nombreTirages, heuresAnimations, distanceKm
     } = inputs;
 
-    // Fonction locale de formatage de date
     const formatDate = (dateValue) => {
         if (!dateValue) return "Date non définie";
         const date = new Date(dateValue);
@@ -141,19 +142,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         return `${day}/${month}/${year}`;
     };
 
-    // Fonction locale RFC3339
-    const toRfc3339 = (date) => {
-        const isoString = date.toISOString();
-        const offset = date.getTimezoneOffset();
-        const sign = offset <= 0 ? '+' : '-';
-        const hours = Math.floor(Math.abs(offset) / 60).toString().padStart(2, '0');
-        const minutes = (Math.abs(offset) % 60).toString().padStart(2, '0');
-        return isoString.replace(/\.\d{3}Z$/, `${sign}${hours}:${minutes}`);
-    };
-
     const productsArray = [];
-
-    // --- LOGIQUE DESCRIPTIONS HTML COMPLÈTES ---
     
     const ligneLivraison = livraisonIncluse
         ? ""
@@ -274,7 +263,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
             descriptionPrestation = `<p>Description indisponible pour le matériel sélectionné : ${nomBorne}</p>`;
     }
 
-    // Ligne 1: Prestation principale
     productsArray.push({
         "product_code": "P-BASE",
         "name": `Prestation ${nomBorne}`,
@@ -285,7 +273,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         "chapter": ""
     });
 
-    // Ligne 2: Logistique & Livraison
     const totalSupplementLivraison = supplementKilometrique + supplementLivraisonDifficile;
     const prixLogistiqueTotal = (livraisonIncluse ? prixLivraison : 0) + totalSupplementLivraison;
 
@@ -323,7 +310,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         });
     }
 
-    // Ligne 3: Template
     if (templateInclus) {
         const templateName = prixTemplate > 0
             ? "[Option] Personnalisation du template"
@@ -351,7 +337,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         }
     }
 
-    // Ligne 4: Supplément Impression
     if (supplementImpression > 0) {
         productsArray.push({
             "product_code": "P-PRINT-SUP",
@@ -364,7 +349,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         });
     }
 
-    // Ligne 5: Supplément Animation
     if (supplementAnimation > 0) {
         productsArray.push({
             "product_code": "P-ANIMATION",
@@ -398,7 +382,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
 export const sendAxonautQuotation = async (quotationBody) => {
     const PROXY_URL = '/api/create-quote'; 
     
-    // LOG 3 : JSON Devis prêt à partir
     console.log("SERVICE: Envoi Devis (JSON)...", JSON.stringify(quotationBody, null, 2));
 
     try {
@@ -412,7 +395,6 @@ export const sendAxonautQuotation = async (quotationBody) => {
         if (!response.ok) throw new Error(data.error || "Erreur création devis");
         if (!data.id) throw new Error("ID manquant retour Axonaut");
 
-        // LOG 4 : Succès Devis
         console.log(`✅ SERVICE: Devis créé avec succès. ID: ${data.id}, NUMBER: ${data.number}`);
 
         return data; 
@@ -423,10 +405,60 @@ export const sendAxonautQuotation = async (quotationBody) => {
 }
 
 /**
+ * Crée un événement dans Axonaut (ici utilisé pour envoyer le devis par email).
+ * Utilise le endpoint /api/v2/events via un proxy.
+ */
+export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail) => {
+    // 💡 Changement du nom du proxy pour correspondre à la ressource "Events"
+    const PROXY_EVENT_URL = '/api/create-event'; 
+    const now = new Date();
+
+    const eventBody = {
+        company_id: companyId,
+        // 💡 Utilisation de l'email de celui qui remplit le formulaire (formData.email)
+        employee_email: formFillerEmail, 
+        date: toRfc3339(now),
+        nature: 2, 
+        title: `Suite à votre demande de devis`,
+        content: `Bonjour,
+
+Veuillez trouver ci-joint votre devis Photobooth.
+
+Vous pouvez signer et régler l'acompte directement en ligne via le lien inclus dans le PDF.
+
+Cordialement,
+L'équipe Photobooth Paris`,
+        is_done: false,
+        attachments: {
+            quotations_ids: [quotationId] 
+        },
+    };
+
+    console.log("SERVICE: Création Événement Axonaut (Email)...", JSON.stringify(eventBody, null, 2));
+
+    try {
+        const response = await fetch(PROXY_EVENT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(eventBody),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.error || "Erreur création événement Axonaut");
+
+        console.log(`✅ SERVICE: Événement créé avec succès. ID: ${data.id}`);
+        return data; 
+
+    } catch (error) {
+        console.error("SERVICE: Erreur création événement", error);
+    }
+}
+
+/**
  * Envoie les données au Webhook Zapier.
  */
 export const sendZapierWebhook = async (payload) => {
-    // LOG 5 : Webhook
     console.log("SERVICE: Envoi Webhook Zapier...", payload);
     try {
         await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: JSON.stringify(payload) });

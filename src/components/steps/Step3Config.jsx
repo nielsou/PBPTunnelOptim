@@ -198,7 +198,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                         Base Signature / Jour : <span className='float-right'>{basePriceDisplay}</span>
                     </p>
                     <p className='text-sm mt-1 font-medium'>
-                        Prix plancher journalier pour la dégressivité: {PLANCHER_PRICE_PRO_HT_USER_FIX_LOCAL}€ HT.
+                        Tarif journalier dégressif.
                     </p>
                 </div>
 

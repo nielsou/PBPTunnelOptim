@@ -10,9 +10,12 @@ import {
     PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT, 
     PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT, 
     PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT, 
-    P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT 
+    P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT,
+    // ⬇️ Nouveaux imports des flags
+    ENABLE_ZAPIER_STEP_1, ENABLE_ZAPIER_STEP_2, ENABLE_ZAPIER_STEP_3, ENABLE_ZAPIER_STEP_4
 } from '../constants'; 
 
+// Fonction utilitaire pour la distance
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
     const R = 6371; 
     const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -25,13 +28,13 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
 }
 
 export const useQuoteLogic = () => {
+    // États et Refs
     const [quoteId, setQuoteId] = useState(() => nanoid(10));
-    
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
-
     const [currentStep, setCurrentStep] = useState(1);
     
+    // État initial du formulaire
     const initialFormState = {
         fullName: '', email: '', phone: '', isPro: false, companyName: '', billingFullAddress: '',
         deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, eventDate: '', eventDuration: 1, needType: 'pro',
@@ -40,12 +43,15 @@ export const useQuoteLogic = () => {
 
     const [formData, setFormData] = useState(initialFormState);
     
+    // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
+        // 1. Distance
         const distanceKm = (formData.deliveryLat && formData.deliveryLng) 
             ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng) 
             : 0;
         const supplementKm = distanceKm > 50 ? Math.round(distanceKm - 50) : 0;
         
+        // 2. Initialisation
         const displayTTC = !formData.isPro;
         const priceTransformer = (priceHT) => (displayTTC ? (priceHT * TVA_RATE) : priceHT);
         const suffix = displayTTC ? '€ TTC' : '€ HT';
@@ -63,6 +69,7 @@ export const useQuoteLogic = () => {
         const duration = formData.eventDuration;
         const NbJours = duration;
         
+        // --- LOGIQUE PRIX ECO ---
         if (formData.needType === 'eco') {
             if (formData.ecoModel) {
                 const model = ECO_MODELS_PRICING[formData.ecoModel];
@@ -81,14 +88,26 @@ export const useQuoteLogic = () => {
                     oneTimeCostsHT += prixLivraisonHT;
                 }
                 
-                details.push({ label: model.name, priceHT: model.priceHT, daily: true, displayPrice: `${priceTransformer(model.priceHT).toFixed(0)}${suffix}` });
+                details.push({
+                    label: model.name,
+                    priceHT: model.priceHT,
+                    daily: true, 
+                    displayPrice: `${priceTransformer(model.priceHT).toFixed(0)}${suffix}`
+                });
                 
                 if (prixLivraisonHT > 0) {
-                     details.push({ label: formData.ecoTransport === 'delivery_withsetup' ? 'Livraison + Mise en service' : 'Livraison Standard', priceHT: prixLivraisonHT, daily: false, displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}` });
+                     details.push({
+                        label: formData.ecoTransport === 'delivery_withsetup' ? 'Livraison + Mise en service' : 'Livraison Standard',
+                        priceHT: prixLivraisonHT,
+                        daily: false,
+                        displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}`
+                    });
                 } else if (formData.ecoTransport === 'pickup') {
                     details.push({ label: 'Retrait (Arcueil)', priceHT: 0, daily: false, displayPrice: 'Gratuit' });
                 }
             }
+        
+        // --- LOGIQUE PRIX PRO ---
         } else if (formData.needType === 'pro') {
             nomBorne = 'Signature';
             baseDayPriceHT += BASE_PRICE_PRO_HT;
@@ -124,6 +143,8 @@ export const useQuoteLogic = () => {
             if (formData.proRGPD) {
                 const rgpdPriceHT = PRO_OPTION_RGPD_HT; dailyServicesHT += rgpdPriceHT; details.push({ label: 'Conformité RGPD', priceHT: rgpdPriceHT, daily: true, displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` });
             }
+
+        // --- LOGIQUE PRIX 360 ---
         } else if (formData.needType === '360') {
             nomBorne = 'Photobooth 360';
             const basePriceHT = P360_BASE_PRICE_HT; 
@@ -135,11 +156,13 @@ export const useQuoteLogic = () => {
             details.push({ label: 'Livraison 360 (incluse)', priceHT: deliveryPriceHT, daily: true, displayPrice: `+${priceTransformer(deliveryPriceHT).toFixed(0)}${suffix}` });
         }
         
+        // Supplément Kilométrique
         if (supplementKm > 0) {
             oneTimeCostsHT += supplementKm;
             details.push({ label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`, priceHT: supplementKm, daily: false, displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}` });
         }
         
+        // Outil Template
         if (formData.templateTool && (formData.needType === 'eco' || formData.needType === 'pro')) {
             prixTemplateHT = formData.isPro ? TEMPLATE_TOOL_PRO_PRICE_HT : 0; 
             oneTimeCostsHT += prixTemplateHT;
@@ -147,6 +170,7 @@ export const useQuoteLogic = () => {
             details.push({ label: 'Outil Template Professionnel', priceHT: prixTemplateHT, daily: false, displayPrice: templateDisplay });
         }
 
+        // --- DÉGRESSIVITÉ ---
         const totalServicesBeforeFormula = dailyServicesHT * duration;
         let totalServicesHT_Degressed = 0;
 
@@ -213,31 +237,78 @@ export const useQuoteLogic = () => {
         }
     };
     
-    // 📍 MODIFICATION ZAPIER : Nettoyage du payload (Ni status, ni TTC)
+    // 📍 ENVOI ZAPIER OPTIMISÉ (Tout envoyer à la fin)
     const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null) => {
-        const shouldSendPrice = step >= 3 || finalSubmit;
-
+        
+        // On initialise le payload
         const payload = {
             quote_id: quoteId,    
-            devis: axonautNumber, 
+            devis: axonautNumber, // null au début, rempli à la fin
             step_completed: step,
-            // status: Supprimé (Inutile)
             timestamp: new Date().toISOString(),
-            ...formData, 
         };
 
-        // On envoie total_ht uniquement si pertinent (étape 3+ ou final). 
-        // total_ttc est supprimé définitivement.
-        if (shouldSendPrice) {
-            payload.total_ht = pricing.totalHT.toFixed(2);
+        // ⚠️ SECURITÉ : On réinjecte TOUJOURS les données du formulaire (formData)
+        // Peu importe l'étape, on envoie ce qu'on a en mémoire.
+        // Comme 'formData' conserve l'état depuis le début, à l'étape 4, il contient TOUT.
+
+        // --- CHAMPS CONTACT (Étape 1) ---
+        payload.fullName = formData.fullName;
+        payload.email = formData.email;
+        payload.phone = formData.phone;
+        payload.isPro = formData.isPro;
+        
+        if (formData.isPro) {
+            payload.companyName = formData.companyName;
+            payload.billingFullAddress = formData.billingFullAddress;
         }
 
+        // --- CHAMPS ÉVÉNEMENT (Étape 2) ---
+        // On vérifie juste qu'on a dépassé l'étape 1 ou qu'on est à la fin
+        if (step >= 2 || finalSubmit) {
+            payload.deliveryFullAddress = formData.deliveryFullAddress;
+            payload.eventDate = formData.eventDate;
+            payload.eventDuration = formData.eventDuration;
+            payload.needType = formData.needType;
+            payload.deliveryLat = formData.deliveryLat;
+            payload.deliveryLng = formData.deliveryLng;
+        }
+
+        // --- CHAMPS CONFIGURATION (Étape 3) ---
+        if (step >= 3 || finalSubmit) {
+            if (formData.needType === 'eco') {
+                payload.ecoModel = formData.ecoModel;
+                payload.ecoTransport = formData.ecoTransport;
+                payload.templateTool = formData.templateTool; 
+            } 
+            else if (formData.needType === 'pro') {
+                payload.proAnimationHours = formData.proAnimationHours;
+                payload.proFondIA = formData.proFondIA;
+                payload.proRGPD = formData.proRGPD;
+                payload.proDelivery = formData.proDelivery;
+                payload.proImpressions = formData.proImpressions;
+                payload.templateTool = formData.templateTool;
+            }
+            // 360 n'a pas de champs spécifiques
+            
+            // --- PRIX (Envoyé uniquement à la fin ou étape 3 validée) ---
+            if (pricing) {
+                payload.total_ht = pricing.totalHT.toFixed(2);
+            }
+        }
+
+        // Envoi effectif
         AxonautService.sendZapierWebhook(payload);
     };
 
     const handleNext = () => {
         if (isStepValid() && currentStep < 4) {
-            triggerWebhook(currentStep, false, calculatePrice);
+            // ⬇️ LOGIQUE DES DRAPEAUX (FLAGS) ⬇️
+            // On vérifie si l'étape qu'on vient de compléter est activée dans les constantes
+            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice);
+            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice);
+            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, false, calculatePrice);
+            
             setCurrentStep(currentStep + 1);
         }
     };
@@ -248,6 +319,7 @@ export const useQuoteLogic = () => {
         }
     };
     
+    // Remise à zéro pour nouvelle demande
     const resetForm = () => {
         setFormData(initialFormState);
         setCurrentStep(1);
@@ -256,11 +328,13 @@ export const useQuoteLogic = () => {
         setQuoteId(nanoid(10));
     };
 
+    // Soumission Finale
     const handleSubmit = async (showMessage) => {
         setIsSubmitting(true);
         const pricing = calculatePrice;
 
         try {
+            // 1. Création Tiers
             const { companyId } = await AxonautService.createAxonautThirdParty(formData);
             
             const inputsForAxonaut = {
@@ -274,11 +348,25 @@ export const useQuoteLogic = () => {
                 acomptePct: 1
             };
 
+            // 2. Création Devis Axonaut
             const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId);
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody); 
             const finalQuoteNumber = quoteResponse.number; 
+            const finalQuoteId = quoteResponse.id; // Récupérer l'ID de la quotation
+
+            // 3. ENVOI DE L'EMAIL VIA ÉVÉNEMENT AXONAUT (NOUVEAU)
+            await AxonautService.createAxonautEvent(
+                finalQuoteId,
+                companyId,
+                formData.email, // Titre pour référence
+                formData.email  // ⚠️ employee_email = Celui qui remplit le formulaire (Client)
+            );
             
-            triggerWebhook(currentStep, true, pricing, finalQuoteNumber);
+            // 4. Webhook Final
+            // On vérifie le drapeau de l'étape 4 avant d'envoyer
+            if (ENABLE_ZAPIER_STEP_4) {
+                triggerWebhook(currentStep, true, pricing, finalQuoteNumber);
+            }
 
             setIsSubmitted(true); 
             

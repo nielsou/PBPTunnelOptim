@@ -108,3 +108,12 @@ export const COUNTRIES = [
   { name: "Espagne", code: "+34", flag: "🇪🇸", mask: "XXX XXX XXX", requiredDigits: 9 },
   { name: "Belgique", code: "+32", flag: "🇧🇪", mask: "X XXX XX XX", requiredDigits: 9 },
 ];
+
+// ======================================================================
+// CONFIGURATION ZAPIER (FLAGS)
+// ======================================================================
+// Mettez à 'true' pour activer l'envoi à cette étape, 'false' pour désactiver.
+export const ENABLE_ZAPIER_STEP_1 = false; // Contact
+export const ENABLE_ZAPIER_STEP_2 = false; // Événement
+export const ENABLE_ZAPIER_STEP_3 = false; // Configuration
+export const ENABLE_ZAPIER_STEP_4 = true;  // Final (Devis complet)
