@@ -4,7 +4,7 @@ import {
     AXONAUT_THEMES_MAPPING, 
     AXONAUT_FIXED_DEFAULTS,
     ZAPIER_WEBHOOK_URL,
-    TVA_RATE
+    // TVA_RATE n'est pas utilisé ici mais pourrait l'être
 } from '../constants';
 
 /**
@@ -407,27 +407,30 @@ export const sendAxonautQuotation = async (quotationBody) => {
 /**
  * Crée un événement dans Axonaut (ici utilisé pour envoyer le devis par email).
  * Utilise le endpoint /api/v2/events via un proxy.
+ * 🆕 MODIFICATION : Ajout du paramètre 'publicLink'
  */
-export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail) => {
-    // 💡 Changement du nom du proxy pour correspondre à la ressource "Events"
+export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink) => {
     const PROXY_EVENT_URL = '/api/create-event'; 
     const now = new Date();
 
+    // 🆕 Construction du message avec le lien de signature
+    const emailContent = `Bonjour,
+
+Veuillez trouver ci-joint votre devis Photobooth.
+
+Vous pouvez le consulter, le signer et régler l'acompte directement en ligne via ce lien sécurisé :
+${publicLink}
+
+Cordialement,
+L'équipe Photobooth Paris`;
+
     const eventBody = {
         company_id: companyId,
-        // 💡 Utilisation de l'email de celui qui remplit le formulaire (formData.email)
         employee_email: formFillerEmail, 
         date: toRfc3339(now),
         nature: 2, 
         title: `Suite à votre demande de devis`,
-        content: `Bonjour,
-
-Veuillez trouver ci-joint votre devis Photobooth.
-
-Vous pouvez signer et régler l'acompte directement en ligne via le lien inclus dans le PDF.
-
-Cordialement,
-L'équipe Photobooth Paris`,
+        content: emailContent,
         is_done: false,
         attachments: {
             quotations_ids: [quotationId] 
@@ -465,4 +468,38 @@ export const sendZapierWebhook = async (payload) => {
     } catch (error) {
         console.error('Erreur Zapier', error);
     }
+};
+
+/**
+ * 🆕 MOCK : Récupère les infos partenaire via le numéro client.
+ * A CONNECTER A VOTRE BACKEND REEL PLUS TARD.
+ */
+export const getAxonautCompanyDetails = async (clientNumber) => {
+    console.log(`SERVICE: Recherche Partenaire ${clientNumber}...`);
+
+    // Simulation d'appel API
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (clientNumber === '12345') { // Code de test
+                resolve({
+                    found: true,
+                    name: "AGENCE EVENEMENTIEL PRO",
+                    billingAddress: {
+                        fullAddress: "10 Avenue des Champs-Élysées, 75008 Paris",
+                        zip: "75008",
+                        city: "Paris"
+                    },
+                    contacts: [
+                        { fullName: "Julie Martin", email: "julie@agence-event.pro", phone: "+33612345678" }
+                    ],
+                    savedAddresses: [
+                        { label: "Siège Social", address: "10 Avenue des Champs-Élysées, 75008 Paris" },
+                        { label: "Showroom", address: "45 Rue de la République, 92100 Boulogne-Billancourt" }
+                    ]
+                });
+            } else {
+                reject("Client introuvable");
+            }
+        }, 800);
+    });
 };

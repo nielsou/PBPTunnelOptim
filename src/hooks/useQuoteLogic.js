@@ -2,28 +2,28 @@
 
 import { useState, useMemo } from 'react';
 import { nanoid } from 'nanoid';
-import * as AxonautService from '../services/axonautService'; 
-import { 
-    TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS, 
-    ECO_MODELS_PRICING, DELIVERY_BASE_ECO_HT, DELIVERY_BASE_ILLIMITE_HT, 
+import * as AxonautService from '../services/axonautService';
+import {
+    TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS,
+    ECO_MODELS_PRICING, DELIVERY_BASE_ECO_HT, DELIVERY_BASE_ILLIMITE_HT,
     SETUP_PRICE_HT, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX,
-    PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT, 
-    PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT, 
-    PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT, 
+    PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT,
+    PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT,
+    PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT,
     P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT,
     // ⬇️ Nouveaux imports des flags
     ENABLE_ZAPIER_STEP_1, ENABLE_ZAPIER_STEP_2, ENABLE_ZAPIER_STEP_3, ENABLE_ZAPIER_STEP_4
-} from '../constants'; 
+} from '../constants';
 
 // Fonction utilitaire pour la distance
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; 
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
 
@@ -33,7 +33,8 @@ export const useQuoteLogic = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
-    
+    const [finalPublicLink, setFinalPublicLink] = useState(null);
+
     // État initial du formulaire
     const initialFormState = {
         fullName: '', email: '', phone: '', isPro: false, companyName: '', billingFullAddress: '',
@@ -42,33 +43,33 @@ export const useQuoteLogic = () => {
     };
 
     const [formData, setFormData] = useState(initialFormState);
-    
+
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
         // 1. Distance
-        const distanceKm = (formData.deliveryLat && formData.deliveryLng) 
-            ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng) 
+        const distanceKm = (formData.deliveryLat && formData.deliveryLng)
+            ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng)
             : 0;
         const supplementKm = distanceKm > 50 ? Math.round(distanceKm - 50) : 0;
-        
+
         // 2. Initialisation
         const displayTTC = !formData.isPro;
         const priceTransformer = (priceHT) => (displayTTC ? (priceHT * TVA_RATE) : priceHT);
         const suffix = displayTTC ? '€ TTC' : '€ HT';
 
-        let dailyServicesHT = 0; 
-        let oneTimeCostsHT = 0;   
+        let dailyServicesHT = 0;
+        let oneTimeCostsHT = 0;
         let details = [];
         let nomBorne = '';
-        let baseDayPriceHT = 0; 
+        let baseDayPriceHT = 0;
         let prixLivraisonHT = 0;
         let supplementImpressionHT = 0;
         let supplementAnimationHT = 0;
         let prixTemplateHT = 0;
-        
+
         const duration = formData.eventDuration;
         const NbJours = duration;
-        
+
         // --- LOGIQUE PRIX ECO ---
         if (formData.needType === 'eco') {
             if (formData.ecoModel) {
@@ -76,9 +77,9 @@ export const useQuoteLogic = () => {
                 nomBorne = model.name;
                 baseDayPriceHT += model.priceHT;
                 dailyServicesHT += model.priceHT;
-                
+
                 const baseDeliveryPriceHT = formData.ecoModel === 'illimite' ? DELIVERY_BASE_ILLIMITE_HT : DELIVERY_BASE_ECO_HT;
-                const setupPriceHT = SETUP_PRICE_HT; 
+                const setupPriceHT = SETUP_PRICE_HT;
 
                 if (formData.ecoTransport === 'delivery_nosetup') {
                     prixLivraisonHT = baseDeliveryPriceHT;
@@ -87,16 +88,16 @@ export const useQuoteLogic = () => {
                     prixLivraisonHT = baseDeliveryPriceHT + setupPriceHT;
                     oneTimeCostsHT += prixLivraisonHT;
                 }
-                
+
                 details.push({
                     label: model.name,
                     priceHT: model.priceHT,
-                    daily: true, 
+                    daily: true,
                     displayPrice: `${priceTransformer(model.priceHT).toFixed(0)}${suffix}`
                 });
-                
+
                 if (prixLivraisonHT > 0) {
-                     details.push({
+                    details.push({
                         label: formData.ecoTransport === 'delivery_withsetup' ? 'Livraison + Mise en service' : 'Livraison Standard',
                         priceHT: prixLivraisonHT,
                         daily: false,
@@ -106,15 +107,15 @@ export const useQuoteLogic = () => {
                     details.push({ label: 'Retrait (Arcueil)', priceHT: 0, daily: false, displayPrice: 'Gratuit' });
                 }
             }
-        
-        // --- LOGIQUE PRIX PRO ---
+
+            // --- LOGIQUE PRIX PRO ---
         } else if (formData.needType === 'pro') {
             nomBorne = 'Signature';
             baseDayPriceHT += BASE_PRICE_PRO_HT;
             dailyServicesHT += BASE_PRICE_PRO_HT;
             details.push({ label: 'Signature (base journalière)', priceHT: BASE_PRICE_PRO_HT, daily: true, displayPrice: `${priceTransformer(BASE_PRICE_PRO_HT).toFixed(0)}${suffix}` });
 
-            const proDeliveryBasePriceHT = PRO_DELIVERY_BASE_HT; 
+            const proDeliveryBasePriceHT = PRO_DELIVERY_BASE_HT;
             const animationHours = parseInt(formData.proAnimationHours);
             const isShortAnimation = animationHours > 0 && animationHours <= 3;
             prixLivraisonHT = isShortAnimation ? proDeliveryBasePriceHT / 2 : proDeliveryBasePriceHT;
@@ -122,7 +123,7 @@ export const useQuoteLogic = () => {
             details.push({ label: 'Logistique/Installation par Technicien Certifié', priceHT: prixLivraisonHT, daily: false, displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}` });
 
             if (formData.proAnimationHours !== 'none') {
-                supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT; 
+                supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
                 dailyServicesHT += supplementAnimationHT;
                 const animationDescription = isShortAnimation ? `Animation ${animationHours}h (Technicien)` : `Animation ${animationHours}h (Animatrice dédiée)`;
                 details.push({ label: animationDescription, priceHT: supplementAnimationHT, daily: true, displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` });
@@ -132,7 +133,7 @@ export const useQuoteLogic = () => {
                 const NbPrint = formData.proImpressions;
                 const NbJoursTotalOption = NbJours * (NbPrint - 1);
                 const PrixBaseImpression = PRO_IMPRESSION_BASE_HT;
-                const PrixPlancherImpression = PRO_IMPRESSION_PLANCHER_HT; 
+                const PrixPlancherImpression = PRO_IMPRESSION_PLANCHER_HT;
                 supplementImpressionHT = Math.trunc((PrixBaseImpression - PrixPlancherImpression) * 10 * (1 - Math.pow(0.9, NbJoursTotalOption)) + PrixPlancherImpression * NbJoursTotalOption);
                 oneTimeCostsHT += supplementImpressionHT;
                 details.push({ label: `${NbPrint} impressions par cliché (Total ${NbJours}j)`, priceHT: supplementImpressionHT, daily: false, displayPrice: `+${priceTransformer(supplementImpressionHT).toFixed(0)}${suffix}` });
@@ -144,27 +145,27 @@ export const useQuoteLogic = () => {
                 const rgpdPriceHT = PRO_OPTION_RGPD_HT; dailyServicesHT += rgpdPriceHT; details.push({ label: 'Conformité RGPD', priceHT: rgpdPriceHT, daily: true, displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` });
             }
 
-        // --- LOGIQUE PRIX 360 ---
+            // --- LOGIQUE PRIX 360 ---
         } else if (formData.needType === '360') {
             nomBorne = 'Photobooth 360';
-            const basePriceHT = P360_BASE_PRICE_HT; 
-            const deliveryPriceHT = P360_DELIVERY_PRICE_HT; 
+            const basePriceHT = P360_BASE_PRICE_HT;
+            const deliveryPriceHT = P360_DELIVERY_PRICE_HT;
             baseDayPriceHT = basePriceHT;
-            prixLivraisonHT = deliveryPriceHT; 
+            prixLivraisonHT = deliveryPriceHT;
             dailyServicesHT += basePriceHT + deliveryPriceHT;
             details.push({ label: 'Photobooth 360 (base journalière)', priceHT: basePriceHT, daily: true, displayPrice: `${priceTransformer(basePriceHT).toFixed(0)}${suffix}` });
             details.push({ label: 'Livraison 360 (incluse)', priceHT: deliveryPriceHT, daily: true, displayPrice: `+${priceTransformer(deliveryPriceHT).toFixed(0)}${suffix}` });
         }
-        
+
         // Supplément Kilométrique
         if (supplementKm > 0) {
             oneTimeCostsHT += supplementKm;
             details.push({ label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`, priceHT: supplementKm, daily: false, displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}` });
         }
-        
+
         // Outil Template
         if (formData.templateTool && (formData.needType === 'eco' || formData.needType === 'pro')) {
-            prixTemplateHT = formData.isPro ? TEMPLATE_TOOL_PRO_PRICE_HT : 0; 
+            prixTemplateHT = formData.isPro ? TEMPLATE_TOOL_PRO_PRICE_HT : 0;
             oneTimeCostsHT += prixTemplateHT;
             let templateDisplay = formData.isPro ? `${priceTransformer(prixTemplateHT).toFixed(0)}${suffix}` : 'Gratuit (Offert)';
             details.push({ label: 'Outil Template Professionnel', priceHT: prixTemplateHT, daily: false, displayPrice: templateDisplay });
@@ -189,28 +190,28 @@ export const useQuoteLogic = () => {
             } else {
                 const is360 = formData.needType === '360';
                 const modelKey = is360 ? '360' : formData.ecoModel;
-                let PBaseJour_Only = dailyServicesHT; 
+                let PBaseJour_Only = dailyServicesHT;
                 let PPlancherJour_Only = 0;
                 if (is360) {
-                    PBaseJour_Only = P360_BASE_PRICE_HT + P360_DELIVERY_PRICE_HT; 
-                    PPlancherJour_Only = P360_FLOOR_PRICE_HT; 
+                    PBaseJour_Only = P360_BASE_PRICE_HT + P360_DELIVERY_PRICE_HT;
+                    PPlancherJour_Only = P360_FLOOR_PRICE_HT;
                 } else if (modelKey) {
-                    PBaseJour_Only = ECO_MODELS_PRICING[modelKey].priceHT; 
+                    PBaseJour_Only = ECO_MODELS_PRICING[modelKey].priceHT;
                     PPlancherJour_Only = ECO_MODELS_PRICING[modelKey].floorPriceHT;
                 }
                 const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, NbJours));
                 const basePlancherPart = PPlancherJour_Only * NbJours;
-                totalServicesHT_Degressed = Math.round((baseDegressivePart + basePlancherPart)*100)/100;
+                totalServicesHT_Degressed = Math.round((baseDegressivePart + basePlancherPart) * 100) / 100;
             }
         }
-        
+
         const totalHT = totalServicesHT_Degressed + oneTimeCostsHT;
-        
+
         const axonautData = {
-            nomBorne, prixMateriel: totalServicesHT_Degressed, prixTemplate: prixTemplateHT, prixLivraison: prixLivraisonHT, 
-            nombreMachine: 1, supplementKilometrique: supplementKm, supplementLivraisonDifficile: 0, 
-            supplementImpression: supplementImpressionHT, supplementAnimation: supplementAnimationHT, 
-            nombreTirages: formData.proImpressions, heuresAnimations: parseInt(formData.proAnimationHours) || 0, distanceKm: Math.round(distanceKm), 
+            nomBorne, prixMateriel: totalServicesHT_Degressed, prixTemplate: prixTemplateHT, prixLivraison: prixLivraisonHT,
+            nombreMachine: 1, supplementKilometrique: supplementKm, supplementLivraisonDifficile: 0,
+            supplementImpression: supplementImpressionHT, supplementAnimation: supplementAnimationHT,
+            nombreTirages: formData.proImpressions, heuresAnimations: parseInt(formData.proAnimationHours) || 0, distanceKm: Math.round(distanceKm),
         };
 
         return {
@@ -221,7 +222,7 @@ export const useQuoteLogic = () => {
     }, [formData]);
 
 
-    const isStepValid = () => { 
+    const isStepValid = () => {
         switch (currentStep) {
             case 1:
                 if (!formData.fullName || !formData.email || !formData.phone || formData.phone.replace(/\D/g, '').length < 9) return false;
@@ -236,13 +237,13 @@ export const useQuoteLogic = () => {
                 return true;
         }
     };
-    
+
     // 📍 ENVOI ZAPIER OPTIMISÉ (Tout envoyer à la fin)
     const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null) => {
-        
+
         // On initialise le payload
         const payload = {
-            quote_id: quoteId,    
+            quote_id: quoteId,
             devis: axonautNumber, // null au début, rempli à la fin
             step_completed: step,
             timestamp: new Date().toISOString(),
@@ -257,7 +258,7 @@ export const useQuoteLogic = () => {
         payload.email = formData.email;
         payload.phone = formData.phone;
         payload.isPro = formData.isPro;
-        
+
         if (formData.isPro) {
             payload.companyName = formData.companyName;
             payload.billingFullAddress = formData.billingFullAddress;
@@ -279,8 +280,8 @@ export const useQuoteLogic = () => {
             if (formData.needType === 'eco') {
                 payload.ecoModel = formData.ecoModel;
                 payload.ecoTransport = formData.ecoTransport;
-                payload.templateTool = formData.templateTool; 
-            } 
+                payload.templateTool = formData.templateTool;
+            }
             else if (formData.needType === 'pro') {
                 payload.proAnimationHours = formData.proAnimationHours;
                 payload.proFondIA = formData.proFondIA;
@@ -290,7 +291,7 @@ export const useQuoteLogic = () => {
                 payload.templateTool = formData.templateTool;
             }
             // 360 n'a pas de champs spécifiques
-            
+
             // --- PRIX (Envoyé uniquement à la fin ou étape 3 validée) ---
             if (pricing) {
                 payload.total_ht = pricing.totalHT.toFixed(2);
@@ -308,7 +309,7 @@ export const useQuoteLogic = () => {
             if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice);
             if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice);
             if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, false, calculatePrice);
-            
+
             setCurrentStep(currentStep + 1);
         }
     };
@@ -318,7 +319,7 @@ export const useQuoteLogic = () => {
             setCurrentStep(currentStep - 1);
         }
     };
-    
+
     // Remise à zéro pour nouvelle demande
     const resetForm = () => {
         setFormData(initialFormState);
@@ -336,10 +337,10 @@ export const useQuoteLogic = () => {
         try {
             // 1. Création Tiers
             const { companyId } = await AxonautService.createAxonautThirdParty(formData);
-            
+
             const inputsForAxonaut = {
-                ...pricing.axonautData, 
-                ...AXONAUT_FIXED_DEFAULTS, 
+                ...pricing.axonautData,
+                ...AXONAUT_FIXED_DEFAULTS,
                 dateEvenement: formData.eventDate,
                 adresseLivraisonComplete: formData.deliveryFullAddress,
                 nombreJours: formData.eventDuration,
@@ -350,30 +351,37 @@ export const useQuoteLogic = () => {
 
             // 2. Création Devis Axonaut
             const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId);
-            const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody); 
-            const finalQuoteNumber = quoteResponse.number; 
-            const finalQuoteId = quoteResponse.id; // Récupérer l'ID de la quotation
+            const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
+            const finalQuoteNumber = quoteResponse.number;
+            const finalQuoteId = quoteResponse.id;
 
-            // 3. ENVOI DE L'EMAIL VIA ÉVÉNEMENT AXONAUT (NOUVEAU)
+            // RÉCUPÉRATION DU LIEN (URL complète)
+            const signLink = quoteResponse.customer_portal_url;
+
+            // On sauvegarde le lien pour l'interface
+            setFinalPublicLink(signLink);
+
+            // 3. ENVOI DE L'EMAIL VIA ÉVÉNEMENT AXONAUT
             await AxonautService.createAxonautEvent(
                 finalQuoteId,
                 companyId,
-                formData.email, // Titre pour référence
-                formData.email  // ⚠️ employee_email = Celui qui remplit le formulaire (Client)
+                formData.email,
+                formData.email,
+                signLink // ⬅️ On passe le lien à la fonction d'envoi d'email
             );
-            
+
             // 4. Webhook Final
-            // On vérifie le drapeau de l'étape 4 avant d'envoyer
             if (ENABLE_ZAPIER_STEP_4) {
-                triggerWebhook(currentStep, true, pricing, finalQuoteNumber);
+                const payloadWithLink = { ...pricing, sign_link: signLink };
+                triggerWebhook(currentStep, true, payloadWithLink, finalQuoteNumber);
             }
 
-            setIsSubmitted(true); 
-            
+            setIsSubmitted(true);
+
         } catch (error) {
             showMessage(`Erreur lors de la confirmation du devis: ${error.message}`);
         } finally {
-            setIsSubmitting(false); 
+            setIsSubmitting(false);
         }
     };
 
@@ -389,7 +397,8 @@ export const useQuoteLogic = () => {
         handlePrev,
         totalSteps: 4,
         isSubmitting,
-        isSubmitted, 
-        resetForm     
+        isSubmitted,
+        resetForm,
+        finalPublicLink 
     };
 };
