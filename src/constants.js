@@ -66,12 +66,15 @@ export const PRO_ANIMATION_HOUR_PRICE_HT = 45; // Prix HT par heure
 export const PRO_OPTION_FONDIA_HT = 50;
 export const PRO_OPTION_RGPD_HT = 50;
 
+// Options 360
+export const P360_EXTRA_ANIMATION_HOUR_PRICE_HT = 90; // Prix HT par heure
+
 // Options Impressions
-export const PRO_IMPRESSION_BASE_HT = 80;
-export const PRO_IMPRESSION_PLANCHER_HT = 50;
+export const PRO_IMPRESSION_BASE_HT = 100;
+export const PRO_IMPRESSION_PLANCHER_HT = 100;
 
 // Option Template (coût Pro)
-export const TEMPLATE_TOOL_PRO_PRICE_HT = 60;
+export const TEMPLATE_TOOL_PRO_PRICE_HT = 68.33;
 
 
 // ======================================================================

@@ -1,3 +1,5 @@
+// src/components/steps/Step1Contact.jsx
+
 import React from 'react';
 import { User } from 'lucide-react';
 import { InputField } from '../ui/InputField';
@@ -59,14 +61,14 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                         setFormData(prev => ({
                             ...prev,
                             isPro: isPro,
-                            needType: 'pro', // Remettre à PRO par défaut
-                            ecoModel: '',
-                            ecoTransport: 'pickup',
+                            needType: '',
+                            model: '', 
+                            delivery: '', 
                             proAnimationHours: 'none',
-                            proFondIA: false,
-                            proRGPD: false,
+                            proFondIA: 0,
+                            proRGPD: 0,
                             proImpressions: 1,
-                            templateTool: false,
+                            templateTool: 0,
                         }));
                         if (currentStep > 2) setCurrentStep(2);
                     }}
@@ -92,7 +94,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     />
                     <div>
                         <AddressAutocomplete
-                            label="Adresse de facturation (Recherche automatique)"
+                            label="Adresse de facturation"
                             required
                             defaultValue={formData.billingFullAddress || ''}
                             onAddressSelect={handleAddressSelect}

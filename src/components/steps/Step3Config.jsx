@@ -1,16 +1,13 @@
+// src/components/steps/Step3Config.jsx
+
 import React from 'react';
 import { Settings, Wand2, Truck, Check } from 'lucide-react';
-import { TVA_RATE, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX } from '../../constants';
+import { TVA_RATE, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX, P360_EXTRA_ANIMATION_HOUR_PRICE_HT } from '../../constants';
 
 export const Step3Config = ({ formData, setFormData, customColor, pricingData }) => {
     
-    // ⬅️ FIX: Ajout du safe guard pour les premières phases de rendu
     if (!pricingData || typeof pricingData.priceSuffix === 'undefined') {
-        return (
-            <div className='text-center py-10 text-gray-500'>
-                Chargement des configurations...
-            </div>
-        );
+        return <div className='text-center py-10 text-gray-500'>Chargement des configurations...</div>;
     }
     
     const { priceSuffix } = pricingData;
@@ -37,10 +34,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                         onChange={(e) => handleChange('templateTool', e.target.checked)}
                         className='w-5 h-5 text-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-500 cursor-pointer border-gray-400'
                     />
-                    <label
-                        htmlFor='templateTool'
-                        className='flex-1 text-sm font-semibold text-gray-800 cursor-pointer flex items-center space-x-2'
-                    >
+                    <label htmlFor='templateTool' className='flex-1 text-sm font-semibold text-gray-800 cursor-pointer flex items-center space-x-2'>
                         <Wand2 className='w-4 h-4 mr-2' />
                         <span>Outil Template (Personnalisation Avancée)</span>
                     </label>
@@ -53,7 +47,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
         );
     };
 
-
+    // --- BLOC ÉCO ---
     if (formData.needType === 'eco') {
         const ecoModels = [
             { id: 'numerique', name: 'CineBooth Numérique', priceHT: 245, desc: 'Envoi numérique des photos et vidéos.' },
@@ -62,69 +56,58 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
             { id: 'illimite', name: 'StarBooth Pro - Illimité', priceHT: 412, desc: "Impressions illimitées." },
         ];
 
-        const model = ecoModels.find(m => m.id === formData.ecoModel);
-        const baseDeliveryPriceHT = model ? (model.id === 'illimite' ? 70 : 50) : 0;
+        const currentModel = ecoModels.find(m => m.id === formData.model);
+        const baseDeliveryPriceHT = currentModel ? (currentModel.id === 'illimite' ? 70 : 50) : 0;
         const setupPriceHT = 20;
         const deliveryNosetupDisplay = `${priceTransformer(baseDeliveryPriceHT).toFixed(0)}€ ${priceSuffix}`;
         const deliveryWithSetupDisplay = `${priceTransformer(baseDeliveryPriceHT + setupPriceHT).toFixed(0)}€ ${priceSuffix}`;
 
-
         return (
             <div className='space-y-8'>
-                <h2
-                    className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
-                    style={{ color: customColor, borderColor: customColor }}
-                >
+                <h2 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2' style={{ color: customColor, borderColor: customColor }}>
                     Configuration - Formule Économique (Prix en {priceSuffix})
                 </h2>
 
                 <div>
-                    <label className='block text-lg font-bold text-gray-900 mb-4'>
-                        Modèle <span className='text-red-500'>*</span>
-                    </label>
+                    <label className='block text-lg font-bold text-gray-900 mb-4'>Modèle <span className='text-red-500'>*</span></label>
                     <div className='space-y-3'>
-                        {ecoModels.map(model => (
+                        {ecoModels.map(item => (
                             <button
-                                key={model.id}
+                                key={item.id}
                                 type='button'
-                                onClick={() => handleChange('ecoModel', model.id)}
-                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex flex-col ${formData.ecoModel === model.id
+                                onClick={() => handleChange('model', item.id)}
+                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex flex-col ${formData.model === item.id
                                     ? 'border-blue-600 bg-blue-50 shadow-lg ring-2 ring-blue-100'
                                     : 'border-gray-300 bg-white hover:border-blue-400 shadow-sm'
                                     }`}
                             >
                                 <div className='flex justify-between items-center w-full'>
-                                    <span className='font-medium text-gray-800'>{model.name}</span>
+                                    <span className='font-medium text-gray-800'>{item.name}</span>
                                     <span className='text-xl font-extrabold text-blue-600'>
-                                        {priceTransformer(model.priceHT).toFixed(0)}€ {priceSuffix}
+                                        {priceTransformer(item.priceHT).toFixed(0)}€ {priceSuffix}
                                     </span>
                                 </div>
-                                <p className='text-xs text-gray-500 mt-1 w-full'>{model.desc}</p>
+                                <p className='text-xs text-gray-500 mt-1 w-full'>{item.desc}</p>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 <div>
-                    <label className='block text-lg font-bold text-gray-900 mb-4'>
-                        Options
-                    </label>
+                    <label className='block text-lg font-bold text-gray-900 mb-4'>Options</label>
                     <div className='space-y-3'>
                         <TemplateOption />
                     </div>
                 </div>
 
-                {formData.ecoModel && (
+                {formData.model && (
                     <div>
-                        <label className='block text-lg font-bold text-gray-900 mb-4'>
-                            Transport & Mise en service <span className='text-red-500'>*</span>
-                        </label>
+                        <label className='block text-lg font-bold text-gray-900 mb-4'>Transport & Mise en service <span className='text-red-500'>*</span></label>
                         <div className='space-y-3'>
-                            {/* Retrait */}
                             <button
                                 type='button'
-                                onClick={() => handleChange('ecoTransport', 'pickup')}
-                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex justify-between items-center ${formData.ecoTransport === 'pickup'
+                                onClick={() => handleChange('delivery', 'pickup')}
+                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex justify-between items-center ${formData.delivery === 'pickup'
                                     ? 'border-blue-600 bg-blue-50 shadow-lg ring-2 ring-blue-100'
                                     : 'border-gray-300 bg-white hover:border-blue-400 shadow-sm'
                                     }`}
@@ -133,11 +116,10 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                                 <span className='text-xl font-extrabold text-green-600'>Gratuit</span>
                             </button>
 
-                            {/* Livraison Standard (Mise en service par vos soins) */}
                             <button
                                 type='button'
-                                onClick={() => handleChange('ecoTransport', 'delivery_nosetup')}
-                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex flex-col ${formData.ecoTransport === 'delivery_nosetup'
+                                onClick={() => handleChange('delivery', 'delivery_nosetup')}
+                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex flex-col ${formData.delivery === 'delivery_nosetup'
                                     ? 'border-blue-600 bg-blue-50 shadow-lg ring-2 ring-blue-100'
                                     : 'border-gray-300 bg-white hover:border-blue-400 shadow-sm'
                                     }`}
@@ -146,16 +128,13 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                                     <span className='font-medium text-gray-800 flex items-center'><Truck className='w-4 h-4 mr-2' /> Livraison Standard</span>
                                     <span className='text-xl font-extrabold text-blue-600'>{deliveryNosetupDisplay}</span>
                                 </div>
-                                <p className='text-xs text-blue-700 mt-2 font-semibold'>
-                                    * Le Photobooth est <span className='font-extrabold'>Plug and Play</span> : il suffit de le brancher.
-                                </p>
+                                <p className='text-xs text-blue-700 mt-2 font-semibold'>* Le Photobooth est <span className='font-extrabold'>Plug and Play</span> : il suffit de le brancher.</p>
                             </button>
 
-                            {/* Livraison + Mise en service par le livreur */}
                             <button
                                 type='button'
-                                onClick={() => handleChange('ecoTransport', 'delivery_withsetup')}
-                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex justify-between items-center ${formData.ecoTransport === 'delivery_withsetup'
+                                onClick={() => handleChange('delivery', 'delivery_withsetup')}
+                                className={`w-full p-4 border-2 rounded-xl transition-all text-left flex justify-between items-center ${formData.delivery === 'delivery_withsetup'
                                     ? 'border-blue-600 bg-blue-50 shadow-lg ring-2 ring-blue-100'
                                     : 'border-gray-300 bg-white hover:border-blue-400 shadow-sm'
                                     }`}
@@ -169,71 +148,48 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
             </div>
         );
     }
-
+    
+    // --- BLOC PRO (Signature) ---
     if (formData.needType === 'pro') {
-        const BASE_PRICE_PRO_HT_LOCAL = 480; 
-        const PLANCHER_PRICE_PRO_HT_USER_FIX_LOCAL = 79;
-
-        const basePriceDisplay = priceSuffix === 'TTC' ? `${(BASE_PRICE_PRO_HT_LOCAL * TVA_RATE).toFixed(0)}€ TTC` : `${BASE_PRICE_PRO_HT_LOCAL}€ HT`;
-        const optionPriceHT = 50;
-        const optionPriceDisplay = priceSuffix === 'TTC' ? `+${(optionPriceHT * TVA_RATE).toFixed(0)}€ TTC` : `+${optionPriceHT}€ HT`;
+         const BASE_PRICE_PRO_HT_LOCAL = 480; 
+         
+         const basePriceDisplay = priceSuffix === 'TTC' ? `${(BASE_PRICE_PRO_HT_LOCAL * TVA_RATE).toFixed(0)}€ TTC` : `${BASE_PRICE_PRO_HT_LOCAL}€ HT`;
+         const optionPriceHT = 50;
+         const optionPriceDisplay = priceSuffix === 'TTC' ? `+${(optionPriceHT * TVA_RATE).toFixed(0)}€ TTC` : `+${optionPriceHT}€ HT`;
 
         const proDeliveryBasePriceHT = 110;
         const animationHours = parseInt(formData.proAnimationHours);
         const isShortAnimation = animationHours > 0 && animationHours <= 3;
         const proDeliveryPriceHT = isShortAnimation ? proDeliveryBasePriceHT / 2 : proDeliveryBasePriceHT;
         const proDeliveryPriceDisplay = priceSuffix === 'TTC' ? `+${(proDeliveryPriceHT * TVA_RATE).toFixed(0)}€ TTC` : `+${proDeliveryPriceHT}€ HT`;
-
+        
         return (
             <div className='space-y-6'>
-                <h2
-                    className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
-                    style={{ color: customColor, borderColor: customColor }}
-                >
-                    Configuration - Signature (Prix en {priceSuffix})
-                </h2>
-
+                <h2 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2' style={{ color: customColor, borderColor: customColor }}>Configuration - Signature (Prix en {priceSuffix})</h2>
                 <div className='bg-blue-600 text-white p-4 rounded-xl shadow-xl'>
-                    <p className='text-xl font-bold'>
-                        Base Signature / Jour : <span className='float-right'>{basePriceDisplay}</span>
-                    </p>
-                    <p className='text-sm mt-1 font-medium'>
-                        Tarif journalier dégressif.
-                    </p>
+                    <p className='text-xl font-bold'>Base Signature / Jour : <span className='float-right'>{basePriceDisplay}</span></p>
+                    <p className='text-sm mt-1 font-medium'>Tarif journalier dégressif.</p>
                 </div>
-
+                
+                {/* Sélecteur Classique 45€/h */}
                 <div>
-                    <label className='block text-sm font-semibold text-gray-800 mb-3'>
-                        Heures d'animation ({priceTransformer(45).toFixed(0)}€ {priceSuffix} par heure)
-                    </label>
-                    <select
-                        value={formData.proAnimationHours}
-                        onChange={e => handleChange('proAnimationHours', e.target.value)}
+                    <label className='block text-sm font-semibold text-gray-800 mb-3'>Heures d'animation ({priceTransformer(45).toFixed(0)}€ {priceSuffix} par heure)</label>
+                    <select 
+                        value={formData.proAnimationHours} 
+                        onChange={e => handleChange('proAnimationHours', e.target.value)} 
                         className='w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900'
                     >
                         <option value='none'>Non-souhaité (Inclus dans le prix de base)</option>
-                        {[1, 2, 3].map(h => (
-                            <option key={h} value={h}>
-                                {h}h d'animation (Réalisé par le Technicien - Logistique réduite !)
-                            </option>
-                        ))}
-                        {[4, 5, 6, 7, 8].map(h => (
-                            <option key={h} value={h}>
-                                {h}h d'animation (Animatrice dédiée)
-                            </option>
-                        ))}
+                        {[1, 2, 3].map(h => <option key={h} value={h}>{h}h d'animation (Réalisé par le Technicien - Logistique réduite !)</option>)}
+                        {[4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{h}h d'animation (Animatrice dédiée)</option>)}
                     </select>
                     <p className='mt-2 text-sm text-blue-700 italic'>
-                        {isShortAnimation
-                            ? `* Avantage Logistique : Coût de Logistique divisé par deux (${proDeliveryPriceHT}€ HT).`
-                            : (formData.proAnimationHours !== 'none' ? `* Coût Logistique normal (${proDeliveryBasePriceHT}€ HT).` : '* Pas d\'animation souhaitée pour l\'instant.')
-                        }
+                        {isShortAnimation ? `* Avantage Logistique : Coût de Logistique divisé par deux (${proDeliveryPriceHT}€ HT) car réalisé par le Technicien.` : (formData.proAnimationHours !== 'none' ? `* Coût Logistique normal (${proDeliveryBasePriceHT}€ HT).` : '* Pas d\'animation souhaitée pour l\'instant.')}
                     </p>
                 </div>
 
                 <div className='space-y-3'>
                     <TemplateOption />
-
                     {[
                         { id: 'proFondIA', label: 'Fond IA (personnalisé)', priceDisplay: optionPriceDisplay, checked: formData.proFondIA, onChange: (e) => handleChange('proFondIA', e.target.checked) },
                         { id: 'proRGPD', label: 'Option RGPD & Sécurité des données', priceDisplay: optionPriceDisplay, checked: formData.proRGPD, onChange: (e) => handleChange('proRGPD', e.target.checked) },
@@ -244,26 +200,15 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                             <span className='text-base font-bold text-blue-600'>{option.priceDisplay}</span>
                         </div>
                     ))}
-
-
                     <div className='flex items-center space-x-3 bg-green-50 p-4 rounded-xl border border-green-300 shadow-md opacity-90'>
                         <Check className='w-5 h-5 text-green-700' />
-                        <label htmlFor='proDelivery' className='flex-1 text-sm font-semibold text-gray-800'>
-                            Livraison / Installation / Désinstallation
-                        </label>
+                        <label htmlFor='proDelivery' className='flex-1 text-sm font-semibold text-gray-800'>Livraison / Installation / Désinstallation</label>
                         <span className='text-base font-bold text-green-700'>{proDeliveryPriceDisplay}</span>
                     </div>
                 </div>
-
                 <div>
-                    <label className='block text-sm font-semibold text-gray-800 mb-3'>
-                        Nombre d'impressions par cliché
-                    </label>
-                    <select
-                        value={formData.proImpressions}
-                        onChange={e => handleChange('proImpressions', parseInt(e.target.value))}
-                        className='w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900'
-                    >
+                    <label className='block text-sm font-semibold text-gray-800 mb-3'>Nombre d'impressions par cliché</label>
+                    <select value={formData.proImpressions} onChange={e => handleChange('proImpressions', parseInt(e.target.value))} className='w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900'>
                         <option value={1}>1 impression (inclus)</option>
                         <option value={2}>2 impressions (Calcul dégressif)</option>
                         <option value={3}>3 impressions (Calcul dégressif)</option>
@@ -273,24 +218,27 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
         );
     }
 
+    // --- BLOC 360 ---
     if (formData.needType === '360') {
-        const { baseDayPriceHT } = pricingData;
-        const dailyTotalDisplay = `${priceTransformer(baseDayPriceHT).toFixed(0)}€ ${priceSuffix}`;
-
         const basePriceHT = 715;
         const deliveryPriceHT = 150;
+        
+        // 🆕 CALCUL CORRECT DU TOTAL POUR L'AFFICHAGE
+        const totalDailyHT = basePriceHT + deliveryPriceHT;
+        const dailyTotalDisplay = `${priceTransformer(totalDailyHT).toFixed(0)}€ ${priceSuffix}`;
 
         const basePriceDisplay = priceSuffix === 'TTC' ? `${(basePriceHT * TVA_RATE).toFixed(0)}€ TTC` : `${basePriceHT}€ HT`;
         const deliveryPriceDisplay = priceSuffix === 'TTC' ? `${(deliveryPriceHT * TVA_RATE).toFixed(0)}€ TTC` : `${deliveryPriceHT}€ HT`;
 
+        // 🆕 CALCUL POUR AFFICHAGE 360 (Variable NaN corrigée via constants.js)
+        const extraHourPriceHT = P360_EXTRA_ANIMATION_HOUR_PRICE_HT;
+        
+        // On récupère la valeur actuelle (si 'none' => 3)
+        const currentAnim360 = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : parseInt(formData.proAnimationHours);
+
         return (
             <div className='space-y-6'>
-                <h2
-                    className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
-                    style={{ color: customColor, borderColor: customColor }}
-                >
-                    Configuration - Photobooth 360 (Prix en {priceSuffix})
-                </h2>
+                <h2 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2' style={{ color: customColor, borderColor: customColor }}>Configuration - Photobooth 360 (Prix en {priceSuffix})</h2>
                 <div className='bg-gradient-to-r from-purple-100 to-pink-100 p-8 rounded-2xl border-4 border-purple-500 shadow-2xl'>
                     <div className='text-center'>
                         <div className='text-6xl mb-4'>📸🎥</div>
@@ -306,18 +254,31 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                             </div>
                             <div className='flex justify-between p-4 bg-purple-600 text-white rounded-xl shadow-lg border-2 border-purple-800 mt-5'>
                                 <span className='font-extrabold text-xl'>Total par jour ({priceSuffix})</span>
+                                {/* AFFICHE BIEN L'ADDITION MAINTENANT */}
                                 <span className='font-extrabold text-3xl'>{dailyTotalDisplay}</span>
                             </div>
                         </div>
-                        <p className='text-sm text-purple-700 mt-4 italic'>
-                            L'animation et l'opérateur sont inclus pour toute la durée.
-                        </p>
+                        <p className='text-sm text-purple-700 mt-4 italic'>L'animation et l'opérateur sont inclus pour toute la durée.</p>
                     </div>
                 </div>
-                <div className='bg-yellow-50 p-4 rounded-xl border border-yellow-300 text-yellow-800'>
-                    <p className='font-semibold'>
-                        Note: L'outil Template Professionnel n'est pas disponible pour la formule Photobooth 360.
-                    </p>
+
+                {/* 🆕 NOUVELLE LISTE POUR 360 UNIQUEMENT */}
+                <div>
+                    <label className='block text-sm font-semibold text-gray-800 mb-3'>
+                        Heures d'animation ({priceTransformer(extraHourPriceHT).toFixed(0)}€ {priceSuffix} par heure sup.)
+                    </label>
+                    <select 
+                        value={currentAnim360} 
+                        onChange={e => handleChange('proAnimationHours', e.target.value)} 
+                        className='w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900'
+                    >
+                        <option value={3}>3h d'animation (Inclus)</option>
+                        {[4, 5, 6, 7, 8].map(h => {
+                             const supp = (h - 3) * extraHourPriceHT;
+                             const disp = priceSuffix === 'TTC' ? `${(supp * TVA_RATE).toFixed(0)}€ TTC` : `${supp}€ HT`;
+                             return <option key={h} value={h}>{h}h d'animation (+{disp})</option>;
+                        })}
+                    </select>
                 </div>
             </div>
         );

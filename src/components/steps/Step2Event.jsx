@@ -29,7 +29,7 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
 
             <div>
                 <AddressAutocomplete
-                    label="Adresse de l'événement (Recherche automatique)"
+                    label="Adresse de l'événement"
                     required
                     defaultValue={formData.deliveryFullAddress || ''}
                     onAddressSelect={handleAddressSelect}
