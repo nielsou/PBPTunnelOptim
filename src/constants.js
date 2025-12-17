@@ -76,6 +76,26 @@ export const PRO_IMPRESSION_PLANCHER_HT = 100;
 // Option Template (coût Pro)
 export const TEMPLATE_TOOL_PRO_PRICE_HT = 68.33;
 
+// Tarifs négociés
+export const COMPANY_SPECIFIC_PRICING = {
+    "29821892": { // FUGA FAMILY
+        freeTemplate: true  
+    },
+    "36829130": { // MAMA SHELTER
+        priceIllimite: 430,
+        freeTemplate: true 
+    },
+    "24606699": { // LE MARCOUNET
+        freeTemplate: true 
+    },
+    "29441860": { // LE NIDA
+        freeTemplate: true 
+    },
+    "24977719": { // FOOD SOCIETY
+        freeTemplate: true 
+    }
+};
+
 
 // ======================================================================
 // VALEURS FIXES AXONAUT & DIVERS

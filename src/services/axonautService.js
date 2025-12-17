@@ -211,7 +211,6 @@ export function generateAxonautQuotationBody(inputs, companyId) {
                     ${ligneLivraison}
                     <li><p>Installation par vos soins, ultra-simple en 2 min chrono</p></li>
                     <li><p>Assistance digitale et support technique</p></li>
-                    <li><p>Economisez 70 EUR en venant récupérer votre machine à notre dépôt d'Arcueil</p></li>
                   </ul>
                   <p>
                     <strong>Date</strong> : ${formatDate(dateEvenement)}<br />
@@ -281,7 +280,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
             } else if (nomBorne === "Photobooth 360") {
                 descHtml += "<li><p>Livraison, installation et reprise</p></li>";
             } else {
-                descHtml += "<li><p>Livraison et reprise par nos soins</p></li>";
+                descHtml += "<li><p>Livraison, installation et reprise par nos livreurs partenaires</p></li>";
             }
         } else {
             descHtml += "<li><p>Frais Logistique</p></li>";

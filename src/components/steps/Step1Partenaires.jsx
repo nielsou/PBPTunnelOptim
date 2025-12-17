@@ -143,7 +143,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 <h2 className='text-3xl font-extrabold text-gray-900 mb-2' style={{ color: customColor }}>Espace Partenaires</h2>
                 <div className='bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm'>
                     <form onSubmit={handleSearch} className='flex gap-3'>
-                        <input type="text" value={clientNumber} onChange={(e) => setClientNumber(e.target.value)} placeholder="ID Axonaut" className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-bold" />
+                        <input type="text" value={clientNumber} onChange={(e) => setClientNumber(e.target.value)} placeholder="Numéro client" className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-bold" />
                         <button type="submit" disabled={isLoading || !clientNumber} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center">
                             {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Search className="w-5 h-5" />}
                         </button>
@@ -160,7 +160,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
             <div className='flex justify-between items-center border-b pb-4 mb-4' style={{ borderColor: customColor }}>
                 <div>
                     <h2 className='text-2xl font-extrabold text-gray-900'>{clientData.name}</h2>
-                    <p className='text-sm text-gray-500'>ID Axonaut: {clientData.companyId}</p>
+                    <p className='text-sm text-gray-500'>Numéro client : {clientData.companyId}</p>
                 </div>
                 <button onClick={() => setClientData(null)} className='text-sm text-gray-500 underline'>Changer de compte</button>
             </div>

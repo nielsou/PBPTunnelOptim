@@ -11,7 +11,7 @@ import {
     P360_EXTRA_ANIMATION_HOUR_PRICE_HT,
     PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT,
     PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT,
-    P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT,
+    P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT, COMPANY_SPECIFIC_PRICING,
     ENABLE_ZAPIER_STEP_1, ENABLE_ZAPIER_STEP_2, ENABLE_ZAPIER_STEP_3, ENABLE_ZAPIER_STEP_4
 } from '../constants';
 
@@ -57,6 +57,16 @@ export const useQuoteLogic = () => {
 
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
+
+        // --- 0. RÉCUPÉRATION DES TARIFS NÉGOCIÉS ---
+        const cid = formData.companyId?.toString();
+        const deals = COMPANY_SPECIFIC_PRICING[cid] || {};
+
+        // Définition des variables de prix (Négocié ou Défaut)
+        const currentSignaturePrice = deals.priceSignature ?? BASE_PRICE_PRO_HT;
+        const currentIllimitePrice = deals.priceIllimite ?? ECO_MODELS_PRICING.illimite.priceHT;
+        const currentTemplatePrice = deals.freeTemplate ? 0 : TEMPLATE_TOOL_PRO_PRICE_HT;
+
         // 1. Distance
         const distanceKm = (formData.deliveryLat && formData.deliveryLng)
             ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng)
@@ -86,8 +96,14 @@ export const useQuoteLogic = () => {
             if (formData.model) {
                 const model = ECO_MODELS_PRICING[formData.model];
                 nomBorne = model.name;
-                baseDayPriceHT += model.priceHT;
-                dailyServicesHT += model.priceHT;
+
+                let basePriceHT_Model = model.priceHT;
+                if (formData.model === 'illimite') {
+                    basePriceHT_Model = currentIllimitePrice;
+                }
+
+                baseDayPriceHT += basePriceHT_Model;
+                dailyServicesHT += basePriceHT_Model;
 
                 const baseDeliveryPriceHT = formData.model === 'illimite' ? DELIVERY_BASE_ILLIMITE_HT : DELIVERY_BASE_ECO_HT;
                 const setupPriceHT = SETUP_PRICE_HT;
@@ -122,9 +138,9 @@ export const useQuoteLogic = () => {
             // --- LOGIQUE PRIX PRO (Signature) ---
         } else if (formData.needType === 'pro') {
             nomBorne = 'Signature';
-            baseDayPriceHT += BASE_PRICE_PRO_HT;
-            dailyServicesHT += BASE_PRICE_PRO_HT;
-            details.push({ label: 'Signature (base journalière)', priceHT: BASE_PRICE_PRO_HT, daily: true, displayPrice: `${priceTransformer(BASE_PRICE_PRO_HT).toFixed(0)}${suffix}` });
+            baseDayPriceHT += currentSignaturePrice;
+            dailyServicesHT += currentSignaturePrice;
+            details.push({ label: 'Signature (base journalière)', priceHT: currentSignaturePrice, daily: true, displayPrice: `${priceTransformer(currentSignaturePrice).toFixed(0)}${suffix}` });
 
             const proDeliveryBasePriceHT = PRO_DELIVERY_BASE_HT;
             const animationHours = parseInt(formData.proAnimationHours);
@@ -196,9 +212,14 @@ export const useQuoteLogic = () => {
 
         // Outil Template
         if (formData.templateTool && (formData.needType === 'eco' || formData.needType === 'pro')) {
-            prixTemplateHT = formData.isPro ? TEMPLATE_TOOL_PRO_PRICE_HT : 0;
+            // Utilise 0 si freeTemplate est true, sinon le prix constant
+            prixTemplateHT = formData.isPro ? currentTemplatePrice : 0;
             oneTimeCostsHT += prixTemplateHT;
-            let templateDisplay = formData.isPro ? `${priceTransformer(prixTemplateHT).toFixed(0)}${suffix}` : 'Gratuit (Offert)';
+
+            let templateDisplay = (formData.isPro && currentTemplatePrice > 0)
+                ? `${priceTransformer(prixTemplateHT).toFixed(0)}${suffix}`
+                : 'Gratuit (Offert)';
+
             details.push({ label: 'Outil Template Professionnel', priceHT: prixTemplateHT, daily: false, displayPrice: templateDisplay });
         }
 
@@ -207,12 +228,12 @@ export const useQuoteLogic = () => {
         let totalServicesHT_Degressed = 0;
 
         if (formData.needType === 'pro') {
-            const PBaseJour_Only = BASE_PRICE_PRO_HT;
+            const PBaseJour_Only = currentSignaturePrice;
             const PPlancherJour_Only = PLANCHER_PRICE_PRO_HT_USER_FIX;
             const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, duration));
             const basePlancherPart = PPlancherJour_Only * duration;
             const totalBaseDegressedHT = Math.round(baseDegressivePart + basePlancherPart);
-            const dailyOptionsHT = dailyServicesHT - BASE_PRICE_PRO_HT;
+            const dailyOptionsHT = dailyServicesHT - currentSignaturePrice;
             totalServicesHT_Degressed = totalBaseDegressedHT + (dailyOptionsHT * duration);
 
         } else if (formData.needType === 'eco' || formData.needType === '360') {
@@ -249,6 +270,11 @@ export const useQuoteLogic = () => {
             totalHT, totalServicesHT: totalServicesHT_Degressed, oneTimeCostsHT, baseDayPriceHT,
             totalServicesBeforeFormula, details, displayTTC, priceSuffix: displayTTC ? 'TTC' : 'HT',
             axonautData, quoteId,
+            unitaryPrices: {
+                template: currentTemplatePrice,
+                signature: currentSignaturePrice,
+                illimite: currentIllimitePrice
+            }
         };
     }, [formData]);
 
@@ -377,26 +403,28 @@ export const useQuoteLogic = () => {
     };
 
     // GESTION DE LA SOUMISSION 
-    const handleSubmit = async (showMessage, skipEmail = false) => {
+    const handleSubmit = async (showMessage, isCalculatorMode = false) => {
+
+        // 1. SÉCURITÉ ANTI-DOUBLON (Anti-Spam Click)
+        if (isSubmitting || isSubmitted) return;
+
+        setIsSubmitting(true);
         const pricing = calculatePrice;
 
         try {
             let companyId = formData.companyId;
             let billingAddressId = formData.billingAddressId;
 
-            // 1. GESTION DU TIERS (SOCIÉTÉ OU PARTICULIER)
-            // En B2C, generateAxonautThirdPartyBody inclut déjà l'employé et l'adresse principale.
+            // 1. GESTION DU TIERS (Création si inexistant)
             if (!companyId) {
                 console.log("Création du tiers...");
                 const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData);
                 companyId = newId;
             }
 
-            // 2. LOGIQUE CONDITIONNELLE SELON LE TYPE DE CLIENT
+            // 2. LOGIQUE CONDITIONNELLE SELON LE TYPE DE CLIENT (PRO)
             if (formData.isPro) {
-                // --- LOGIQUE B2B (Société) ---
-
-                // A. Ajout du contact (Employé) séparément
+                // A. Ajout du contact (Employé)
                 console.log("Mode Pro : Création du contact lié...");
                 try {
                     await AxonautService.createAxonautEmployee(companyId, formData);
@@ -404,7 +432,7 @@ export const useQuoteLogic = () => {
                     console.warn("Le contact n'a pas pu être ajouté (déjà existant), on continue.");
                 }
 
-                // B. Gestion des adresses additionnelles (Facturation / Livraison)
+                // B. Gestion des adresses additionnelles
                 if (formData.saveNewBillingAddress) {
                     const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
                         name: formData.newBillingAddressName || "Facturation",
@@ -424,10 +452,11 @@ export const useQuoteLogic = () => {
                     }, 'delivery');
                 }
             } else {
-                // --- LOGIQUE B2C (Particulier) ---
-                // On ne crée ni employé ni adresse car tout a été injecté dans createAxonautThirdParty
                 console.log("Mode Particulier : Contact et adresse déjà créés avec le tiers.");
             }
+
+            // 🔍 DÉTECTION PARTENAIRE VIP (Basée sur l'ID Axonaut présent dans les constantes)
+            const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(companyId?.toString());
 
             // 3. CRÉATION DU DEVIS
             const inputsForAxonaut = {
@@ -438,7 +467,11 @@ export const useQuoteLogic = () => {
                 nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
                 livraisonIncluse: formData.delivery !== 'pickup',
-                acomptePct: 1
+
+                // ✅ RÈGLE ACOMPTE STRICTE :
+                // Seulement si l'ID est reconnu dans la liste des partenaires VIP => 0%
+                // Sinon (Calculette avec prospect inconnu ou Client standard) => 100% (1)
+                acomptePct: isVipPartner ? 0 : 1
             };
 
             // Si on a récupéré un ID d'adresse spécifique (B2B), on l'utilise
@@ -457,30 +490,31 @@ export const useQuoteLogic = () => {
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
 
-            // ON CONDITIONNE L'ENVOI DE L'EMAIL ICI
-            if (!skipEmail) {
+            // On saute l'email UNIQUEMENT pour la Calculette.
+            if (!isCalculatorMode) {
                 await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink);
             } else {
                 console.log("Mode Calculette : Devis créé sans envoi d'email.");
             }
+
             setIsSubmitted(true);
 
         } catch (error) {
             console.error("Erreur Submit:", error);
             showMessage(`Erreur: ${error.message}`);
-        } finally {
+            // En cas d'erreur, on permet de réessayer (on débloque le bouton)
             setIsSubmitting(false);
         }
     };
 
     return {
+        handleSubmit,
         formData,
         setFormData,
         currentStep,
         setCurrentStep,
         calculatePrice,
         isStepValid,
-        handleSubmit,
         handleNext,
         handlePrev,
         totalSteps: 4,
