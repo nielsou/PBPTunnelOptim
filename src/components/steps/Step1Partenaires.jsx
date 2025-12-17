@@ -1,18 +1,44 @@
+// src/components/steps/Step1Partenaires.jsx
+
 import React, { useState } from 'react';
-import { Search, MapPin, User, Loader2, ArrowRight } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 import { PhoneInputField } from '../ui/PhoneInputField';
 import { getAxonautCompanyDetails } from '../../services/axonautService';
 
-export const Step1Partenaires = ({ formData, setFormData, customColor, handleNext }) => {
+export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
     const [clientNumber, setClientNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [clientData, setClientData] = useState(null);
     const [error, setError] = useState('');
-    const [isNewAddress, setIsNewAddress] = useState(false);
+    const [selectedContactIndex, setSelectedContactIndex] = useState(0);
+    const [isNewBillingAddress, setIsNewBillingAddress] = useState(false);
+    const [isNewDeliveryAddress, setIsNewDeliveryAddress] = useState(false);
 
-    // 1. Recherche du client via l'API (simulée pour l'instant)
+    const isNewContact = selectedContactIndex === 'new';
+
+    // 📍 FONCTION DE GÉOCODAGE INVISIBLE
+    const geocodeAddress = (addressText) => {
+        if (!window.google || !window.google.maps) return;
+
+        const geocoder = new window.google.maps.Geocoder();
+        geocoder.geocode({ address: addressText, componentRestrictions: { country: 'FR' } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const { lat, lng } = results[0].geometry.location;
+                setFormData(prev => ({
+                    ...prev,
+                    deliveryLat: lat(),
+                    deliveryLng: lng()
+                }));
+                console.log(`📍 Géocodage réussi pour ${addressText} :`, lat(), lng());
+            } else {
+                console.error("Erreur de géocodage :", status);
+                setFormData(prev => ({ ...prev, deliveryLat: null, deliveryLng: null }));
+            }
+        });
+    };
+
     const handleSearch = async (e) => {
         e.preventDefault();
         setError('');
@@ -22,113 +48,208 @@ export const Step1Partenaires = ({ formData, setFormData, customColor, handleNex
             const data = await getAxonautCompanyDetails(clientNumber);
             if (data && data.found) {
                 setClientData(data);
-                // Mise à jour du formData global
+                const defaultContact = data.contacts[0];
+                setSelectedContactIndex(0);
+
                 setFormData(prev => ({
                     ...prev,
-                    isPro: true, // Force le mode PRO
+                    isPro: !data.isB2C,
+                    companyId: data.companyId,
                     companyName: data.name,
-                    billingFullAddress: data.billingAddress.fullAddress,
-                    fullName: data.contacts[0]?.fullName || '',
-                    email: data.contacts[0]?.email || '',
-                    phone: data.contacts[0]?.phone || '',
-                    // Par défaut, on met l'adresse de factu en livraison en attendant le choix
-                    deliveryFullAddress: data.billingAddress.fullAddress 
+                    fullName: defaultContact?.fullName || '',
+                    email: defaultContact?.email || '',
+                    phone: defaultContact?.phone || '',
+                    billingFullAddress: data.defaultBillingAddress,
+                    deliveryFullAddress: data.defaultDeliveryAddress
                 }));
+
+                if (data.defaultDeliveryAddress) {
+                    geocodeAddress(data.defaultDeliveryAddress);
+                }
             }
         } catch (err) {
-            setError("Numéro client introuvable.");
+            setError("Numéro client introuvable ou erreur de connexion.");
         } finally {
             setIsLoading(false);
         }
     };
-
-    // 2. Gestion de la sélection d'adresse
-    const handleAddressChange = (e) => {
+    
+    const handleContactDropdownChange = (e) => {
         const val = e.target.value;
         if (val === 'new') {
-            setIsNewAddress(true);
-            setFormData(prev => ({ ...prev, deliveryFullAddress: '', deliveryLat: null, deliveryLng: null }));
+            setSelectedContactIndex('new');
+            // MODIFICATION ICI : On ajoute isNewContact: true
+            setFormData(prev => ({
+                ...prev,
+                fullName: '',
+                email: '',
+                phone: '',
+                isNewContact: true
+            }));
         } else {
-            setIsNewAddress(false);
-            setFormData(prev => ({ ...prev, deliveryFullAddress: val }));
-            // Note: Idéalement, il faudrait aussi récupérer lat/lng stockés côté back
+            const index = parseInt(val, 10);
+            setSelectedContactIndex(index);
+            const contact = clientData.contacts[index];
+            // MODIFICATION ICI : On remet isNewContact: false
+            setFormData(prev => ({
+                ...prev,
+                fullName: contact.fullName,
+                email: contact.email,
+                phone: contact.phone,
+                isNewContact: false
+            }));
         }
     };
 
-    // Si pas encore identifié, on affiche le login
+    const handleAddressDropdownChange = (e, type) => {
+        const val = e.target.value;
+        const isNew = val === 'new';
+        const selectedIndex = e.target.selectedIndex;
+
+        if (type === 'billing') {
+            setIsNewBillingAddress(isNew);
+            if (isNew) {
+                setFormData(prev => ({ ...prev, billingFullAddress: '', billingAddressId: null, saveNewBillingAddress: true, newBillingAddressName: '' }));
+            } else {
+                const selectedAddr = clientData.billingAddresses[selectedIndex];
+                setFormData(prev => ({
+                    ...prev,
+                    billingFullAddress: selectedAddr.address,
+                    billingAddressId: selectedAddr.id,
+                    saveNewBillingAddress: false
+                }));
+            }
+        } else if (type === 'delivery') {
+            setIsNewDeliveryAddress(isNew);
+            if (isNew) {
+                setFormData(prev => ({ ...prev, deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, saveNewDeliveryAddress: true, newDeliveryAddressName: '' }));
+            } else {
+                const selectedAddr = clientData.deliveryAddresses[selectedIndex];
+                setFormData(prev => ({
+                    ...prev,
+                    deliveryFullAddress: selectedAddr.address,
+                    deliveryLat: null,
+                    deliveryLng: null,
+                    saveNewDeliveryAddress: false
+                }));
+                geocodeAddress(selectedAddr.address);
+            }
+        }
+    };
+
     if (!clientData) {
         return (
             <div className='space-y-6'>
-                <h2 className='text-3xl font-extrabold text-gray-900 mb-2' style={{ color: customColor }}>
-                    Espace Partenaires
-                </h2>
-                <p className='text-gray-600 mb-6'>Identifiez-vous pour accéder à vos tarifs et adresses.</p>
-                
+                <h2 className='text-3xl font-extrabold text-gray-900 mb-2' style={{ color: customColor }}>Espace Partenaires</h2>
                 <div className='bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm'>
                     <form onSubmit={handleSearch} className='flex gap-3'>
-                        <input
-                            type="text"
-                            value={clientNumber}
-                            onChange={(e) => setClientNumber(e.target.value)}
-                            placeholder="Votre Numéro Client"
-                            className="flex-1 px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 font-bold"
-                        />
-                        <button 
-                            type="submit" 
-                            disabled={isLoading || !clientNumber}
-                            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 flex items-center"
-                        >
-                            {isLoading ? <Loader2 className="animate-spin w-5 h-5"/> : <Search className="w-5 h-5"/>}
+                        <input type="text" value={clientNumber} onChange={(e) => setClientNumber(e.target.value)} placeholder="ID Axonaut" className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-bold" />
+                        <button type="submit" disabled={isLoading || !clientNumber} className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold flex items-center">
+                            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Search className="w-5 h-5" />}
                         </button>
                     </form>
-                    {error && <p className='mt-3 text-red-600 font-bold flex items-center'>⚠️ {error}</p>}
+                    {error && <p className='mt-3 text-red-600 font-bold'>⚠️ {error}</p>}
                 </div>
             </div>
         );
     }
 
-    // Une fois identifié
     return (
         <div className='space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+            {/* EN-TETE AVEC ID COMPANY */}
             <div className='flex justify-between items-center border-b pb-4 mb-4' style={{ borderColor: customColor }}>
                 <div>
                     <h2 className='text-2xl font-extrabold text-gray-900'>{clientData.name}</h2>
-                    <p className='text-sm text-gray-500'>Compte Partenaire</p>
+                    <p className='text-sm text-gray-500'>ID Axonaut: {clientData.companyId}</p>
                 </div>
-                <button onClick={() => setClientData(null)} className='text-sm text-gray-500 underline'>Changer</button>
+                <button onClick={() => setClientData(null)} className='text-sm text-gray-500 underline'>Changer de compte</button>
             </div>
 
-            {/* Infos Contact (pré-remplies mais modifiables) */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <InputField label="Contact sur place" value={formData.fullName} onChange={e => setFormData(p => ({...p, fullName: e.target.value}))} />
-                <PhoneInputField value={formData.phone} onChange={v => setFormData(p => ({...p, phone: v}))} />
-            </div>
-
-            {/* Choix Adresse Livraison */}
-            <div className='bg-gray-50 p-4 rounded-xl border border-gray-200'>
-                <label className='block text-lg font-bold text-gray-900 mb-3'>Lieu de l'événement</label>
-                
-                {!isNewAddress ? (
-                    <div className='space-y-3'>
-                        <select 
-                            className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium'
-                            onChange={handleAddressChange}
-                            defaultValue={clientData.billingAddress.fullAddress}
-                        >
-                            {clientData.savedAddresses.map((addr, i) => (
-                                <option key={i} value={addr.address}>{addr.label} - {addr.address}</option>
-                            ))}
-                            <option value="new">📍 + Ajouter une nouvelle adresse</option>
-                        </select>
-                    </div>
-                ) : (
-                    <div className='space-y-2'>
-                        <AddressAutocomplete 
-                            label="Nouvelle adresse" 
-                            required 
-                            onAddressSelect={addr => setFormData(p => ({...p, deliveryFullAddress: addr.fullAddress, deliveryLat: addr.lat, deliveryLng: addr.lng}))}
+            {/* CONTACT */}
+            <div className='bg-green-50 p-4 rounded-xl border border-green-200'>
+                <label className='block text-lg font-bold text-gray-900 mb-3'>Contact Responsable</label>
+                <select className='w-full p-3 mb-4 border border-gray-300 rounded-xl bg-white font-medium' onChange={handleContactDropdownChange} value={selectedContactIndex}>
+                    {clientData.contacts.map((contact, i) => (
+                        <option key={`contact-${i}`} value={i}>👤 {contact.fullName}</option>
+                    ))}
+                    <option value="new">➕ Nouveau contact</option>
+                </select>
+                <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${!isNewContact ? 'opacity-90' : ''}`}>
+                    <InputField label="Nom et Prénom" value={formData.fullName} onChange={e => setFormData(p => ({ ...p, fullName: e.target.value }))} required />
+                    <InputField label="Email" type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} required />
+                    <div className="md:col-span-2">
+                        <PhoneInputField
+                            value={formData.phone}
+                            onChange={value => setFormData(p => ({ ...p, phone: value }))}
                         />
-                        <button onClick={() => setIsNewAddress(false)} className='text-sm text-blue-600 underline'>Annuler</button>
+                    </div>
+                </div>
+            </div>
+
+            {/* FACTURATION */}
+            <div className='bg-indigo-50 p-4 rounded-xl border border-indigo-200'>
+                <label className='block text-lg font-bold text-gray-900 mb-3'>Adresse de Facturation</label>
+                {!isNewBillingAddress ? (
+                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'billing')}>
+                        {clientData.billingAddresses.map((addr, i) => (
+                            <option key={`bill-${i}`} value={addr.address}>📄 {addr.label} - {addr.address}</option>
+                        ))}
+                        <option value="new">📍 + Ajouter une nouvelle adresse</option>
+                    </select>
+                ) : (
+                    <div className='space-y-3 bg-white p-4 rounded-lg border border-indigo-100 shadow-inner'>
+                        <InputField
+                            label="Nom de cette adresse"
+                            placeholder="ex: Bureau, Siège..."
+                            value={formData.newBillingAddressName || ''}
+                            onChange={e => setFormData(p => ({ ...p, newBillingAddressName: e.target.value }))}
+                        />
+                        <AddressAutocomplete
+                            label="Adresse complète"
+                            required
+                            onAddressSelect={addr => setFormData(p => ({
+                                ...p,
+                                billingFullAddress: addr.fullAddress,
+                                billingZipCode: addr.postal,
+                                billingCity: addr.city
+                            }))}
+                        />
+                        <button onClick={() => setIsNewBillingAddress(false)} className='text-sm text-blue-600 underline'>Annuler</button>
+                    </div>
+                )}
+            </div>
+
+            {/* LIVRAISON */}
+            <div className='bg-gray-50 p-4 rounded-xl border border-gray-200'>
+                <label className='block text-lg font-bold text-gray-900 mb-3'>Lieu de livraison (Événement)</label>
+                {!isNewDeliveryAddress ? (
+                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'delivery')}>
+                        {clientData.deliveryAddresses.map((addr, i) => (
+                            <option key={`del-${i}`} value={addr.address}>🚚 {addr.label} - {addr.address}</option>
+                        ))}
+                        <option value="new">📍 + Ajouter un nouveau lieu</option>
+                    </select>
+                ) : (
+                    <div className='space-y-3 bg-white p-4 rounded-lg border border-gray-200 shadow-inner'>
+                        <InputField
+                            label="Nom de ce lieu"
+                            placeholder="ex: Mariage X, Salon Y..."
+                            value={formData.newDeliveryAddressName || ''}
+                            onChange={e => setFormData(p => ({ ...p, newDeliveryAddressName: e.target.value }))}
+                        />
+                        <AddressAutocomplete
+                            label="Adresse complète"
+                            required
+                            onAddressSelect={addr => setFormData(p => ({
+                                ...p,
+                                deliveryFullAddress: addr.fullAddress,
+                                deliveryLat: addr.lat,
+                                deliveryLng: addr.lng,
+                                deliveryZipCode: addr.postal,
+                                deliveryCity: addr.city
+                            }))}
+                        />
+                        <button onClick={() => setIsNewDeliveryAddress(false)} className='text-sm text-blue-600 underline'>Annuler</button>
                     </div>
                 )}
             </div>

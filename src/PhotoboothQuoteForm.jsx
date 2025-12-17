@@ -1,7 +1,7 @@
 // src/PhotoboothQuoteForm.jsx
 
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, ChevronLeft, Check, RefreshCcw, FileSignature } from 'lucide-react'; 
+import { ChevronRight, ChevronLeft, Check, RefreshCcw, FileSignature } from 'lucide-react';
 import { useQuoteLogic } from './hooks/useQuoteLogic';
 import { customColor } from './constants';
 
@@ -43,28 +43,25 @@ export default function PhotoboothQuoteForm() {
 
     // État pour savoir si on est en mode "Partenaires"
     const [isPartnerMode, setIsPartnerMode] = useState(false);
+    const [isCalculatorMode, setIsCalculatorMode] = useState(false);
 
     const pricingData = calculatePrice;
 
     // Détection de l'URL au chargement
     useEffect(() => {
-        // Si l'URL contient "/partenaires" (ex: localhost:3000/partenaires)
-        if (window.location.pathname.includes('/partenaires')) {
+        // Si l'URL contient "/partenaires" ou "/calculator"
+        const path = window.location.pathname;
+        if (path.includes('/partenaires') || path.includes('/calculette')) {
             setIsPartnerMode(true);
-            // On force le mode PRO et le type de besoin
-            setFormData(prev => ({
-                ...prev,
-                isPro: true,
-                needType: 'pro'
-            }));
+            setIsCalculatorMode(path.includes('/calculette'));
         }
-    }, [setFormData]); // Ajout dépendance setFormData pour linter
+    }, [setFormData]);
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [currentStep, isSubmitted]);
 
-    // ÉCRAN DE SUCCÈS
+    // ÉCRAN DE SUCCÈS APRÈS SOUMISSION
     if (isSubmitted) {
         return (
             <div className='min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 font-sans text-gray-900 flex items-center justify-center'>
@@ -85,7 +82,7 @@ export default function PhotoboothQuoteForm() {
                             Vous allez recevoir un email d'ici quelques instants à l'adresse <strong>{formData.email}</strong>.
                         </p>
 
-                        {/* 🆕 BOUTON DE SIGNATURE DIRECTE */}
+                        {/* BOUTON DE SIGNATURE DIRECTE (Si lien disponible via Axonaut) */}
                         {finalPublicLink && (
                             <a
                                 href={finalPublicLink}
@@ -117,11 +114,11 @@ export default function PhotoboothQuoteForm() {
         );
     }
 
-    // GESTION DE L'AFFICHAGE DES ÉTAPES
+    // GESTION DU RENDU DES ÉTAPES
     const renderStep = () => {
         switch (currentStep) {
             case 1:
-                // 🔀 AIGUILLAGE INTELLIGENT
+                // Aiguillage selon le mode (Standard vs Partenaire)
                 if (isPartnerMode) {
                     return <Step1Partenaires
                         formData={formData}
@@ -146,7 +143,7 @@ export default function PhotoboothQuoteForm() {
                     formData={formData}
                     pricingData={pricingData}
                     customColor={customColor}
-                    handleSubmit={handleSubmit}
+                    handleSubmit={(showMessage) => handleSubmit(showMessage, isCalculatorMode)}
                     handleEditRequest={() => setCurrentStep(1)}
                     showMessage={showMessage}
                     isSubmitting={isSubmitting}
@@ -160,7 +157,7 @@ export default function PhotoboothQuoteForm() {
         <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 font-sans text-gray-900'>
             <div id="custom-alert" className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-xl z-50 hidden"></div>
             <div className='max-w-4xl mx-auto'>
-                {/* TITRE DYNAMIQUE */}
+                {/* TITRE DYNAMIQUE SELON LE MODE */}
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center" style={{ color: customColor }}>
                     {isPartnerMode ? 'Devis Express Partenaires' : 'Devis Express Photobooth'}
                 </h1>
@@ -182,16 +179,15 @@ export default function PhotoboothQuoteForm() {
                                 <div />
                             )}
 
-                            {/* BOUTON SUIVANT */}
+                            {/* BOUTON SUIVANT : Centralisé sur isStepValid() */}
                             <button
                                 onClick={handleNext}
-                                // Condition de désactivation spécifique pour le mode partenaire (doit être identifié)
-                                disabled={!isStepValid() || (currentStep === 1 && isPartnerMode && !formData.companyName)}
-                                className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 flex items-center space-x-2 shadow-md ${isStepValid() && (!isPartnerMode || formData.companyName)
-                                        ? 'text-white hover:transform hover:scale-[1.02]'
-                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                disabled={!isStepValid()}
+                                className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 flex items-center space-x-2 shadow-md ${isStepValid()
+                                    ? 'text-white hover:transform hover:scale-[1.02]'
+                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     }`}
-                                style={isStepValid() && (!isPartnerMode || formData.companyName) ? { backgroundColor: customColor, boxShadow: `0 4px 6px -1px ${customColor}55, 0 2px 4px -2px ${customColor}55` } : {}}
+                                style={isStepValid() ? { backgroundColor: customColor, boxShadow: `0 4px 6px -1px ${customColor}55, 0 2px 4px -2px ${customColor}55` } : {}}
                             >
                                 <span>{currentStep === 3 ? 'Voir le devis' : 'Suivant'}</span>
                                 <ChevronRight className='w-5 h-5' />

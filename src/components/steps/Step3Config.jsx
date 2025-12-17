@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Settings, Wand2, Truck, Check } from 'lucide-react';
-import { TVA_RATE, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX, P360_EXTRA_ANIMATION_HOUR_PRICE_HT } from '../../constants';
+import { TVA_RATE, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX, P360_EXTRA_ANIMATION_HOUR_PRICE_HT, TEMPLATE_TOOL_PRO_PRICE_HT } from '../../constants';
 
 export const Step3Config = ({ formData, setFormData, customColor, pricingData }) => {
     
@@ -19,7 +19,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
 
     const TemplateOption = () => {
         const isPro = formData.isPro;
-        const priceHT = 60;
+        const priceHT = TEMPLATE_TOOL_PRO_PRICE_HT;
         const displayPrice = isPro
             ? `+${priceTransformer(priceHT).toFixed(0)}€ ${priceSuffix}`
             : 'Gratuit (Offert)';

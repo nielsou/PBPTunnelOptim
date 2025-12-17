@@ -8,10 +8,28 @@ import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
 export const Step1Contact = ({ formData, setFormData, customColor, currentStep, setCurrentStep }) => {
     
-    const handleAddressSelect = (addr) => {
+    // Pour la facturation (si Pro)
+    const handleBillingAddressSelect = (addr) => {
         setFormData(prev => ({
             ...prev,
-            billingFullAddress: addr.fullAddress
+            billingFullAddress: addr.fullAddress,
+            billingLat: addr.lat,
+            billingLng: addr.lng,
+            billingZipCode: addr.postal,
+            billingCity: addr.city
+        }));
+    };
+
+    // 🆕 Pour la livraison (Harmonisation Étape 1)
+    const handleDeliveryAddressSelect = (addr) => {
+        setFormData(prev => ({
+            ...prev,
+            deliveryFullAddress: addr.fullAddress,
+            deliveryLat: addr.lat,
+            deliveryLng: addr.lng,
+            deliveryZipCode: addr.postal,
+            deliveryCity: addr.city,
+            saveNewDeliveryAddress: true
         }));
     };
 
@@ -21,37 +39,28 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
 
     return (
         <div className='space-y-6'>
-            <h2
-                className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
-                style={{ color: customColor, borderColor: customColor }}
-            >
+            <h2 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2' style={{ color: customColor, borderColor: customColor }}>
                 Informations de contact
             </h2>
 
-            <InputField
-                label="Nom et Prénom"
-                value={formData.fullName}
-                onChange={e => handleChange('fullName', e.target.value)}
-                placeholder='Jean Dupont'
-                required
-            />
+            <InputField label="Nom et Prénom" value={formData.fullName} onChange={e => handleChange('fullName', e.target.value)} placeholder='Jean Dupont' required />
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <InputField
-                    label="Email"
-                    type='email'
-                    value={formData.email}
-                    onChange={e => handleChange('email', e.target.value)}
-                    placeholder='jean@exemple.fr'
+                <InputField label="Email" type='email' value={formData.email} onChange={e => handleChange('email', e.target.value)} placeholder='jean@exemple.fr' required />
+                <PhoneInputField value={formData.phone} onChange={value => handleChange('phone', value)} />
+            </div>
+
+            {/* 🆕 Bloc Livraison inséré ici pour les nouveaux clients */}
+            <div className='bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm'>
+                <AddressAutocomplete
+                    label="Lieu de l'événement (Livraison)"
                     required
-                />
-                <PhoneInputField
-                    value={formData.phone}
-                    onChange={value => handleChange('phone', value)}
+                    defaultValue={formData.deliveryFullAddress || ''}
+                    onAddressSelect={handleDeliveryAddressSelect}
                 />
             </div>
 
-            <div className='flex items-center space-x-3 bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-inner'>
+            <div className='flex items-center space-x-3 bg-blue-50 p-4 rounded-xl border border-blue-200'>
                 <input
                     type='checkbox'
                     id='isPro'
@@ -61,45 +70,27 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                         setFormData(prev => ({
                             ...prev,
                             isPro: isPro,
-                            needType: '',
-                            model: '', 
-                            delivery: '', 
-                            proAnimationHours: 'none',
-                            proFondIA: 0,
-                            proRGPD: 0,
-                            proImpressions: 1,
-                            templateTool: 0,
+                            companyName: isPro ? prev.companyName : '',
+                            billingFullAddress: isPro ? prev.billingFullAddress : '',
                         }));
-                        if (currentStep > 2) setCurrentStep(2);
                     }}
-                    className='w-5 h-5 text-blue-600 rounded-lg focus:ring-2 focus:ring-blue-500 cursor-pointer border-gray-400'
+                    className='w-5 h-5 text-blue-600 rounded-lg cursor-pointer'
                 />
-                <label
-                    htmlFor='isPro'
-                    className='text-sm font-medium text-gray-800 cursor-pointer'
-                >
+                <label htmlFor='isPro' className='text-sm font-medium text-gray-800 cursor-pointer'>
                     Je suis un professionnel (Affichage des prix en HT)
                 </label>
             </div>
 
             {formData.isPro && (
-                <div className='space-y-4 bg-indigo-50 p-6 rounded-xl border border-indigo-200 shadow-md'>
+                <div className='space-y-4 bg-indigo-50 p-6 rounded-xl border border-indigo-200 animate-in slide-in-from-top-2'>
                     <h3 className='text-xl font-bold text-gray-800'>Détails Professionnels</h3>
-                    <InputField
-                        label="Nom de la société"
-                        value={formData.companyName}
-                        onChange={e => handleChange('companyName', e.target.value)}
-                        placeholder='Ma Société SAS'
+                    <InputField label="Nom de la société" value={formData.companyName} onChange={e => handleChange('companyName', e.target.value)} placeholder='Ma Société SAS' required />
+                    <AddressAutocomplete
+                        label="Adresse de facturation"
                         required
+                        defaultValue={formData.billingFullAddress || ''}
+                        onAddressSelect={handleBillingAddressSelect}
                     />
-                    <div>
-                        <AddressAutocomplete
-                            label="Adresse de facturation"
-                            required
-                            defaultValue={formData.billingFullAddress || ''}
-                            onAddressSelect={handleAddressSelect}
-                        />
-                    </div>
                 </div>
             )}
         </div>

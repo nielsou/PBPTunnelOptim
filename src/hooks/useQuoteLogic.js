@@ -4,11 +4,11 @@ import { useState, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import {
-    TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS,
+    COUNTRIES, TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS,
     ECO_MODELS_PRICING, DELIVERY_BASE_ECO_HT, DELIVERY_BASE_ILLIMITE_HT,
     SETUP_PRICE_HT, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX,
-    PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT, // Retour du prix standard
-    P360_EXTRA_ANIMATION_HOUR_PRICE_HT, // 🆕 Prix 360
+    PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT,
+    P360_EXTRA_ANIMATION_HOUR_PRICE_HT,
     PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT,
     PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT,
     P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT,
@@ -36,11 +36,20 @@ export const useQuoteLogic = () => {
     const [finalPublicLink, setFinalPublicLink] = useState(null);
 
     // État initial du formulaire
+    // MISE À JOUR : Ajout des champs détaillés pour les adresses (Zip, City, Lat, Lng) pour Facturation ET Livraison
     const initialFormState = {
-        fullName: '', email: '', phone: '', isPro: false, companyName: '', billingFullAddress: '',
-        deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, eventDate: '', eventDuration: 1, needType: 'pro',
-        model: '', delivery: '', 
-        proAnimationHours: 'none', 
+        fullName: '', email: '', phone: '', isPro: false, companyName: '',
+
+        // Facturation
+        billingFullAddress: '', billingLat: null, billingLng: null, billingZipCode: '', billingCity: '',
+
+        // Livraison / Événement
+        deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, deliveryZipCode: '', deliveryCity: '',
+        deliverySameAsBilling: false, // Nouveau flag pour savoir si on duplique l'adresse
+
+        eventDate: '', eventDuration: 1, needType: 'pro',
+        model: '', delivery: '',
+        proAnimationHours: 'none',
         proFondIA: false, proRGPD: false, proDelivery: true, proImpressions: 1, templateTool: false,
     };
 
@@ -170,11 +179,11 @@ export const useQuoteLogic = () => {
                 const extraHours = animationHours360 - 3;
                 supplementAnimationHT = extraHours * P360_EXTRA_ANIMATION_HOUR_PRICE_HT;
                 dailyServicesHT += supplementAnimationHT;
-                details.push({ 
-                    label: `Animation ${animationHours360}h (dont 3h incluses)`, 
-                    priceHT: supplementAnimationHT, 
-                    daily: true, 
-                    displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` 
+                details.push({
+                    label: `Animation ${animationHours360}h (dont 3h incluses)`,
+                    priceHT: supplementAnimationHT,
+                    daily: true,
+                    displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}`
                 });
             }
         }
@@ -244,14 +253,36 @@ export const useQuoteLogic = () => {
     }, [formData]);
 
 
+
     const isStepValid = () => {
         switch (currentStep) {
             case 1:
-                if (!formData.fullName || !formData.email || !formData.phone || formData.phone.replace(/\D/g, '').length < 9) return false;
+                // 1. Vérification de présence des champs obligatoires
+                if (!formData.fullName || !formData.email || !formData.phone || !formData.deliveryFullAddress) return false;
+
+                // 2. Validation stricte de l'Email (Regex)
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(formData.email)) return false;
+
+                // 3. Validation stricte du Téléphone
+                // On cherche le pays correspondant au code dans formData.phone
+                const selectedCountry = COUNTRIES.find(c => formData.phone.startsWith(c.code));
+                if (selectedCountry) {
+                    const digitsOnly = formData.phone.replace(selectedCountry.code, '').replace(/\D/g, '');
+                    // On compare le nombre de chiffres saisis avec le requis du pays
+                    if (digitsOnly.length !== selectedCountry.requiredDigits) return false;
+                } else {
+                    // Fallback si pays non trouvé
+                    if (formData.phone.replace(/\D/g, '').length < 9) return false;
+                }
+
+                // 4. Validation spécifique PRO
                 if (formData.isPro && (!formData.companyName || !formData.billingFullAddress)) return false;
+
                 return true;
+
             case 2:
-                return (formData.deliveryFullAddress && formData.eventDate && formData.needType && formData.eventDuration >= 1 && formData.deliveryLat !== null);
+                return (formData.eventDate && formData.needType && formData.eventDuration >= 1);
             case 3:
                 if (formData.needType === 'eco') return formData.model && formData.delivery;
                 return true;
@@ -266,7 +297,7 @@ export const useQuoteLogic = () => {
 
         const payload = {
             quote_id: quoteId,
-            devis: axonautNumber, 
+            devis: axonautNumber,
             step_completed: step,
             timestamp: new Date().toISOString(),
         };
@@ -300,7 +331,7 @@ export const useQuoteLogic = () => {
             }
             else if (formData.needType === 'pro') {
                 payload.model = "Signature";
-                payload.delivery = "Included"; 
+                payload.delivery = "Included";
                 payload.proAnimationHours = formData.proAnimationHours;
                 payload.proFondIA = toExcelBool(formData.proFondIA);
                 payload.proRGPD = toExcelBool(formData.proRGPD);
@@ -309,9 +340,9 @@ export const useQuoteLogic = () => {
                 payload.templateTool = toExcelBool(formData.templateTool);
             }
             else if (formData.needType === '360') {
-                 payload.model = "360";
-                 // On envoie le nombre d'heures réelles
-                 payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
+                payload.model = "360";
+                // On envoie le nombre d'heures réelles
+                payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
             }
 
             if (pricing) {
@@ -345,13 +376,60 @@ export const useQuoteLogic = () => {
         setQuoteId(nanoid(10));
     };
 
-    const handleSubmit = async (showMessage) => {
-        setIsSubmitting(true);
+    // GESTION DE LA SOUMISSION 
+    const handleSubmit = async (showMessage, skipEmail = false) => {
         const pricing = calculatePrice;
 
         try {
-            const { companyId } = await AxonautService.createAxonautThirdParty(formData);
+            let companyId = formData.companyId;
+            let billingAddressId = formData.billingAddressId;
 
+            // 1. GESTION DU TIERS (SOCIÉTÉ OU PARTICULIER)
+            // En B2C, generateAxonautThirdPartyBody inclut déjà l'employé et l'adresse principale.
+            if (!companyId) {
+                console.log("Création du tiers...");
+                const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData);
+                companyId = newId;
+            }
+
+            // 2. LOGIQUE CONDITIONNELLE SELON LE TYPE DE CLIENT
+            if (formData.isPro) {
+                // --- LOGIQUE B2B (Société) ---
+
+                // A. Ajout du contact (Employé) séparément
+                console.log("Mode Pro : Création du contact lié...");
+                try {
+                    await AxonautService.createAxonautEmployee(companyId, formData);
+                } catch (err) {
+                    console.warn("Le contact n'a pas pu être ajouté (déjà existant), on continue.");
+                }
+
+                // B. Gestion des adresses additionnelles (Facturation / Livraison)
+                if (formData.saveNewBillingAddress) {
+                    const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
+                        name: formData.newBillingAddressName || "Facturation",
+                        fullAddress: formData.billingFullAddress,
+                        zip: formData.billingZipCode,
+                        city: formData.billingCity
+                    }, 'billing');
+                    if (newBillAddr?.id) billingAddressId = newBillAddr.id;
+                }
+
+                if (formData.saveNewDeliveryAddress) {
+                    await AxonautService.createAxonautAddress(companyId, {
+                        name: formData.newDeliveryAddressName || "Lieu Événement",
+                        fullAddress: formData.deliveryFullAddress,
+                        zip: formData.deliveryZipCode,
+                        city: formData.deliveryCity
+                    }, 'delivery');
+                }
+            } else {
+                // --- LOGIQUE B2C (Particulier) ---
+                // On ne crée ni employé ni adresse car tout a été injecté dans createAxonautThirdParty
+                console.log("Mode Particulier : Contact et adresse déjà créés avec le tiers.");
+            }
+
+            // 3. CRÉATION DU DEVIS
             const inputsForAxonaut = {
                 ...pricing.axonautData,
                 ...AXONAUT_FIXED_DEFAULTS,
@@ -363,31 +441,33 @@ export const useQuoteLogic = () => {
                 acomptePct: 1
             };
 
+            // Si on a récupéré un ID d'adresse spécifique (B2B), on l'utilise
+            if (billingAddressId) {
+                inputsForAxonaut.company_address_id = billingAddressId;
+            }
+
             const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId);
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
-            const finalQuoteNumber = quoteResponse.number;
-            const finalQuoteId = quoteResponse.id;
 
+            if (ENABLE_ZAPIER_STEP_4) {
+                triggerWebhook(4, true, pricing, quoteResponse.number);
+            }
+
+            // 4. FINALISATION (Signature & Email)
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
 
-            await AxonautService.createAxonautEvent(
-                finalQuoteId,
-                companyId,
-                formData.email,
-                formData.email,
-                signLink
-            );
-
-            if (ENABLE_ZAPIER_STEP_4) {
-                const payloadWithLink = { ...pricing, sign_link: signLink };
-                triggerWebhook(currentStep, true, payloadWithLink, finalQuoteNumber);
+            // ON CONDITIONNE L'ENVOI DE L'EMAIL ICI
+            if (!skipEmail) {
+                await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink);
+            } else {
+                console.log("Mode Calculette : Devis créé sans envoi d'email.");
             }
-
             setIsSubmitted(true);
 
         } catch (error) {
-            showMessage(`Erreur lors de la confirmation du devis: ${error.message}`);
+            console.error("Erreur Submit:", error);
+            showMessage(`Erreur: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -407,6 +487,6 @@ export const useQuoteLogic = () => {
         isSubmitting,
         isSubmitted,
         resetForm,
-        finalPublicLink 
+        finalPublicLink
     };
 };

@@ -1,18 +1,10 @@
+// src/components/steps/Step2Event.jsx
+
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { InputField } from '../ui/InputField';
-import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
 export const Step2Event = ({ formData, setFormData, customColor }) => {
-
-    const handleAddressSelect = (addr) => {
-        setFormData(prev => ({
-            ...prev,
-            deliveryFullAddress: addr.fullAddress,
-            deliveryLat: addr.lat, // Stocker la latitude
-            deliveryLng: addr.lng  // Stocker la longitude
-        }));
-    };
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -24,16 +16,16 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
                 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
                 style={{ color: customColor, borderColor: customColor }}
             >
-                Informations de l'événement
+                Détails de l'événement
             </h2>
 
-            <div>
-                <AddressAutocomplete
-                    label="Adresse de l'événement"
-                    required
-                    defaultValue={formData.deliveryFullAddress || ''}
-                    onAddressSelect={handleAddressSelect}
-                />
+            {/* Rappel visuel de l'adresse choisie à l'étape 1 */}
+            <div className='p-4 bg-blue-50 rounded-xl border border-blue-200 flex items-center text-blue-800 shadow-sm'>
+                <MapPin className='w-5 h-5 mr-3 text-blue-600' />
+                <div className='flex flex-col'>
+                    <span className='text-xs font-bold uppercase tracking-wider text-blue-400'>Lieu de l'événement</span>
+                    <span className='text-sm font-medium'>{formData.deliveryFullAddress || 'Adresse non renseignée'}</span>
+                </div>
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

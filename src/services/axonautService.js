@@ -1,7 +1,7 @@
 // src/services/axonautService.js
 
-import { 
-    AXONAUT_THEMES_MAPPING, 
+import {
+    AXONAUT_THEMES_MAPPING,
     AXONAUT_FIXED_DEFAULTS,
     ZAPIER_WEBHOOK_URL,
     // TVA_RATE n'est pas utilisé ici mais pourrait l'être
@@ -23,25 +23,21 @@ const toRfc3339 = (date) => {
  * Génère le corps JSON pour la création d'un tiers.
  * Gère le parsing d'adresse (CP/Ville) et nettoie les civilités.
  */
+/**
+ * Génère le corps JSON pour la création d'un tiers (Société uniquement).
+ * Suppression du contact interne pour éviter les conflits.
+ */
+
 export function generateAxonautThirdPartyBody(formData) {
     const isPro = formData.isPro;
-    const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
-    const lastName = lastNameParts.join(' ') || (firstName || '');
-    const phoneDigits = formData.phone ? formData.phone.replace(/\D/g, '') : '';
-    const mobileNumber = phoneDigits.length >= 10 ? phoneDigits.slice(-10).match(/.{1,2}/g).join(' ') : phoneDigits;
-
-    // Choix adresse (Facturation si Pro, sinon Livraison)
     const fullAddressString = isPro ? (formData.billingFullAddress || formData.deliveryFullAddress) : formData.deliveryFullAddress;
 
-    // --- Parsing Adresse (Regex & Découpage) ---
     let zipCode = '';
     let city = '';
-    let streetOnly = fullAddressString; 
+    let streetOnly = fullAddressString;
 
     if (fullAddressString) {
-        // Regex : Cherche 5 chiffres (CP) suivis d'espaces puis du texte (Ville)
         const addressMatch = fullAddressString.match(/\b(\d{5})\s+([^,]+)/);
-        
         if (addressMatch) {
             zipCode = addressMatch[1];
             city = addressMatch[2].trim();
@@ -50,38 +46,38 @@ export function generateAxonautThirdPartyBody(formData) {
         }
     }
 
+    const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
+    const lastName = lastNameParts.join(' ') || firstName || '';
+
     let thirdPartyBody = {
         name: isPro ? formData.companyName : formData.fullName,
-        address_street: streetOnly || 'Adresse non spécifiée', 
-        address_zip_code: zipCode || '75000', 
-        address_city: city || 'Paris',       
+        address_street: streetOnly || 'Adresse non spécifiée',
+        address_zip_code: zipCode || '75000',
+        address_city: city || 'Paris',
         address_country: 'France',
         is_prospect: true,
-        is_customer: false, 
+        is_customer: false,
         isB2C: !isPro,
         currency: "EUR",
         language: "fr",
         business_manager: AXONAUT_FIXED_DEFAULTS.commercial,
         categories: ["PHOTOBOOTH PARIS"],
-        employees: [],
     };
 
     if (isPro) {
+        // En mode PRO, on ne met pas d'employés ici pour respecter votre process de séparation
         thirdPartyBody.address_contact_name = formData.fullName;
-    }
-
-    if (formData.fullName && formData.email) {
-        thirdPartyBody.employees.push({
-            firstname: firstName,
-            lastname: lastName,
-            email: formData.email,
-            cellphoneNumber: mobileNumber || undefined,
-            is_billing_contact: true,
-        });
-    }
-
-    if (!thirdPartyBody.name) {
-        thirdPartyBody.name = isPro ? `Société (${formData.fullName})` : formData.fullName;
+    } else {
+        // CORRECTIF B2C : Ajout obligatoire du tableau employees
+        thirdPartyBody.employees = [
+            {
+                firstname: firstName,
+                lastname: lastName,
+                email: formData.email,
+                cellphoneNumber: formData.phone, // Utilisation de cellphone_number
+                is_billing_contact: true
+            }
+        ];
     }
 
     return thirdPartyBody;
@@ -93,7 +89,7 @@ export function generateAxonautThirdPartyBody(formData) {
 export const createAxonautThirdParty = async (formData) => {
     const thirdPartyBody = generateAxonautThirdPartyBody(formData);
     const PROXY_URL = '/api/create-thirdparty';
-    
+
     console.log("SERVICE: Envoi Tiers...", JSON.stringify(thirdPartyBody, null, 2));
 
     try {
@@ -104,17 +100,17 @@ export const createAxonautThirdParty = async (formData) => {
         });
 
         const data = await response.json();
-        
+
         if (!response.ok) throw new Error(data.details?.message || data.error || "Erreur création tiers");
         if (!data.id) throw new Error("ID manquant retour Axonaut");
 
         console.log(`✅ SERVICE: Tiers OK. ID: ${data.id}`);
 
-        return { companyId: data.id }; 
+        return { companyId: data.id };
 
     } catch (error) {
         console.warn(`SERVICE: Erreur Tiers (${error.message}). Utilisation ID fallback.`);
-        return { companyId: formData.isPro ? 99999999 : 88888888 }; 
+        return { companyId: formData.isPro ? 99999999 : 88888888 };
     }
 }
 
@@ -124,11 +120,11 @@ export const createAxonautThirdParty = async (formData) => {
 export function generateAxonautQuotationBody(inputs, companyId) {
     const TVA_RATE_DEC = 20.0;
     const themesMapping = AXONAUT_THEMES_MAPPING;
-    
+
     const {
         nomBorne, prixMateriel, prixTemplate, prixLivraison, nombreMachine,
         supplementKilometrique, supplementLivraisonDifficile, supplementImpression,
-        supplementAnimation, commercial, dateEvenement, 
+        supplementAnimation, commercial, dateEvenement,
         adresseLivraisonComplete, nombreJours, templateInclus, livraisonIncluse,
         acomptePct, nombreTirages, heuresAnimations, distanceKm
     } = inputs;
@@ -143,7 +139,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
     };
 
     const productsArray = [];
-    
+
     const ligneLivraison = livraisonIncluse
         ? ""
         : "<li><p>À venir récupérer au 2 rue Victor Carmignac, 94110 Arcueil</p></li>";
@@ -169,7 +165,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
                   </p>`;
             break;
 
-        case "CineBooth 150 impressions": 
+        case "CineBooth 150 impressions":
             descriptionPrestation = `
                   <ul>
                     <li><p>Mise à disposition de notre borne photo <strong>CineBooth 150</strong> avec capteur haute performance et flash intelligent</p></li>
@@ -187,7 +183,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
                   </p>`;
             break;
 
-        case "CineBooth 300 impressions": 
+        case "CineBooth 300 impressions":
             descriptionPrestation = `
                   <ul>
                     <li><p>Mise à disposition de notre borne photo <strong>CineBooth 300</strong> avec capteur haute performance et flash intelligent</p></li>
@@ -205,7 +201,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
                   </p>`;
             break;
 
-        case "StarBooth Pro Illimité": 
+        case "StarBooth Pro Illimité":
             descriptionPrestation = `
                   <ul>
                     <li><p>Mise à disposition de notre borne photo <strong>Starbooth Pro</strong> avec capteur haute performance 4K et flash intelligent</p></li>
@@ -288,7 +284,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
                 descHtml += "<li><p>Livraison et reprise par nos soins</p></li>";
             }
         } else {
-            descHtml += "<li><p>Frais Logistique</p></li>"; 
+            descHtml += "<li><p>Frais Logistique</p></li>";
         }
 
         if (supplementKilometrique > 0) {
@@ -366,7 +362,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
     expiryDate.setDate(now.getDate() + 14);
 
     return {
-        "company_id": companyId, 
+        "company_id": companyId,
         "theme_id": themesMapping[acomptePct],
         "business_manager": commercial,
         "online_payment": true,
@@ -380,24 +376,24 @@ export function generateAxonautQuotationBody(inputs, companyId) {
  * Envoie le devis via l'API (Proxy).
  */
 export const sendAxonautQuotation = async (quotationBody) => {
-    const PROXY_URL = '/api/create-quote'; 
-    
+    const PROXY_URL = '/api/create-quote';
+
     console.log("SERVICE: Envoi Devis (JSON)...", JSON.stringify(quotationBody, null, 2));
 
     try {
-        const response = await fetch(PROXY_URL, { 
+        const response = await fetch(PROXY_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(quotationBody),
         });
         const data = await response.json();
-        
+
         if (!response.ok) throw new Error(data.error || "Erreur création devis");
         if (!data.id) throw new Error("ID manquant retour Axonaut");
 
         console.log(`✅ SERVICE: Devis créé avec succès. ID: ${data.id}, NUMBER: ${data.number}`);
 
-        return data; 
+        return data;
     } catch (error) {
         console.error("SERVICE: Erreur critique envoi devis", error);
         throw new Error(`Erreur envoi devis: ${error.message}`);
@@ -410,7 +406,7 @@ export const sendAxonautQuotation = async (quotationBody) => {
  * 🆕 MODIFICATION : Ajout du paramètre 'publicLink'
  */
 export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink) => {
-    const PROXY_EVENT_URL = '/api/create-event'; 
+    const PROXY_EVENT_URL = '/api/create-event';
     const now = new Date();
 
     // 🆕 Construction du message avec le lien de signature
@@ -426,14 +422,14 @@ L'équipe Photobooth Paris`;
 
     const eventBody = {
         company_id: companyId,
-        employee_email: formFillerEmail, 
+        employee_email: formFillerEmail,
         date: toRfc3339(now),
-        nature: 2, 
+        nature: 2,
         title: `Suite à votre demande de devis`,
         content: emailContent,
         is_done: false,
         attachments: {
-            quotations_ids: [quotationId] 
+            quotations_ids: [quotationId]
         },
     };
 
@@ -451,7 +447,7 @@ L'équipe Photobooth Paris`;
         if (!response.ok) throw new Error(data.error || "Erreur création événement Axonaut");
 
         console.log(`✅ SERVICE: Événement créé avec succès. ID: ${data.id}`);
-        return data; 
+        return data;
 
     } catch (error) {
         console.error("SERVICE: Erreur création événement", error);
@@ -471,35 +467,193 @@ export const sendZapierWebhook = async (payload) => {
 };
 
 /**
- * 🆕 MOCK : Récupère les infos partenaire via le numéro client.
- * A CONNECTER A VOTRE BACKEND REEL PLUS TARD.
+ * Récupère les infos partenaire ET ses adresses via les API Proxy.
+ * Filtrage strict par usage (Livraison vs Facturation).
  */
-export const getAxonautCompanyDetails = async (clientNumber) => {
-    console.log(`SERVICE: Recherche Partenaire ${clientNumber}...`);
+export const getAxonautCompanyDetails = async (companyId) => {
+    console.log(`SERVICE: Recherche Partenaire ID ${companyId}...`);
 
-    // Simulation d'appel API
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            if (clientNumber === '12345') { // Code de test
-                resolve({
-                    found: true,
-                    name: "AGENCE EVENEMENTIEL PRO",
-                    billingAddress: {
-                        fullAddress: "10 Avenue des Champs-Élysées, 75008 Paris",
-                        zip: "75008",
-                        city: "Paris"
-                    },
-                    contacts: [
-                        { fullName: "Julie Martin", email: "julie@agence-event.pro", phone: "+33612345678" }
-                    ],
-                    savedAddresses: [
-                        { label: "Siège Social", address: "10 Avenue des Champs-Élysées, 75008 Paris" },
-                        { label: "Showroom", address: "45 Rue de la République, 92100 Boulogne-Billancourt" }
-                    ]
-                });
-            } else {
-                reject("Client introuvable");
+    try {
+        // 1. Récupération des infos Société
+        const companyRes = await fetch(`/api/get-company?id=${companyId}`);
+        const companyData = await companyRes.json();
+
+        if (!companyRes.ok) throw new Error(companyData.error || "Société introuvable");
+
+        // 2. Récupération des Adresses associées
+        const addressesRes = await fetch(`/api/get-addresses?companyId=${companyId}`);
+        const addressesData = await addressesRes.json();
+        const rawAddresses = addressesRes.ok && Array.isArray(addressesData) ? addressesData : [];
+
+        // Log de debug pour vérification des flags
+        console.log("🔍 DEBUG - ADRESSES BRUTES RECUES DE L'API :", JSON.stringify(rawAddresses, null, 2));
+
+        // --- FORMATAGE ET FILTRAGE ---
+
+        const formatAddr = (street, zip, city) => {
+            if (!street && !city) return "";
+            return `${street || ''}, ${zip || ''} ${city || ''}`.trim().replace(/^, /, '').replace(/, $/, '');
+        };
+
+        // Adresse Principale (Fiche Société)
+        const mainAddressFull = formatAddr(companyData.address_street, companyData.address_zip_code, companyData.address_city);
+
+        // Listes filtrées
+        let billingAddresses = [];
+        let deliveryAddresses = [];
+
+        // Règle pour le Siège Social : Par défaut dans Facturation (car pas de flags sur l'objet Company)
+        if (mainAddressFull) {
+            const mainAddressObj = { label: "Facturation", address: mainAddressFull };
+            billingAddresses.push(mainAddressObj);
+
+            // Note : Si vous voulez que le siège soit aussi proposé en livraison, décommentez la ligne ci-dessous
+            // deliveryAddresses.push(mainAddressObj);
+        }
+
+        // 3. Filtrage précis des adresses supplémentaires selon les flags demandés
+        rawAddresses.forEach(addr => {
+            const formatted = formatAddr(addr.address_street, addr.address_zip_code, addr.address_city);
+            if (!formatted) return;
+
+            const addrObj = {
+                id: addr.id, // <--- IMPORTANT : On récupère l'ID Axonaut
+                label: addr.name || "Adresse",
+                address: formatted
+            };
+
+            if (addr.is_for_delivery === true) {
+                if (!deliveryAddresses.some(a => a.address === formatted)) {
+                    deliveryAddresses.push(addrObj);
+                }
             }
-        }, 800);
+
+            if (addr.is_for_invoice === true || addr.is_for_quotation === true) {
+                if (!billingAddresses.some(a => a.address === formatted)) {
+                    billingAddresses.push(addrObj);
+                }
+            }
+        });
+
+        // Fallbacks de sécurité : Si une liste est vide, on utilise l'adresse du siège ou une valeur par défaut
+        if (billingAddresses.length === 0) {
+            billingAddresses.push({
+                label: "Adresse de facturation",
+                address: mainAddressFull || "Adresse non renseignée"
+            });
+        }
+        if (deliveryAddresses.length === 0) {
+            deliveryAddresses.push({
+                label: "Adresse de livraison",
+                address: mainAddressFull || "Adresse non renseignée"
+            });
+        }
+
+        // --- TRAITEMENT DES CONTACTS ---
+        const contacts = companyData.employees?.map(emp => {
+            const parts = [emp.firstname, emp.lastname].filter(p => p && p !== 'null' && p.trim() !== '');
+            const cleanName = parts.length > 0 ? parts.join(' ') : 'Sans nom';
+
+            let rawPhone = emp.cellphone_number || emp.phone_number || '';
+            let cleanPhoneDigits = rawPhone.replace(/\D/g, '');
+
+            if (cleanPhoneDigits.startsWith('0') && cleanPhoneDigits.length === 10) {
+                cleanPhoneDigits = '+33' + cleanPhoneDigits;
+            } else if (cleanPhoneDigits.length > 0 && !cleanPhoneDigits.startsWith('+')) {
+                cleanPhoneDigits = '+' + cleanPhoneDigits;
+            }
+
+            return {
+                fullName: cleanName,
+                email: emp.email || '',
+                phone: cleanPhoneDigits
+            };
+        }) || [];
+
+        if (contacts.length === 0) contacts.push({ fullName: '', email: '', phone: '' });
+
+        return {
+            found: true,
+            companyId: companyData.id,
+            name: companyData.name,
+            isB2C: companyData.isB2C,
+            billingAddresses: billingAddresses,
+            deliveryAddresses: deliveryAddresses,
+            contacts: contacts,
+            defaultBillingAddress: billingAddresses[0].address,
+            defaultDeliveryAddress: deliveryAddresses[0].address
+        };
+
+    } catch (error) {
+        console.error("SERVICE: Erreur récupération partenaire", error);
+        throw error;
+    }
+};
+
+/**
+ * Crée une adresse structurée dans Axonaut pour une société existante.
+ */
+export const createAxonautAddress = async (companyId, addressData, type = 'delivery') => {
+    console.log(`SERVICE: Création adresse ${type} pour société ${companyId}...`);
+
+    const payload = {
+        company_id: parseInt(companyId),
+        name: addressData.name || (type === 'delivery' ? "Lieu Événement" : "Facturation"),
+        address_street: addressData.fullAddress,
+        address_zip_code: addressData.zip || "",
+        address_city: addressData.city || "",
+        address_country: "France",
+        is_for_invoice: type === 'billing',
+        is_for_quotation: type === 'billing',
+        is_for_delivery: type === 'delivery'
+    };
+
+    const res = await fetch('/api/create-address', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Erreur création adresse");
+    return data;
+};
+
+/**
+ * Ajoute un contact (Employé) à une société existante.
+ */
+export const createAxonautEmployee = async (companyId, formData) => {
+    console.log(`SERVICE: Création nouvel employé pour société ${companyId}...`);
+
+    const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
+    const lastName = lastNameParts.join(' ') || (firstName || '');
+
+    const payload = {
+        company_id: parseInt(companyId),
+        firstname: firstName,
+        lastname: lastName,
+        email: formData.email,
+        cellphone_number: formData.phone,
+        job: "Contact Photobooth"
+    };
+
+    try {
+        // Assurez-vous que votre proxy backend gère cette route /api/create-employee
+        const res = await fetch('/api/create-employee', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erreur création contact");
+
+        console.log(`✅ SERVICE: Employé créé avec succès. ID: ${data.id}`);
+        return data;
+
+    } catch (error) {
+        console.error("SERVICE: Erreur création employé", error);
+        // On ne bloque pas pour ne pas empêcher le devis, mais l'email risque d'échouer
+        throw error;
+    }
 };
