@@ -144,7 +144,7 @@ export default function PhotoboothQuoteForm() {
                     pricingData={pricingData}
                     customColor={customColor}
                     handleSubmit={(msg) => handleSubmit(msg, isCalculatorMode)}
-                    handleEditRequest={() => setCurrentStep(1)}
+                    handleEditRequest={handlePrev}
                     showMessage={showMessage}
                     isSubmitting={isSubmitting}
                 />;

@@ -16,7 +16,7 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
                 className='text-3xl font-extrabold text-gray-900 mb-6 border-b pb-2'
                 style={{ color: customColor, borderColor: customColor }}
             >
-                Détails de l'événement
+                Date & Lieu de l'événement
             </h2>
 
             {/* Rappel visuel de l'adresse choisie à l'étape 1 */}
@@ -46,55 +46,9 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
                     required
                 />
             </div>
-
-            <div>
-                <label className='block text-lg font-bold text-gray-900 mb-4'>
-                    Type de besoin <span className='text-red-500'>*</span>
-                </label>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
-                    <button
-                        type='button'
-                        onClick={() => handleChange('needType', 'eco')}
-                        className={`p-6 border-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${formData.needType === 'eco'
-                            ? 'border-blue-600 bg-blue-50 shadow-xl ring-4 ring-blue-100'
-                            : 'border-gray-200 bg-white hover:border-blue-300 shadow-md'
-                            }`}
-                    >
-                        <div className='text-5xl mb-3'>💰</div>
-                        <h3 className='font-bold text-lg text-gray-900 mb-1'>Nos bornes compactes</h3>
-                        <p className='text-sm text-gray-600'>
-                            Un petit concentré de technologies, dans un espace réduit !
-                        </p>
-                    </button>
-
-                    <button
-                        type='button'
-                        onClick={() => handleChange('needType', 'pro')}
-                        className={`p-6 border-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${formData.needType === 'pro'
-                            ? 'border-blue-600 bg-blue-50 shadow-xl ring-4 ring-blue-100'
-                            : 'border-gray-200 bg-white hover:border-blue-300 shadow-md'
-                            }`}
-                    >
-                        <div className='text-5xl mb-3'>⭐</div>
-                        <h3 className='font-bold text-lg text-gray-900 mb-1'>Notre borne premium</h3>
-                        <p className='text-sm text-gray-600'>
-                            Machine haut de gamme avec service, qui en impose par sa prestance !
-                        </p>
-                    </button>
-
-                    <button
-                        type='button'
-                        onClick={() => handleChange('needType', '360')}
-                        className={`p-6 border-4 rounded-2xl transition-all duration-300 hover:scale-[1.02] ${formData.needType === '360'
-                            ? 'border-blue-600 bg-blue-50 shadow-xl ring-4 ring-blue-100'
-                            : 'border-gray-200 bg-white hover:border-blue-300 shadow-md'
-                            }`}
-                    >
-                        <div className='text-5xl mb-3'>🎥</div>
-                        <h3 className='font-bold text-lg text-gray-900 mb-1'>Photobooth 360</h3>
-                        <p className='text-sm text-gray-600'>Expérience immersive à 360°</p>
-                    </button>
-                </div>
+            
+            <div className='bg-gray-50 p-4 rounded-xl border border-gray-100 text-sm text-gray-500 italic text-center mt-4'>
+                Le choix du modèle de borne se fera à l'étape suivante.
             </div>
         </div>
     );

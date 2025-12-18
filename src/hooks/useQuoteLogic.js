@@ -6,7 +6,7 @@ import * as AxonautService from '../services/axonautService';
 import {
     COUNTRIES, TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS,
     ECO_MODELS_PRICING, DELIVERY_BASE_ECO_HT, DELIVERY_BASE_ILLIMITE_HT,
-    SETUP_PRICE_HT, BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX,
+    BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX,
     PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT,
     P360_EXTRA_ANIMATION_HOUR_PRICE_HT,
     PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT,
@@ -36,7 +36,6 @@ export const useQuoteLogic = () => {
     const [finalPublicLink, setFinalPublicLink] = useState(null);
 
     // État initial du formulaire
-    // MISE À JOUR : Ajout des champs détaillés pour les adresses (Zip, City, Lat, Lng) pour Facturation ET Livraison
     const initialFormState = {
         fullName: '', email: '', phone: '', isPro: false, companyName: '',
 
@@ -45,12 +44,14 @@ export const useQuoteLogic = () => {
 
         // Livraison / Événement
         deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, deliveryZipCode: '', deliveryCity: '',
-        deliverySameAsBilling: false, // Nouveau flag pour savoir si on duplique l'adresse
-
-        eventDate: '', eventDuration: 1, needType: 'pro',
-        model: '', delivery: '',
+        deliverySameAsBilling: true, 
+        eventDate: '', eventDuration: 1, 
+        
+        // Le modèle pilote tout désormais
+        model: '', 
+        
         proAnimationHours: 'none',
-        proFondIA: false, proRGPD: false, proDelivery: true, proImpressions: 1, templateTool: false,
+        proFondIA: false, proRGPD: false, delivery: true, proImpressions: 1, templateTool: false,
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -58,7 +59,12 @@ export const useQuoteLogic = () => {
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
 
-        // --- 0. RÉCUPÉRATION DES TARIFS NÉGOCIÉS ---
+        // --- 0. DÉTECTION DU TYPE D'OFFRE ---
+        const isSignature = formData.model === 'Signature';
+        const is360 = formData.model === '360';
+        const isEco = !isSignature && !is360 && formData.model !== ''; // Inclut Numérique, 150, 300 ET Illimité (Starbooth)
+
+        // --- 1. RÉCUPÉRATION DES TARIFS NÉGOCIÉS ---
         const cid = formData.companyId?.toString();
         const deals = COMPANY_SPECIFIC_PRICING[cid] || {};
 
@@ -67,13 +73,13 @@ export const useQuoteLogic = () => {
         const currentIllimitePrice = deals.priceIllimite ?? ECO_MODELS_PRICING.illimite.priceHT;
         const currentTemplatePrice = deals.freeTemplate ? 0 : TEMPLATE_TOOL_PRO_PRICE_HT;
 
-        // 1. Distance
+        // 2. Distance
         const distanceKm = (formData.deliveryLat && formData.deliveryLng)
             ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng)
             : 0;
         const supplementKm = distanceKm > 50 ? Math.round(distanceKm - 50) : 0;
 
-        // 2. Initialisation
+        // 3. Initialisation
         const displayTTC = !formData.isPro;
         const priceTransformer = (priceHT) => (displayTTC ? (priceHT * TVA_RATE) : priceHT);
         const suffix = displayTTC ? '€ TTC' : '€ HT';
@@ -91,13 +97,13 @@ export const useQuoteLogic = () => {
         const duration = formData.eventDuration;
         const NbJours = duration;
 
-        // --- LOGIQUE PRIX ECO ---
-        if (formData.needType === 'eco') {
+        // --- LOGIQUE PRIX ECO (Inclut STARBOOTH PRO) ---
+        if (isEco) {
             if (formData.model) {
-                const model = ECO_MODELS_PRICING[formData.model];
-                nomBorne = model.name;
+                const modelData = ECO_MODELS_PRICING[formData.model];
+                nomBorne = modelData ? modelData.name : 'Modèle Eco';
 
-                let basePriceHT_Model = model.priceHT;
+                let basePriceHT_Model = modelData ? modelData.priceHT : 0;
                 if (formData.model === 'illimite') {
                     basePriceHT_Model = currentIllimitePrice;
                 }
@@ -106,37 +112,78 @@ export const useQuoteLogic = () => {
                 dailyServicesHT += basePriceHT_Model;
 
                 const baseDeliveryPriceHT = formData.model === 'illimite' ? DELIVERY_BASE_ILLIMITE_HT : DELIVERY_BASE_ECO_HT;
-                const setupPriceHT = SETUP_PRICE_HT;
 
-                if (formData.delivery === 'delivery_nosetup') {
+                if (formData.delivery === true) {
                     prixLivraisonHT = baseDeliveryPriceHT;
                     oneTimeCostsHT += prixLivraisonHT;
-                } else if (formData.delivery === 'delivery_withsetup') {
-                    prixLivraisonHT = baseDeliveryPriceHT + setupPriceHT;
-                    oneTimeCostsHT += prixLivraisonHT;
+                    if (modelData) {
+                        details.push({
+                            label: modelData.name,
+                            priceHT: basePriceHT_Model,
+                            daily: true,
+                            displayPrice: `${priceTransformer(basePriceHT_Model).toFixed(0)}${suffix}`
+                        });
+                    }
+                } else {
+                    // Retrait
+                    prixLivraisonHT = 0;
+                    if (modelData) {
+                        details.push({
+                            label: modelData.name,
+                            priceHT: basePriceHT_Model,
+                            daily: true,
+                            displayPrice: `${priceTransformer(basePriceHT_Model).toFixed(0)}${suffix}`
+                        });
+                    }
+                    details.push({ label: 'Retrait (Arcueil)', priceHT: 0, daily: false, displayPrice: 'Gratuit' });
                 }
 
-                details.push({
-                    label: model.name,
-                    priceHT: model.priceHT,
-                    daily: true,
-                    displayPrice: `${priceTransformer(model.priceHT).toFixed(0)}${suffix}`
-                });
+                // --- OPTIONS PREMIUM POUR STARBOOTH PRO ('illimite') ---
+                if (formData.model === 'illimite') {
+                    // 1. Animation (Si livraison sélectionnée ou forcée)
+                    // Note : Pas de réduction de livraison ici ("C'est toujours animatrice dédiée")
+                    if (formData.delivery === true && formData.proAnimationHours !== 'none') {
+                        const animationHours = parseInt(formData.proAnimationHours);
+                        if (animationHours > 0) {
+                            supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
+                            dailyServicesHT += supplementAnimationHT;
+                            details.push({ 
+                                label: `Animation ${animationHours}h (Animatrice dédiée)`, 
+                                priceHT: supplementAnimationHT, 
+                                daily: true, 
+                                displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` 
+                            });
+                        }
+                    }
 
-                if (prixLivraisonHT > 0) {
-                    details.push({
-                        label: formData.delivery === 'delivery_withsetup' ? 'Livraison + Mise en service' : 'Livraison Standard',
-                        priceHT: prixLivraisonHT,
-                        daily: false,
-                        displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}`
-                    });
-                } else if (formData.delivery === 'pickup') {
-                    details.push({ label: 'Retrait (Arcueil)', priceHT: 0, daily: false, displayPrice: 'Gratuit' });
+                    // 2. Fond IA
+                    if (formData.proFondIA) {
+                        const fondIAPriceHT = PRO_OPTION_FONDIA_HT; 
+                        dailyServicesHT += fondIAPriceHT; 
+                        details.push({ 
+                            label: 'Fond IA (personnalisé)', 
+                            priceHT: fondIAPriceHT, 
+                            daily: true, 
+                            displayPrice: `+${priceTransformer(fondIAPriceHT).toFixed(0)}${suffix}` 
+                        });
+                    }
+
+                    // 3. RGPD
+                    if (formData.proRGPD) {
+                        const rgpdPriceHT = PRO_OPTION_RGPD_HT; 
+                        dailyServicesHT += rgpdPriceHT; 
+                        details.push({ 
+                            label: 'Conformité RGPD', 
+                            priceHT: rgpdPriceHT, 
+                            daily: true, 
+                            displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` 
+                        });
+                    }
                 }
             }
 
-            // --- LOGIQUE PRIX PRO (Signature) ---
-        } else if (formData.needType === 'pro') {
+        // --- LOGIQUE PRIX PRO (Signature) ---
+        } else if (isSignature) {
             nomBorne = 'Signature';
             baseDayPriceHT += currentSignaturePrice;
             dailyServicesHT += currentSignaturePrice;
@@ -145,11 +192,12 @@ export const useQuoteLogic = () => {
             const proDeliveryBasePriceHT = PRO_DELIVERY_BASE_HT;
             const animationHours = parseInt(formData.proAnimationHours);
             const isShortAnimation = animationHours > 0 && animationHours <= 3;
+            // Réduction Livraison si technicien (1-3h)
             prixLivraisonHT = isShortAnimation ? proDeliveryBasePriceHT / 2 : proDeliveryBasePriceHT;
             oneTimeCostsHT += prixLivraisonHT;
             details.push({ label: 'Logistique/Installation par Technicien Certifié', priceHT: prixLivraisonHT, daily: false, displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}` });
 
-            // LOGIQUE SIGNATURE CLASSIQUE (45€/h)
+            // Animation Signature
             if (formData.proAnimationHours !== 'none') {
                 supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
                 dailyServicesHT += supplementAnimationHT;
@@ -157,6 +205,7 @@ export const useQuoteLogic = () => {
                 details.push({ label: animationDescription, priceHT: supplementAnimationHT, daily: true, displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` });
             }
 
+            // Impressions Signature
             if (formData.proImpressions > 1) {
                 const NbPrint = formData.proImpressions;
                 const NbJoursTotalOption = NbJours * (NbPrint - 1);
@@ -173,8 +222,8 @@ export const useQuoteLogic = () => {
                 const rgpdPriceHT = PRO_OPTION_RGPD_HT; dailyServicesHT += rgpdPriceHT; details.push({ label: 'Conformité RGPD', priceHT: rgpdPriceHT, daily: true, displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` });
             }
 
-            // --- LOGIQUE PRIX 360 ---
-        } else if (formData.needType === '360') {
+        // --- LOGIQUE PRIX 360 ---
+        } else if (is360) {
             nomBorne = 'Photobooth 360';
             const basePriceHT = P360_BASE_PRICE_HT;
             const deliveryPriceHT = P360_DELIVERY_PRICE_HT;
@@ -184,8 +233,7 @@ export const useQuoteLogic = () => {
             details.push({ label: 'Photobooth 360 (base journalière)', priceHT: basePriceHT, daily: true, displayPrice: `${priceTransformer(basePriceHT).toFixed(0)}${suffix}` });
             details.push({ label: 'Livraison 360 (incluse)', priceHT: deliveryPriceHT, daily: true, displayPrice: `+${priceTransformer(deliveryPriceHT).toFixed(0)}${suffix}` });
 
-            // 🆕 LOGIQUE ANIMATION 360
-            // 3h incluses, extra à 90€
+            // Animation 360
             let animationHours360 = 3;
             if (formData.proAnimationHours && formData.proAnimationHours !== 'none') {
                 animationHours360 = parseInt(formData.proAnimationHours);
@@ -211,8 +259,7 @@ export const useQuoteLogic = () => {
         }
 
         // Outil Template
-        if (formData.templateTool && (formData.needType === 'eco' || formData.needType === 'pro')) {
-            // Utilise 0 si freeTemplate est true, sinon le prix constant
+        if (formData.templateTool && (isEco || isSignature)) {
             prixTemplateHT = formData.isPro ? currentTemplatePrice : 0;
             oneTimeCostsHT += prixTemplateHT;
 
@@ -227,7 +274,7 @@ export const useQuoteLogic = () => {
         const totalServicesBeforeFormula = dailyServicesHT * duration;
         let totalServicesHT_Degressed = 0;
 
-        if (formData.needType === 'pro') {
+        if (isSignature) {
             const PBaseJour_Only = currentSignaturePrice;
             const PPlancherJour_Only = PLANCHER_PRICE_PRO_HT_USER_FIX;
             const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, duration));
@@ -236,20 +283,18 @@ export const useQuoteLogic = () => {
             const dailyOptionsHT = dailyServicesHT - currentSignaturePrice;
             totalServicesHT_Degressed = totalBaseDegressedHT + (dailyOptionsHT * duration);
 
-        } else if (formData.needType === 'eco' || formData.needType === '360') {
+        } else if (isEco || is360) {
             if (duration <= 1 || dailyServicesHT === 0) {
                 totalServicesHT_Degressed = dailyServicesHT;
             } else {
-                const is360 = formData.needType === '360';
-                const modelKey = is360 ? '360' : formData.model;
                 let PBaseJour_Only = dailyServicesHT;
                 let PPlancherJour_Only = 0;
                 if (is360) {
                     PBaseJour_Only = P360_BASE_PRICE_HT + P360_DELIVERY_PRICE_HT;
                     PPlancherJour_Only = P360_FLOOR_PRICE_HT;
-                } else if (modelKey) {
-                    PBaseJour_Only = ECO_MODELS_PRICING[modelKey].priceHT;
-                    PPlancherJour_Only = ECO_MODELS_PRICING[modelKey].floorPriceHT;
+                } else if (formData.model && ECO_MODELS_PRICING[formData.model]) {
+                    PBaseJour_Only = ECO_MODELS_PRICING[formData.model].priceHT;
+                    PPlancherJour_Only = ECO_MODELS_PRICING[formData.model].floorPriceHT;
                 }
                 const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, NbJours));
                 const basePlancherPart = PPlancherJour_Only * NbJours;
@@ -264,6 +309,7 @@ export const useQuoteLogic = () => {
             nombreMachine: 1, supplementKilometrique: supplementKm, supplementLivraisonDifficile: 0,
             supplementImpression: supplementImpressionHT, supplementAnimation: supplementAnimationHT,
             nombreTirages: formData.proImpressions, heuresAnimations: parseInt(formData.proAnimationHours) || 0, distanceKm: Math.round(distanceKm),
+            livraisonIncluse: formData.delivery
         };
 
         return {
@@ -279,39 +325,33 @@ export const useQuoteLogic = () => {
     }, [formData]);
 
 
-
     const isStepValid = () => {
         switch (currentStep) {
             case 1:
-                // 1. Vérification de présence des champs obligatoires
                 if (!formData.fullName || !formData.email || !formData.phone || !formData.deliveryFullAddress) return false;
-
-                // 2. Validation stricte de l'Email (Regex)
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(formData.email)) return false;
-
-                // 3. Validation stricte du Téléphone
-                // On cherche le pays correspondant au code dans formData.phone
+                
                 const selectedCountry = COUNTRIES.find(c => formData.phone.startsWith(c.code));
                 if (selectedCountry) {
                     const digitsOnly = formData.phone.replace(selectedCountry.code, '').replace(/\D/g, '');
-                    // On compare le nombre de chiffres saisis avec le requis du pays
                     if (digitsOnly.length !== selectedCountry.requiredDigits) return false;
                 } else {
-                    // Fallback si pays non trouvé
                     if (formData.phone.replace(/\D/g, '').length < 9) return false;
                 }
 
-                // 4. Validation spécifique PRO
                 if (formData.isPro && (!formData.companyName || !formData.billingFullAddress)) return false;
-
                 return true;
 
             case 2:
-                return (formData.eventDate && formData.needType && formData.eventDuration >= 1);
+                // Seuls date et durée comptent ici
+                return (formData.eventDate && formData.eventDuration >= 1);
+                
             case 3:
-                if (formData.needType === 'eco') return formData.model && formData.delivery;
+                // Validation basée uniquement sur la présence d'un model
+                if (!formData.model) return false;
                 return true;
+                
             default:
                 return true;
         }
@@ -320,7 +360,12 @@ export const useQuoteLogic = () => {
     // 📍 ENVOI ZAPIER
     const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null) => {
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
-
+        const isSignature = formData.model === 'Signature';
+        const is360 = formData.model === '360';
+        const isEco = !isSignature && !is360 && formData.model !== '';
+        // Pour Zapier, illimite reste 'eco' ou une nouvelle catégorie ? 
+        // Gardons la logique précédente pour ne pas casser le Zap
+        
         const payload = {
             quote_id: quoteId,
             devis: axonautNumber,
@@ -343,31 +388,37 @@ export const useQuoteLogic = () => {
             payload.deliveryFullAddress = formData.deliveryFullAddress;
             payload.eventDate = formData.eventDate;
             payload.eventDuration = formData.eventDuration;
-            payload.needType = formData.needType;
             payload.deliveryLat = formData.deliveryLat;
             payload.deliveryLng = formData.deliveryLng;
         }
 
         // Étape 3
         if (step >= 3 || finalSubmit) {
-            if (formData.needType === 'eco') {
-                payload.model = formData.model;
-                payload.delivery = formData.delivery;
+            payload.model = formData.model;
+            
+            if (isEco) {
+                payload.needType = 'eco'; 
+                payload.delivery = toExcelBool(formData.delivery);
                 payload.templateTool = toExcelBool(formData.templateTool);
+                
+                // NOUVEAU : Envoi des options si Starbooth
+                if (formData.model === 'illimite') {
+                    payload.proAnimationHours = formData.proAnimationHours;
+                    payload.proFondIA = toExcelBool(formData.proFondIA);
+                    payload.proRGPD = toExcelBool(formData.proRGPD);
+                }
             }
-            else if (formData.needType === 'pro') {
-                payload.model = "Signature";
-                payload.delivery = "Included";
+            else if (isSignature) {
+                payload.needType = 'pro';
                 payload.proAnimationHours = formData.proAnimationHours;
                 payload.proFondIA = toExcelBool(formData.proFondIA);
                 payload.proRGPD = toExcelBool(formData.proRGPD);
-                payload.proDelivery = toExcelBool(formData.proDelivery);
+                payload.delivery = toExcelBool(formData.delivery);
                 payload.proImpressions = formData.proImpressions;
                 payload.templateTool = toExcelBool(formData.templateTool);
             }
-            else if (formData.needType === '360') {
-                payload.model = "360";
-                // On envoie le nombre d'heures réelles
+            else if (is360) {
+                payload.needType = '360';
                 payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
             }
 
@@ -404,8 +455,6 @@ export const useQuoteLogic = () => {
 
     // GESTION DE LA SOUMISSION 
     const handleSubmit = async (showMessage, isCalculatorMode = false) => {
-
-        // 1. SÉCURITÉ ANTI-DOUBLON (Anti-Spam Click)
         if (isSubmitting || isSubmitted) return;
 
         setIsSubmitting(true);
@@ -415,24 +464,21 @@ export const useQuoteLogic = () => {
             let companyId = formData.companyId;
             let billingAddressId = formData.billingAddressId;
 
-            // 1. GESTION DU TIERS (Création si inexistant)
+            // 1. GESTION DU TIERS
             if (!companyId) {
                 console.log("Création du tiers...");
                 const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData);
                 companyId = newId;
             }
 
-            // 2. LOGIQUE CONDITIONNELLE SELON LE TYPE DE CLIENT (PRO)
+            // 2. LOGIQUE CONDITIONNELLE PRO
             if (formData.isPro) {
-                // A. Ajout du contact (Employé)
-                console.log("Mode Pro : Création du contact lié...");
                 try {
                     await AxonautService.createAxonautEmployee(companyId, formData);
                 } catch (err) {
-                    console.warn("Le contact n'a pas pu être ajouté (déjà existant), on continue.");
+                    console.warn("Contact déjà existant.");
                 }
 
-                // B. Gestion des adresses additionnelles
                 if (formData.saveNewBillingAddress) {
                     const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
                         name: formData.newBillingAddressName || "Facturation",
@@ -451,11 +497,9 @@ export const useQuoteLogic = () => {
                         city: formData.deliveryCity
                     }, 'delivery');
                 }
-            } else {
-                console.log("Mode Particulier : Contact et adresse déjà créés avec le tiers.");
             }
 
-            // 🔍 DÉTECTION PARTENAIRE VIP (Basée sur l'ID Axonaut présent dans les constantes)
+            // 🔍 PARTENAIRE VIP
             const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(companyId?.toString());
 
             // 3. CRÉATION DU DEVIS
@@ -466,15 +510,12 @@ export const useQuoteLogic = () => {
                 adresseLivraisonComplete: formData.deliveryFullAddress,
                 nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
-                livraisonIncluse: formData.delivery !== 'pickup',
+                livraisonIncluse: formData.delivery !== false, 
 
-                // ✅ RÈGLE ACOMPTE STRICTE :
-                // Seulement si l'ID est reconnu dans la liste des partenaires VIP => 0%
-                // Sinon (Calculette avec prospect inconnu ou Client standard) => 100% (1)
+                // ✅ RÈGLE ACOMPTE
                 acomptePct: isVipPartner ? 0 : 1
             };
 
-            // Si on a récupéré un ID d'adresse spécifique (B2B), on l'utilise
             if (billingAddressId) {
                 inputsForAxonaut.company_address_id = billingAddressId;
             }
@@ -486,15 +527,14 @@ export const useQuoteLogic = () => {
                 triggerWebhook(4, true, pricing, quoteResponse.number);
             }
 
-            // 4. FINALISATION (Signature & Email)
+            // 4. FINALISATION
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
 
-            // On saute l'email UNIQUEMENT pour la Calculette.
             if (!isCalculatorMode) {
                 await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink);
             } else {
-                console.log("Mode Calculette : Devis créé sans envoi d'email.");
+                console.log("Mode Calculette : Devis créé sans email.");
             }
 
             setIsSubmitted(true);
@@ -502,7 +542,6 @@ export const useQuoteLogic = () => {
         } catch (error) {
             console.error("Erreur Submit:", error);
             showMessage(`Erreur: ${error.message}`);
-            // En cas d'erreur, on permet de réessayer (on débloque le bouton)
             setIsSubmitting(false);
         }
     };
