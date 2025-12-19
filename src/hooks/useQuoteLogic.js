@@ -44,12 +44,12 @@ export const useQuoteLogic = () => {
 
         // Livraison / Événement
         deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, deliveryZipCode: '', deliveryCity: '',
-        deliverySameAsBilling: true, 
-        eventDate: '', eventDuration: 1, 
-        
+        deliverySameAsBilling: true,
+        eventDate: '', eventDuration: 1,
+
         // Le modèle pilote tout désormais
-        model: '', 
-        
+        model: '',
+
         proAnimationHours: 'none',
         proFondIA: false, proRGPD: false, delivery: true, proImpressions: 1, templateTool: false,
     };
@@ -147,42 +147,42 @@ export const useQuoteLogic = () => {
                         if (animationHours > 0) {
                             supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
                             dailyServicesHT += supplementAnimationHT;
-                            details.push({ 
-                                label: `Animation ${animationHours}h (Animatrice dédiée)`, 
-                                priceHT: supplementAnimationHT, 
-                                daily: true, 
-                                displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` 
+                            details.push({
+                                label: `Animation ${animationHours}h (Animatrice dédiée)`,
+                                priceHT: supplementAnimationHT,
+                                daily: true,
+                                displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}`
                             });
                         }
                     }
 
                     // 2. Fond IA
                     if (formData.proFondIA) {
-                        const fondIAPriceHT = PRO_OPTION_FONDIA_HT; 
-                        dailyServicesHT += fondIAPriceHT; 
-                        details.push({ 
-                            label: 'Fond IA (personnalisé)', 
-                            priceHT: fondIAPriceHT, 
-                            daily: true, 
-                            displayPrice: `+${priceTransformer(fondIAPriceHT).toFixed(0)}${suffix}` 
+                        const fondIAPriceHT = PRO_OPTION_FONDIA_HT;
+                        dailyServicesHT += fondIAPriceHT;
+                        details.push({
+                            label: 'Fond IA (personnalisé)',
+                            priceHT: fondIAPriceHT,
+                            daily: true,
+                            displayPrice: `+${priceTransformer(fondIAPriceHT).toFixed(0)}${suffix}`
                         });
                     }
 
                     // 3. RGPD
                     if (formData.proRGPD) {
-                        const rgpdPriceHT = PRO_OPTION_RGPD_HT; 
-                        dailyServicesHT += rgpdPriceHT; 
-                        details.push({ 
-                            label: 'Conformité RGPD', 
-                            priceHT: rgpdPriceHT, 
-                            daily: true, 
-                            displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` 
+                        const rgpdPriceHT = PRO_OPTION_RGPD_HT;
+                        dailyServicesHT += rgpdPriceHT;
+                        details.push({
+                            label: 'Conformité RGPD',
+                            priceHT: rgpdPriceHT,
+                            daily: true,
+                            displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}`
                         });
                     }
                 }
             }
 
-        // --- LOGIQUE PRIX PRO (Signature) ---
+            // --- LOGIQUE PRIX PRO (Signature) ---
         } else if (isSignature) {
             nomBorne = 'Signature';
             baseDayPriceHT += currentSignaturePrice;
@@ -222,7 +222,7 @@ export const useQuoteLogic = () => {
                 const rgpdPriceHT = PRO_OPTION_RGPD_HT; dailyServicesHT += rgpdPriceHT; details.push({ label: 'Conformité RGPD', priceHT: rgpdPriceHT, daily: true, displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` });
             }
 
-        // --- LOGIQUE PRIX 360 ---
+            // --- LOGIQUE PRIX 360 ---
         } else if (is360) {
             nomBorne = 'Photobooth 360';
             const basePriceHT = P360_BASE_PRICE_HT;
@@ -331,7 +331,7 @@ export const useQuoteLogic = () => {
                 if (!formData.fullName || !formData.email || !formData.phone || !formData.deliveryFullAddress) return false;
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(formData.email)) return false;
-                
+
                 const selectedCountry = COUNTRIES.find(c => formData.phone.startsWith(c.code));
                 if (selectedCountry) {
                     const digitsOnly = formData.phone.replace(selectedCountry.code, '').replace(/\D/g, '');
@@ -346,12 +346,12 @@ export const useQuoteLogic = () => {
             case 2:
                 // Seuls date et durée comptent ici
                 return (formData.eventDate && formData.eventDuration >= 1);
-                
+
             case 3:
                 // Validation basée uniquement sur la présence d'un model
                 if (!formData.model) return false;
                 return true;
-                
+
             default:
                 return true;
         }
@@ -365,7 +365,7 @@ export const useQuoteLogic = () => {
         const isEco = !isSignature && !is360 && formData.model !== '';
         // Pour Zapier, illimite reste 'eco' ou une nouvelle catégorie ? 
         // Gardons la logique précédente pour ne pas casser le Zap
-        
+
         const payload = {
             quote_id: quoteId,
             devis: axonautNumber,
@@ -395,12 +395,12 @@ export const useQuoteLogic = () => {
         // Étape 3
         if (step >= 3 || finalSubmit) {
             payload.model = formData.model;
-            
+
             if (isEco) {
-                payload.needType = 'eco'; 
+                payload.needType = 'eco';
                 payload.delivery = toExcelBool(formData.delivery);
                 payload.templateTool = toExcelBool(formData.templateTool);
-                
+
                 // NOUVEAU : Envoi des options si Starbooth
                 if (formData.model === 'illimite') {
                     payload.proAnimationHours = formData.proAnimationHours;
@@ -471,32 +471,30 @@ export const useQuoteLogic = () => {
                 companyId = newId;
             }
 
-            // 2. LOGIQUE CONDITIONNELLE PRO
-            if (formData.isPro) {
-                try {
-                    await AxonautService.createAxonautEmployee(companyId, formData);
-                } catch (err) {
-                    console.warn("Contact déjà existant.");
-                }
+            // 2. LOGIQUE D'UPDATE 
+            try {
+                await AxonautService.createAxonautEmployee(companyId, formData);
+            } catch (err) {
+                console.warn("Contact déjà existant.");
+            }
 
-                if (formData.saveNewBillingAddress) {
-                    const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
-                        name: formData.newBillingAddressName || "Facturation",
-                        fullAddress: formData.billingFullAddress,
-                        zip: formData.billingZipCode,
-                        city: formData.billingCity
-                    }, 'billing');
-                    if (newBillAddr?.id) billingAddressId = newBillAddr.id;
-                }
+            if (formData.saveNewBillingAddress) {
+                const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
+                    name: formData.newBillingAddressName || "Facturation",
+                    fullAddress: formData.billingFullAddress,
+                    zip: formData.billingZipCode,
+                    city: formData.billingCity
+                }, 'billing');
+                if (newBillAddr?.id) billingAddressId = newBillAddr.id;
+            }
 
-                if (formData.saveNewDeliveryAddress) {
-                    await AxonautService.createAxonautAddress(companyId, {
-                        name: formData.newDeliveryAddressName || "Lieu Événement",
-                        fullAddress: formData.deliveryFullAddress,
-                        zip: formData.deliveryZipCode,
-                        city: formData.deliveryCity
-                    }, 'delivery');
-                }
+            if (formData.saveNewDeliveryAddress) {
+                await AxonautService.createAxonautAddress(companyId, {
+                    name: formData.newDeliveryAddressName || "Lieu Événement",
+                    fullAddress: formData.deliveryFullAddress,
+                    zip: formData.deliveryZipCode,
+                    city: formData.deliveryCity
+                }, 'delivery');
             }
 
             // 🔍 PARTENAIRE VIP
@@ -510,7 +508,7 @@ export const useQuoteLogic = () => {
                 adresseLivraisonComplete: formData.deliveryFullAddress,
                 nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
-                livraisonIncluse: formData.delivery !== false, 
+                livraisonIncluse: formData.delivery !== false,
 
                 // ✅ RÈGLE ACOMPTE
                 acomptePct: isVipPartner ? 0 : 1

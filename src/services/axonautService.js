@@ -4,7 +4,6 @@ import {
     AXONAUT_THEMES_MAPPING,
     AXONAUT_FIXED_DEFAULTS,
     ZAPIER_WEBHOOK_URL,
-    // TVA_RATE n'est pas utilisé ici mais pourrait l'être
 } from '../constants';
 
 /**
@@ -18,15 +17,6 @@ const toRfc3339 = (date) => {
     const minutes = (Math.abs(offset) % 60).toString().padStart(2, '0');
     return isoString.replace(/\.\d{3}Z$/, `${sign}${hours}:${minutes}`);
 };
-
-/**
- * Génère le corps JSON pour la création d'un tiers.
- * Gère le parsing d'adresse (CP/Ville) et nettoie les civilités.
- */
-/**
- * Génère le corps JSON pour la création d'un tiers (Société uniquement).
- * Suppression du contact interne pour éviter les conflits.
- */
 
 export function generateAxonautThirdPartyBody(formData) {
     const isPro = formData.isPro;
@@ -65,16 +55,14 @@ export function generateAxonautThirdPartyBody(formData) {
     };
 
     if (isPro) {
-        // En mode PRO, on ne met pas d'employés ici pour respecter votre process de séparation
         thirdPartyBody.address_contact_name = formData.fullName;
     } else {
-        // CORRECTIF B2C : Ajout obligatoire du tableau employees
         thirdPartyBody.employees = [
             {
                 firstname: firstName,
                 lastname: lastName,
                 email: formData.email,
-                cellphoneNumber: formData.phone, // Utilisation de cellphone_number
+                cellphoneNumber: formData.phone,
                 is_billing_contact: true
             }
         ];
@@ -83,9 +71,6 @@ export function generateAxonautThirdPartyBody(formData) {
     return thirdPartyBody;
 }
 
-/**
- * Crée ou met à jour un tiers via l'API (Proxy).
- */
 export const createAxonautThirdParty = async (formData) => {
     const thirdPartyBody = generateAxonautThirdPartyBody(formData);
     const PROXY_URL = '/api/create-thirdparty';
@@ -114,9 +99,6 @@ export const createAxonautThirdParty = async (formData) => {
     }
 }
 
-/**
- * Génère le corps JSON complet du devis avec TOUTES les descriptions.
- */
 export function generateAxonautQuotationBody(inputs, companyId) {
     const TVA_RATE_DEC = 20.0;
     const themesMapping = AXONAUT_THEMES_MAPPING;
@@ -139,11 +121,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
     };
 
     const productsArray = [];
-
-    const ligneLivraison = livraisonIncluse
-        ? ""
-        : "<li><p>À venir récupérer au 2 rue Victor Carmignac, 94110 Arcueil</p></li>";
-
+    const ligneLivraison = livraisonIncluse ? "" : "<li><p>À venir récupérer au 2 rue Victor Carmignac, 94110 Arcueil</p></li>";
     let descriptionPrestation = "";
 
     switch (nomBorne) {
@@ -371,12 +349,8 @@ export function generateAxonautQuotationBody(inputs, companyId) {
     };
 }
 
-/**
- * Envoie le devis via l'API (Proxy).
- */
 export const sendAxonautQuotation = async (quotationBody) => {
     const PROXY_URL = '/api/create-quote';
-
     console.log("SERVICE: Envoi Devis (JSON)...", JSON.stringify(quotationBody, null, 2));
 
     try {
@@ -399,16 +373,10 @@ export const sendAxonautQuotation = async (quotationBody) => {
     }
 }
 
-/**
- * Crée un événement dans Axonaut (ici utilisé pour envoyer le devis par email).
- * Utilise le endpoint /api/v2/events via un proxy.
- * 🆕 MODIFICATION : Ajout du paramètre 'publicLink'
- */
 export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink) => {
     const PROXY_EVENT_URL = '/api/create-event';
     const now = new Date();
 
-    // 🆕 Construction du message avec le lien de signature
     const emailContent = `Bonjour,
 
 Veuillez trouver ci-joint votre devis Photobooth.
@@ -442,7 +410,6 @@ L'équipe Photobooth Paris`;
         });
 
         const data = await response.json();
-
         if (!response.ok) throw new Error(data.error || "Erreur création événement Axonaut");
 
         console.log(`✅ SERVICE: Événement créé avec succès. ID: ${data.id}`);
@@ -453,9 +420,6 @@ L'équipe Photobooth Paris`;
     }
 }
 
-/**
- * Envoie les données au Webhook Zapier.
- */
 export const sendZapierWebhook = async (payload) => {
     console.log("SERVICE: Envoi Webhook Zapier...", payload);
     try {
@@ -465,58 +429,40 @@ export const sendZapierWebhook = async (payload) => {
     }
 };
 
-/**
- * Récupère les infos partenaire ET ses adresses via les API Proxy.
- * Filtrage strict par usage (Livraison vs Facturation).
- */
 export const getAxonautCompanyDetails = async (companyId) => {
     console.log(`SERVICE: Recherche Partenaire ID ${companyId}...`);
 
     try {
-        // 1. Récupération des infos Société
         const companyRes = await fetch(`/api/get-company?id=${companyId}`);
         const companyData = await companyRes.json();
-
         if (!companyRes.ok) throw new Error(companyData.error || "Société introuvable");
 
-        // 2. Récupération des Adresses associées
         const addressesRes = await fetch(`/api/get-addresses?companyId=${companyId}`);
         const addressesData = await addressesRes.json();
         const rawAddresses = addressesRes.ok && Array.isArray(addressesData) ? addressesData : [];
 
-        // Log de debug pour vérification des flags
         console.log("🔍 DEBUG - ADRESSES BRUTES RECUES DE L'API :", JSON.stringify(rawAddresses, null, 2));
-
-        // --- FORMATAGE ET FILTRAGE ---
 
         const formatAddr = (street, zip, city) => {
             if (!street && !city) return "";
             return `${street || ''}, ${zip || ''} ${city || ''}`.trim().replace(/^, /, '').replace(/, $/, '');
         };
 
-        // Adresse Principale (Fiche Société)
         const mainAddressFull = formatAddr(companyData.address_street, companyData.address_zip_code, companyData.address_city);
-
-        // Listes filtrées
         let billingAddresses = [];
         let deliveryAddresses = [];
 
-        // Règle pour le Siège Social : Par défaut dans Facturation (car pas de flags sur l'objet Company)
         if (mainAddressFull) {
             const mainAddressObj = { label: "Facturation", address: mainAddressFull };
             billingAddresses.push(mainAddressObj);
-
-            // Note : Si vous voulez que le siège soit aussi proposé en livraison, décommentez la ligne ci-dessous
-            // deliveryAddresses.push(mainAddressObj);
         }
 
-        // 3. Filtrage précis des adresses supplémentaires selon les flags demandés
         rawAddresses.forEach(addr => {
             const formatted = formatAddr(addr.address_street, addr.address_zip_code, addr.address_city);
             if (!formatted) return;
 
             const addrObj = {
-                id: addr.id, // <--- IMPORTANT : On récupère l'ID Axonaut
+                id: addr.id,
                 label: addr.name || "Adresse",
                 address: formatted
             };
@@ -534,7 +480,6 @@ export const getAxonautCompanyDetails = async (companyId) => {
             }
         });
 
-        // Fallbacks de sécurité : Si une liste est vide, on utilise l'adresse du siège ou une valeur par défaut
         if (billingAddresses.length === 0) {
             billingAddresses.push({
                 label: "Adresse de facturation",
@@ -548,7 +493,6 @@ export const getAxonautCompanyDetails = async (companyId) => {
             });
         }
 
-        // --- TRAITEMENT DES CONTACTS ---
         const contacts = companyData.employees?.map(emp => {
             const parts = [emp.firstname, emp.lastname].filter(p => p && p !== 'null' && p.trim() !== '');
             const cleanName = parts.length > 0 ? parts.join(' ') : 'Sans nom';
@@ -589,9 +533,6 @@ export const getAxonautCompanyDetails = async (companyId) => {
     }
 };
 
-/**
- * Crée une adresse structurée dans Axonaut pour une société existante.
- */
 export const createAxonautAddress = async (companyId, addressData, type = 'delivery') => {
     console.log(`SERVICE: Création adresse ${type} pour société ${companyId}...`);
 
@@ -619,10 +560,10 @@ export const createAxonautAddress = async (companyId, addressData, type = 'deliv
 };
 
 /**
- * Ajoute un contact (Employé) à une société existante.
+ * 🆕 Met à jour un contact (Employé) existant.
  */
-export const createAxonautEmployee = async (companyId, formData) => {
-    console.log(`SERVICE: Création nouvel employé pour société ${companyId}...`);
+export const updateAxonautEmployee = async (employeeId, companyId, formData) => {
+    console.log(`SERVICE: Mise à jour employé ${employeeId} pour société ${companyId}...`);
 
     const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
     const lastName = lastNameParts.join(' ') || (firstName || '');
@@ -632,27 +573,91 @@ export const createAxonautEmployee = async (companyId, formData) => {
         firstname: firstName,
         lastname: lastName,
         email: formData.email,
-        cellphone_number: formData.phone,
-        job: "Contact Photobooth"
+        cellphone_number: formData.phone, // Numéro envoyé tel quel, comme demandé
+        job: "Contact Photobooth (Mis à jour)"
     };
 
     try {
-        // Assurez-vous que votre proxy backend gère cette route /api/create-employee
-        const res = await fetch('/api/create-employee', {
-            method: 'POST',
+        // IMPORTANT : Vérifie que ton backend proxy gère bien cette route avec l'ID en paramètre
+        const res = await fetch(`/api/update-employee?id=${employeeId}`, {
+            method: 'POST', // Souvent POST ou PATCH selon ton proxy
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Erreur création contact");
+        if (!res.ok) throw new Error(data.error || "Erreur mise à jour contact");
 
-        console.log(`✅ SERVICE: Employé créé avec succès. ID: ${data.id}`);
+        console.log(`✅ SERVICE: Employé mis à jour. ID: ${data.id}`);
         return data;
 
     } catch (error) {
-        console.error("SERVICE: Erreur création employé", error);
-        // On ne bloque pas pour ne pas empêcher le devis, mais l'email risque d'échouer
+        console.error("SERVICE: Erreur mise à jour employé", error);
         throw error;
+    }
+};
+
+/**
+ * 🆕 INTELLIGENCE : Crée OU Met à jour un contact (Employé)
+ * Vérifie d'abord si l'email existe dans la société.
+ */
+export const createAxonautEmployee = async (companyId, formData) => {
+    console.log(`SERVICE: Vérification existence employé pour société ${companyId}...`);
+
+    try {
+        // 1. On récupère la liste actuelle des employés de la société
+        const companyRes = await fetch(`/api/get-company?id=${companyId}`);
+        let existingEmployeeId = null;
+
+        if (companyRes.ok) {
+            const companyData = await companyRes.json();
+            const employees = companyData.employees || [];
+            
+            // Recherche par email (insensible à la casse)
+            const found = employees.find(e => 
+                e.email && e.email.toLowerCase() === formData.email.toLowerCase()
+            );
+
+            if (found) {
+                console.log(`🔍 Contact trouvé (Email: ${found.email}, ID: ${found.id}). On met à jour.`);
+                existingEmployeeId = found.id;
+            }
+        }
+
+        // 2. Décision : Update ou Create
+        if (existingEmployeeId) {
+            return await updateAxonautEmployee(existingEmployeeId, companyId, formData);
+        } else {
+            console.log("🔍 Contact inconnu. Création...");
+            
+            // Logique de création standard
+            const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
+            const lastName = lastNameParts.join(' ') || (firstName || '');
+
+            const payload = {
+                company_id: parseInt(companyId),
+                firstname: firstName,
+                lastname: lastName,
+                email: formData.email,
+                cellphone_number: formData.phone,
+                job: "Contact Photobooth"
+            };
+
+            const res = await fetch('/api/create-employee', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Erreur création contact");
+
+            console.log(`✅ SERVICE: Employé créé avec succès. ID: ${data.id}`);
+            return data;
+        }
+
+    } catch (error) {
+        console.error("SERVICE: Erreur process employé (Check/Create)", error);
+        // Fallback : on tente quand même la création si le check échoue pour ne pas bloquer
     }
 };
