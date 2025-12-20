@@ -6,7 +6,7 @@ import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
 export const Step1Contact = ({ formData, setFormData, customColor, currentStep, setCurrentStep }) => {
 
-    // Pour la facturation (si différente de la livraison)
+    // Gestion adresse facturation
     const handleBillingAddressSelect = (addr) => {
         setFormData(prev => ({
             ...prev,
@@ -15,11 +15,11 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             billingLng: addr.lng,
             billingZipCode: addr.postal,
             billingCity: addr.city,
-            saveNewBillingAddress: true // Important pour la création dans Axonaut
+            saveNewBillingAddress: true // Marqueur pour création Axonaut
         }));
     };
 
-    // Pour la livraison
+    // Gestion adresse livraison
     const handleDeliveryAddressSelect = (addr) => {
         setFormData(prev => ({
             ...prev,
@@ -28,7 +28,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             deliveryLng: addr.lng,
             deliveryZipCode: addr.postal,
             deliveryCity: addr.city,
-            saveNewDeliveryAddress: true // Important pour la création dans Axonaut
+            saveNewDeliveryAddress: true // Marqueur pour création Axonaut
         }));
     };
 
@@ -88,11 +88,11 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     className='w-5 h-5 text-blue-600 rounded-lg cursor-pointer border-gray-300'
                 />
                 <label htmlFor='isPro' className='text-sm font-medium text-gray-800 cursor-pointer select-none'>
-                    Je suis un professionnel (affichage des prix en HT)
+                    Je suis un professionnel (Société, Agence...)
                 </label>
             </div>
 
-            {/* Champ Nom Société (Visible uniquement si Pro) */}
+            {/* Champ Nom Société (Reste conditionné au statut Pro) */}
             {formData.isPro && (
                 <div className='animate-in slide-in-from-top-2'>
                     <InputField 
@@ -113,16 +113,17 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
 
                 {/* 1. Adresse de Livraison (Lieu de l'événement) */}
                 <div className='space-y-3'>
-                    {formData.isPro && (
-                        <InputField
-                            label="Nom du lieu de l'événement"
-                            placeholder="ex: Salle des fêtes, Bureaux Paris..."
-                            value={formData.newDeliveryAddressName || ''}
-                            onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
-                        />
-                    )}
+                    {/* AJOUT : Champ Nom du lieu (Toujours visible) */}
+                    <InputField
+                        label="Nom de ce lieu"
+                        placeholder="ex: Mariage X, Salon Y..."
+                        value={formData.newDeliveryAddressName || ''}
+                        onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
+                    />
+                    
+                    {/* Libellé "Adresse complète" comme sur Step1Partenaires */}
                     <AddressAutocomplete
-                        label="Adresse de l'événement (Livraison)"
+                        label="Adresse complète"
                         required
                         defaultValue={formData.deliveryFullAddress || ''}
                         onAddressSelect={handleDeliveryAddressSelect}
@@ -146,18 +147,19 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                 {/* 3. Adresse de Facturation (Si différente) */}
                 {!formData.deliverySameAsBilling && (
                     <div className='animate-in slide-in-from-top-2 pt-2 space-y-3 border-t border-gray-200 mt-2'>
-                         <p className='text-sm text-blue-600 font-semibold pt-2'>Adresse de Facturation</p>
+                        <p className='text-sm text-blue-600 font-semibold pt-2'>Détails Facturation</p>
                         
-                        {formData.isPro && (
-                            <InputField
-                                label="Nom de l'adresse de facturation"
-                                placeholder="ex: Siège Social, Service Compta..."
-                                value={formData.newBillingAddressName || ''}
-                                onChange={e => handleChange('newBillingAddressName', e.target.value)}
-                            />
-                        )}
+                        {/* AJOUT : Champ Nom de l'adresse (Toujours visible si le bloc est ouvert) */}
+                        <InputField
+                            label="Nom de cette adresse"
+                            placeholder="ex: Bureau, Siège..."
+                            value={formData.newBillingAddressName || ''}
+                            onChange={e => handleChange('newBillingAddressName', e.target.value)}
+                        />
+
+                        {/* Libellé "Adresse complète" comme sur Step1Partenaires */}
                         <AddressAutocomplete
-                            label="Rechercher l'adresse de facturation"
+                            label="Adresse complète"
                             required
                             defaultValue={formData.billingFullAddress || ''}
                             onAddressSelect={handleBillingAddressSelect}
