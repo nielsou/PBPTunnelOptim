@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { Search, Loader2 } from 'lucide-react';
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
-import { PhoneInputField } from '../ui/PhoneInputField';
 import { getAxonautCompanyDetails } from '../../services/axonautService';
 
 export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
@@ -73,7 +72,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
             setIsLoading(false);
         }
     };
-    
+
     const handleContactDropdownChange = (e) => {
         const val = e.target.value;
         if (val === 'new') {
@@ -124,12 +123,13 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
             if (isNew) {
                 setFormData(prev => ({ ...prev, deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, saveNewDeliveryAddress: true, newDeliveryAddressName: '' }));
             } else {
-                const selectedAddr = clientData.deliveryAddresses[selectedIndex];
-                setFormData(prev => ({
+                const selectedAddr = clientData.deliveryAddresses[selectedIndex]; setFormData(prev => ({
                     ...prev,
                     deliveryFullAddress: selectedAddr.address,
-                    deliveryLat: null,
-                    deliveryLng: null,
+                    deliveryAddressId: selectedAddr.id,
+                    deliveryZipCode: selectedAddr.zip,
+                    deliveryCity: selectedAddr.city,
+                    newDeliveryAddressName: selectedAddr.label,
                     saveNewDeliveryAddress: false
                 }));
                 geocodeAddress(selectedAddr.address);
@@ -178,9 +178,11 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                     <InputField label="Nom et Prénom" value={formData.fullName} onChange={e => setFormData(p => ({ ...p, fullName: e.target.value }))} required />
                     <InputField label="Email" type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} required />
                     <div className="md:col-span-2">
-                        <PhoneInputField
+                        <InputField
+                            label="Téléphone"
                             value={formData.phone}
-                            onChange={value => setFormData(p => ({ ...p, phone: value }))}
+                            onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
+                            required
                         />
                     </div>
                 </div>
@@ -192,7 +194,9 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 {!isNewBillingAddress ? (
                     <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'billing')}>
                         {clientData.billingAddresses.map((addr, i) => (
-                            <option key={`bill-${i}`} value={addr.address}>📄 {addr.label} - {addr.address}</option>
+                            <option key={`bill-${i}`} value={addr.address}>
+                                📄 {addr.label} | {addr.address}
+                            </option>
                         ))}
                         <option value="new">📍 + Ajouter une nouvelle adresse</option>
                     </select>
@@ -225,8 +229,9 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 {!isNewDeliveryAddress ? (
                     <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'delivery')}>
                         {clientData.deliveryAddresses.map((addr, i) => (
-                            <option key={`del-${i}`} value={addr.address}>🚚 {addr.label} - {addr.address}</option>
-                        ))}
+                            <option key={`del-${i}`} value={addr.address}>
+                                🚚 {addr.label} | {addr.address}
+                            </option>))}
                         <option value="new">📍 + Ajouter un nouveau lieu</option>
                     </select>
                 ) : (

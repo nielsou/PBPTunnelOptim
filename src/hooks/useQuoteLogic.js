@@ -4,19 +4,21 @@ import { useState, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import {
-    COUNTRIES, TVA_RATE, PARIS_LAT, PARIS_LNG, AXONAUT_FIXED_DEFAULTS,
-    ECO_MODELS_PRICING, DELIVERY_BASE_ECO_HT, DELIVERY_BASE_ILLIMITE_HT,
-    BASE_PRICE_PRO_HT, PLANCHER_PRICE_PRO_HT_USER_FIX,
-    PRO_DELIVERY_BASE_HT, PRO_ANIMATION_HOUR_PRICE_HT,
-    P360_EXTRA_ANIMATION_HOUR_PRICE_HT,
-    PRO_IMPRESSION_BASE_HT, PRO_IMPRESSION_PLANCHER_HT, PRO_OPTION_FONDIA_HT,
-    PRO_OPTION_RGPD_HT, TEMPLATE_TOOL_PRO_PRICE_HT, P360_BASE_PRICE_HT,
-    P360_DELIVERY_PRICE_HT, P360_FLOOR_PRICE_HT, COMPANY_SPECIFIC_PRICING,
+    TVA_RATE,
+    PARIS_LAT, PARIS_LNG,
+    AXONAUT_FIXED_DEFAULTS,
+    PRICING_STRATEGY, COMPANY_SPECIFIC_PRICING,
+    OPTION_IMPRESSION_BASE_HT,
+    OPTION_FONDIA_HT,
+    OPTION_RGPD_HT,
+    TEMPLATE_TOOL_PRO_PRICE_HT,
     ENABLE_ZAPIER_STEP_1, ENABLE_ZAPIER_STEP_2, ENABLE_ZAPIER_STEP_3, ENABLE_ZAPIER_STEP_4
 } from '../constants';
 
 // Fonction utilitaire pour la distance
-function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+function calculateHaversineDistance(lat2, lon2) {
+    const lat1 = PARIS_LAT;
+    const lon1 = PARIS_LNG;
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
@@ -37,21 +39,38 @@ export const useQuoteLogic = () => {
 
     // État initial du formulaire
     const initialFormState = {
-        fullName: '', email: '', phone: '', isPro: false, companyName: '',
+        fullName: '',
+        email: '',
+        phone: '',
+        isPro: false,
+        companyName: '',
 
         // Facturation
-        billingFullAddress: '', billingLat: null, billingLng: null, billingZipCode: '', billingCity: '',
+        billingFullAddress: '',
+        billingLat: null,
+        billingLng: null,
+        billingZipCode: '',
+        billingCity: '',
 
         // Livraison / Événement
-        deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, deliveryZipCode: '', deliveryCity: '',
+        deliveryFullAddress: '',
+        deliveryLat: null,
+        deliveryLng: null,
+        deliveryZipCode: '',
+        deliveryCity: '',
         deliverySameAsBilling: true,
-        eventDate: '', eventDuration: 1,
+        eventDate: '',
+        eventDuration: 1,
 
         // Le modèle pilote tout désormais
         model: '',
-
         proAnimationHours: 'none',
-        proFondIA: false, proRGPD: false, delivery: true, proImpressions: 1, templateTool: false,
+        proFondIA: false,
+        proRGPD: false,
+        delivery: true,
+        proImpressions: 1,
+        templateTool: false,
+        optionSpeaker360: false,
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -59,268 +78,246 @@ export const useQuoteLogic = () => {
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
 
-        // --- 0. DÉTECTION DU TYPE D'OFFRE ---
-        const isSignature = formData.model === 'Signature';
-        const is360 = formData.model === '360';
-        const isEco = !isSignature && !is360 && formData.model !== ''; // Inclut Numérique, 150, 300 ET Illimité (Starbooth)
-
-        // --- 1. RÉCUPÉRATION DES TARIFS NÉGOCIÉS ---
-        const cid = formData.companyId?.toString();
-        const deals = COMPANY_SPECIFIC_PRICING[cid] || {};
-
-        // Définition des variables de prix (Négocié ou Défaut)
-        const currentSignaturePrice = deals.priceSignature ?? BASE_PRICE_PRO_HT;
-        const currentIllimitePrice = deals.priceIllimite ?? ECO_MODELS_PRICING.illimite.priceHT;
-        const currentTemplatePrice = deals.freeTemplate ? 0 : TEMPLATE_TOOL_PRO_PRICE_HT;
-
-        // 2. Distance
-        const distanceKm = (formData.deliveryLat && formData.deliveryLng)
-            ? calculateHaversineDistance(PARIS_LAT, PARIS_LNG, formData.deliveryLat, formData.deliveryLng)
-            : 0;
-        const supplementKm = distanceKm > 50 ? Math.round(distanceKm - 50) : 0;
-
-        // 3. Initialisation
+        // 1. PRIX EN HT OU EN TTC
         const displayTTC = !formData.isPro;
         const priceTransformer = (priceHT) => (displayTTC ? (priceHT * TVA_RATE) : priceHT);
         const suffix = displayTTC ? '€ TTC' : '€ HT';
 
-        let dailyServicesHT = 0;
-        let oneTimeCostsHT = 0;
+        // 2. Récupération des deals du partenaire (s'il y en a)
+        const partnerId = formData.companyId?.toString();
+        const partnerDeals = COMPANY_SPECIFIC_PRICING[partnerId] || {};
+
+        // 3. Petite fonction pour vérifier si un prix est écrasé
+        const getEffectivePrice = (key, defaultPrice) => {
+            const deal = partnerDeals[key];
+            if (deal === undefined) return defaultPrice;      // Pas d'override
+            if (typeof deal === 'number') return deal;        // Override simple (ex: 430)
+            if (deal && deal.priceHT !== undefined) return deal.priceHT; // Override Objet (ex: { priceHT: 440 })
+            return defaultPrice;
+        };
+
+        // 4. Définition des variables (avec override automatique)
+        const priceHT_num = getEffectivePrice('numerique', PRICING_STRATEGY['numerique'].priceHT);
+        const priceHT_150 = getEffectivePrice('150', PRICING_STRATEGY['150'].priceHT);
+        const priceHT_300 = getEffectivePrice('300', PRICING_STRATEGY['300'].priceHT);
+        const priceHT_pro = getEffectivePrice('illimite', PRICING_STRATEGY['illimite'].priceHT);
+        const priceHT_sign = getEffectivePrice('Signature', PRICING_STRATEGY['Signature'].priceHT);
+        const priceHT_360 = getEffectivePrice('360', PRICING_STRATEGY['360'].priceHT);
+        const priceHT_music360 = getEffectivePrice('360', PRICING_STRATEGY['360'].speaker);
+        let price_template = getEffectivePrice('template', TEMPLATE_TOOL_PRO_PRICE_HT);
+
+        // 🛡️ GROS TEST EN UNE LIGNE : Si pas de modèle, on renvoie l'objet par défaut pour ne pas planter l'UI
+        if (!formData.model) return {
+            totalHT: 0, details: [], displayTTC: displayTTC, priceSuffix: displayTTC ? 'TTC' : 'HT', axonautData: {},
+            unitaryPrices: {
+                'numerique': priceHT_num,
+                '150': priceHT_150,
+                '300': priceHT_300,
+                'illimite': priceHT_pro,
+                'Signature': priceHT_sign,
+                '360': priceHT_360,
+            },
+        };
+
+
+        // --- 0. DÉTECTION DU TYPE D'OFFRE ---
+        const isSignature = formData.model === 'Signature';
+        const is360 = formData.model === '360';
+
+        // Définition des variables de prix (Négocié ou Défaut)
+        //TODO: à refaire
+
+        // 2. Distance
+        const distanceKm = (formData.deliveryLat && formData.deliveryLng)
+            ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
+            : 0;
+        const supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
+
         let details = [];
-        let nomBorne = '';
-        let baseDayPriceHT = 0;
-        let prixLivraisonHT = 0;
-        let supplementImpressionHT = 0;
-        let supplementAnimationHT = 0;
-        let prixTemplateHT = 0;
+        const NbJours = formData.eventDuration;
+        const modelData = PRICING_STRATEGY[formData.model];
+        const nomBorne = modelData.name;
+        let price_prestation = (modelData.priceHT - modelData.floorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + modelData.floorPriceHT * NbJours;
+        let price_livraison = modelData.delivery;
+        price_template = formData.isPro ? price_template : 0;
+        let price_optionImpression = OPTION_IMPRESSION_BASE_HT * (formData.proImpressions - 1) * NbJours;
+        let price_optionIA = formData.proFondIA ? OPTION_FONDIA_HT : 0;
+        let price_optionRGPD = formData.proRGPD ? OPTION_RGPD_HT : 0;
+        let price_optionSpeaker = (is360 && formData.optionSpeaker) ? modelData.speaker : 0;
+        let heuresAnimPayantes = is360 ? parseInt(formData.proAnimationHours) - 3 : parseInt(formData.proAnimationHours);
+        let price_optionAnim = modelData.animation_hour * heuresAnimPayantes;
+        let totalHT = 0;
 
-        const duration = formData.eventDuration;
-        const NbJours = duration;
 
-        // --- LOGIQUE PRIX ECO (Inclut STARBOOTH PRO) ---
-        if (isEco) {
-            if (formData.model) {
-                const modelData = ECO_MODELS_PRICING[formData.model];
-                nomBorne = modelData ? modelData.name : 'Modèle Eco';
+        {
+            // PRESTATION PHOTOBOOTH OU VIDEOBOOTH
+            details.push({
+                label: 'Prestation: ' + nomBorne,
+                priceHT: price_prestation,
+                daily: true,
+                displayPrice: `${priceTransformer(price_prestation).toFixed(0)}${suffix}`
+            });
+            totalHT += price_prestation;
 
-                let basePriceHT_Model = modelData ? modelData.priceHT : 0;
-                if (formData.model === 'illimite') {
-                    basePriceHT_Model = currentIllimitePrice;
-                }
+            // TEMPLATETOOL
+            if (formData.templateTool) {
 
-                baseDayPriceHT += basePriceHT_Model;
-                dailyServicesHT += basePriceHT_Model;
+                let templateDisplay = (price_template > 0)
+                    ? `${priceTransformer(price_template).toFixed(0)}${suffix}`
+                    : 'Offert';
 
-                const baseDeliveryPriceHT = formData.model === 'illimite' ? DELIVERY_BASE_ILLIMITE_HT : DELIVERY_BASE_ECO_HT;
-
-                if (formData.delivery === true) {
-                    prixLivraisonHT = baseDeliveryPriceHT;
-                    oneTimeCostsHT += prixLivraisonHT;
-                    if (modelData) {
-                        details.push({
-                            label: modelData.name,
-                            priceHT: basePriceHT_Model,
-                            daily: true,
-                            displayPrice: `${priceTransformer(basePriceHT_Model).toFixed(0)}${suffix}`
-                        });
-                    }
-                } else {
-                    // Retrait
-                    prixLivraisonHT = 0;
-                    if (modelData) {
-                        details.push({
-                            label: modelData.name,
-                            priceHT: basePriceHT_Model,
-                            daily: true,
-                            displayPrice: `${priceTransformer(basePriceHT_Model).toFixed(0)}${suffix}`
-                        });
-                    }
-                    details.push({ label: 'Retrait (Arcueil)', priceHT: 0, daily: false, displayPrice: 'Gratuit' });
-                }
-
-                // --- OPTIONS PREMIUM POUR STARBOOTH PRO ('illimite') ---
-                if (formData.model === 'illimite') {
-                    // 1. Animation (Si livraison sélectionnée ou forcée)
-                    // Note : Pas de réduction de livraison ici ("C'est toujours animatrice dédiée")
-                    if (formData.delivery === true && formData.proAnimationHours !== 'none') {
-                        const animationHours = parseInt(formData.proAnimationHours);
-                        if (animationHours > 0) {
-                            supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
-                            dailyServicesHT += supplementAnimationHT;
-                            details.push({
-                                label: `Animation ${animationHours}h (Animatrice dédiée)`,
-                                priceHT: supplementAnimationHT,
-                                daily: true,
-                                displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}`
-                            });
-                        }
-                    }
-
-                    // 2. Fond IA
-                    if (formData.proFondIA) {
-                        const fondIAPriceHT = PRO_OPTION_FONDIA_HT;
-                        dailyServicesHT += fondIAPriceHT;
-                        details.push({
-                            label: 'Fond IA (personnalisé)',
-                            priceHT: fondIAPriceHT,
-                            daily: true,
-                            displayPrice: `+${priceTransformer(fondIAPriceHT).toFixed(0)}${suffix}`
-                        });
-                    }
-
-                    // 3. RGPD
-                    if (formData.proRGPD) {
-                        const rgpdPriceHT = PRO_OPTION_RGPD_HT;
-                        dailyServicesHT += rgpdPriceHT;
-                        details.push({
-                            label: 'Conformité RGPD',
-                            priceHT: rgpdPriceHT,
-                            daily: true,
-                            displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}`
-                        });
-                    }
-                }
-            }
-
-            // --- LOGIQUE PRIX PRO (Signature) ---
-        } else if (isSignature) {
-            nomBorne = 'Signature';
-            baseDayPriceHT += currentSignaturePrice;
-            dailyServicesHT += currentSignaturePrice;
-            details.push({ label: 'Signature (base journalière)', priceHT: currentSignaturePrice, daily: true, displayPrice: `${priceTransformer(currentSignaturePrice).toFixed(0)}${suffix}` });
-
-            const proDeliveryBasePriceHT = PRO_DELIVERY_BASE_HT;
-            const animationHours = parseInt(formData.proAnimationHours);
-            const isShortAnimation = animationHours > 0 && animationHours <= 3;
-            // Réduction Livraison si technicien (1-3h)
-            prixLivraisonHT = isShortAnimation ? proDeliveryBasePriceHT / 2 : proDeliveryBasePriceHT;
-            oneTimeCostsHT += prixLivraisonHT;
-            details.push({ label: 'Logistique/Installation par Technicien Certifié', priceHT: prixLivraisonHT, daily: false, displayPrice: `${priceTransformer(prixLivraisonHT).toFixed(0)}${suffix}` });
-
-            // Animation Signature
-            if (formData.proAnimationHours !== 'none') {
-                supplementAnimationHT = animationHours * PRO_ANIMATION_HOUR_PRICE_HT;
-                dailyServicesHT += supplementAnimationHT;
-                const animationDescription = isShortAnimation ? `Animation ${animationHours}h (Technicien)` : `Animation ${animationHours}h (Animatrice dédiée)`;
-                details.push({ label: animationDescription, priceHT: supplementAnimationHT, daily: true, displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}` });
-            }
-
-            // Impressions Signature
-            if (formData.proImpressions > 1) {
-                const NbPrint = formData.proImpressions;
-                const NbJoursTotalOption = NbJours * (NbPrint - 1);
-                const PrixBaseImpression = PRO_IMPRESSION_BASE_HT;
-                const PrixPlancherImpression = PRO_IMPRESSION_PLANCHER_HT;
-                supplementImpressionHT = Math.round(((PrixBaseImpression - PrixPlancherImpression) * 10 * (1 - Math.pow(0.9, NbJoursTotalOption)) + PrixPlancherImpression * NbJoursTotalOption) * 100) / 100;
-                oneTimeCostsHT += supplementImpressionHT;
-                details.push({ label: `${NbPrint} impressions par cliché (Total ${NbJours}j)`, priceHT: supplementImpressionHT, daily: false, displayPrice: `+${priceTransformer(supplementImpressionHT).toFixed(0)}${suffix}` });
-            }
-            if (formData.proFondIA) {
-                const fondIAPriceHT = PRO_OPTION_FONDIA_HT; dailyServicesHT += fondIAPriceHT; details.push({ label: 'Fond IA (personnalisé)', priceHT: fondIAPriceHT, daily: true, displayPrice: `+${priceTransformer(fondIAPriceHT).toFixed(0)}${suffix}` });
-            }
-            if (formData.proRGPD) {
-                const rgpdPriceHT = PRO_OPTION_RGPD_HT; dailyServicesHT += rgpdPriceHT; details.push({ label: 'Conformité RGPD', priceHT: rgpdPriceHT, daily: true, displayPrice: `+${priceTransformer(rgpdPriceHT).toFixed(0)}${suffix}` });
-            }
-
-            // --- LOGIQUE PRIX 360 ---
-        } else if (is360) {
-            nomBorne = 'Photobooth 360';
-            const basePriceHT = P360_BASE_PRICE_HT;
-            const deliveryPriceHT = P360_DELIVERY_PRICE_HT;
-            baseDayPriceHT = basePriceHT;
-            oneTimeCostsHT = deliveryPriceHT;
-            dailyServicesHT += basePriceHT;
-            details.push({ label: 'Photobooth 360 (base journalière)', priceHT: basePriceHT, daily: true, displayPrice: `${priceTransformer(basePriceHT).toFixed(0)}${suffix}` });
-            details.push({ label: 'Livraison 360 (incluse)', priceHT: deliveryPriceHT, daily: true, displayPrice: `+${priceTransformer(deliveryPriceHT).toFixed(0)}${suffix}` });
-
-            // Animation 360
-            let animationHours360 = 3;
-            if (formData.proAnimationHours && formData.proAnimationHours !== 'none') {
-                animationHours360 = parseInt(formData.proAnimationHours);
-            }
-
-            if (animationHours360 > 3) {
-                const extraHours = animationHours360 - 3;
-                supplementAnimationHT = extraHours * P360_EXTRA_ANIMATION_HOUR_PRICE_HT;
-                dailyServicesHT += supplementAnimationHT;
                 details.push({
-                    label: `Animation ${animationHours360}h (dont 3h incluses)`,
-                    priceHT: supplementAnimationHT,
-                    daily: true,
-                    displayPrice: `+${priceTransformer(supplementAnimationHT).toFixed(0)}${suffix}`
+                    label: 'Outil Template Professionnel',
+                    priceHT: price_template,
+                    daily: false,
+                    displayPrice: templateDisplay
+                });
+                totalHT += price_template;
+            }
+
+            // LIVRAISON
+            if (formData.delivery === true) {
+
+                const animationHours = parseInt(formData.proAnimationHours);
+                const isShortAnimation = isSignature && animationHours > 0 && animationHours <= 3;
+                price_livraison = isShortAnimation ? price_livraison / 2 : price_livraison;
+
+                details.push({
+                    label: 'Livraison, installation et reprise',
+                    priceHT: price_livraison,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(price_livraison).toFixed(0)}${suffix}`
+                });
+                totalHT += price_livraison;
+            } else {
+                details.push({
+                    label: 'Retrait (Arcueil)',
+                    priceHT: 0,
+                    daily: false,
+                    displayPrice: 'Gratuit'
                 });
             }
-        }
 
-        // Supplément Kilométrique
-        if (supplementKm > 0) {
-            oneTimeCostsHT += supplementKm;
-            details.push({ label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`, priceHT: supplementKm, daily: false, displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}` });
-        }
+            // OPTION IMPRESSION 
+            if (formData.proImpressions > 1) {
+                details.push({
+                    label: `${NbJours * (formData.proImpressions - 1)}x supplément d'impression`,
+                    priceHT: price_optionImpression,
+                    daily: true,
+                    displayPrice: `+${priceTransformer(price_optionImpression).toFixed(0)}${suffix}`
+                });
+                totalHT += price_optionImpression;
 
-        // Outil Template
-        if (formData.templateTool && (isEco || isSignature)) {
-            prixTemplateHT = formData.isPro ? currentTemplatePrice : 0;
-            oneTimeCostsHT += prixTemplateHT;
+            }
 
-            let templateDisplay = (formData.isPro && currentTemplatePrice > 0)
-                ? `${priceTransformer(prixTemplateHT).toFixed(0)}${suffix}`
-                : 'Gratuit (Offert)';
+            // OPTION ANIM
+            if (heuresAnimPayantes > 0) {
+                details.push({
+                    label: `Animation ${heuresAnimPayantes}h`,
+                    priceHT: price_optionAnim,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(price_optionAnim).toFixed(0)}${suffix}`
+                });
+                totalHT += price_optionAnim;
 
-            details.push({ label: 'Outil Template Professionnel', priceHT: prixTemplateHT, daily: false, displayPrice: templateDisplay });
-        }
+            }
 
-        // --- DÉGRESSIVITÉ ---
-        const totalServicesBeforeFormula = dailyServicesHT * duration;
-        let totalServicesHT_Degressed = 0;
+            // OPTION FOND IA
+            if (formData.proFondIA) {
+                details.push({
+                    label: 'Fond IA (personnalisé)',
+                    priceHT: price_optionIA,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(price_optionIA).toFixed(0)}${suffix}`
+                });
+                totalHT += price_optionIA;
+            }
 
-        if (isSignature) {
-            const PBaseJour_Only = currentSignaturePrice;
-            const PPlancherJour_Only = PLANCHER_PRICE_PRO_HT_USER_FIX;
-            const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, duration));
-            const basePlancherPart = PPlancherJour_Only * duration;
-            const totalBaseDegressedHT = Math.round(baseDegressivePart + basePlancherPart);
-            const dailyOptionsHT = dailyServicesHT - currentSignaturePrice;
-            totalServicesHT_Degressed = totalBaseDegressedHT + (dailyOptionsHT * duration);
+            // OPTION RGPD
+            if (formData.proRGPD) {
+                details.push({
+                    label: 'Conformité RGPD',
+                    priceHT: price_optionRGPD,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(price_optionRGPD).toFixed(0)}${suffix}`
+                });
+                totalHT += price_optionRGPD;
+            }
 
-        } else if (isEco || is360) {
-            if (duration <= 1 || dailyServicesHT === 0) {
-                totalServicesHT_Degressed = dailyServicesHT;
-            } else {
-                let PBaseJour_Only = dailyServicesHT;
-                let PPlancherJour_Only = 0;
-                if (is360) {
-                    PBaseJour_Only = P360_BASE_PRICE_HT + P360_DELIVERY_PRICE_HT;
-                    PPlancherJour_Only = P360_FLOOR_PRICE_HT;
-                } else if (formData.model && ECO_MODELS_PRICING[formData.model]) {
-                    PBaseJour_Only = ECO_MODELS_PRICING[formData.model].priceHT;
-                    PPlancherJour_Only = ECO_MODELS_PRICING[formData.model].floorPriceHT;
-                }
-                const baseDegressivePart = (PBaseJour_Only - PPlancherJour_Only) * 10 * (1 - Math.pow(0.9, NbJours));
-                const basePlancherPart = PPlancherJour_Only * NbJours;
-                totalServicesHT_Degressed = Math.round((baseDegressivePart + basePlancherPart) * 100) / 100;
+            // SUPPLEMENT KILOMETRIQUE
+            if (supplementKm > 0) {
+                supplementKm;
+                details.push({
+                    label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`,
+                    priceHT: supplementKm,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}`
+                });
+                totalHT += supplementKm;
+            }
+
+            // NOUVEAU : OPTION ENCEINTE
+            if (is360 && formData.optionSpeaker) {
+                details.push({
+                    label: 'Enceinte & Musique d\'ambiance',
+                    priceHT: price_optionSpeaker,
+                    daily: false,
+                    displayPrice: `+${priceTransformer(price_optionSpeaker).toFixed(0)}${suffix}`
+                });
+                totalHT += price_optionSpeaker;
             }
         }
 
-        const totalHT = totalServicesHT_Degressed + oneTimeCostsHT;
-
         const axonautData = {
-            nomBorne, prixMateriel: totalServicesHT_Degressed, prixTemplate: prixTemplateHT, prixLivraison: prixLivraisonHT,
-            nombreMachine: 1, supplementKilometrique: supplementKm, supplementLivraisonDifficile: 0,
-            supplementImpression: supplementImpressionHT, supplementAnimation: supplementAnimationHT,
-            nombreTirages: formData.proImpressions, heuresAnimations: parseInt(formData.proAnimationHours) || 0, distanceKm: Math.round(distanceKm),
-            livraisonIncluse: formData.delivery
+            // base material
+            nomBorne,
+            nombreMachine: 1,
+            nombreJours: NbJours,
+            prixMateriel: price_prestation,
+
+            // livraison
+            livraisonIncluse: formData.delivery,
+            nombreTirages: formData.proImpressions,
+            prixLivraison: price_livraison,
+            supplementKilometrique: supplementKm,
+            supplementLivraisonDifficile: 0,
+
+            // template
+            prixTemplate: price_template,
+
+            // impression supp
+            nombreTirages: formData.proImpressions,
+            supplementImpression: price_optionImpression,
+
+            // autres options
+            supplementAnimation: price_optionAnim,
+            optionFondIA: price_optionIA,
+            optionRGPD: price_optionRGPD,
+            optionSpeaker: price_optionSpeaker
         };
 
         return {
-            totalHT, totalServicesHT: totalServicesHT_Degressed, oneTimeCostsHT, baseDayPriceHT,
-            totalServicesBeforeFormula, details, displayTTC, priceSuffix: displayTTC ? 'TTC' : 'HT',
+            totalHT,
+            details,
+            displayTTC,
+            priceSuffix: displayTTC ? 'TTC' : 'HT',
             axonautData, quoteId,
+            // Le détail complet pour l'UI (Step 3)
             unitaryPrices: {
-                template: currentTemplatePrice,
-                signature: currentSignaturePrice,
-                illimite: currentIllimitePrice
-            }
+                'numerique': priceHT_num,
+                '150': priceHT_150,
+                '300': priceHT_300,
+                'illimite': priceHT_pro,
+                'Signature': priceHT_sign,
+                '360': priceHT_360,
+                template: price_template,
+                livraison: price_livraison,
+                //options
+                impressionSup: OPTION_IMPRESSION_BASE_HT,
+                ia: OPTION_FONDIA_HT,
+                rgpd: OPTION_RGPD_HT,
+                speaker: priceHT_music360,
+            },
         };
     }, [formData]);
 
@@ -332,13 +329,7 @@ export const useQuoteLogic = () => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(formData.email)) return false;
 
-                const selectedCountry = COUNTRIES.find(c => formData.phone.startsWith(c.code));
-                if (selectedCountry) {
-                    const digitsOnly = formData.phone.replace(selectedCountry.code, '').replace(/\D/g, '');
-                    if (digitsOnly.length !== selectedCountry.requiredDigits) return false;
-                } else {
-                    if (formData.phone.replace(/\D/g, '').length < 9) return false;
-                }
+                if (!formData.phone || formData.phone.trim().length < 9) return false;
 
                 if (formData.isPro && (!formData.companyName || !formData.billingFullAddress)) return false;
                 return true;
@@ -397,7 +388,6 @@ export const useQuoteLogic = () => {
             payload.model = formData.model;
 
             if (isEco) {
-                payload.needType = 'eco';
                 payload.delivery = toExcelBool(formData.delivery);
                 payload.templateTool = toExcelBool(formData.templateTool);
 
@@ -409,7 +399,6 @@ export const useQuoteLogic = () => {
                 }
             }
             else if (isSignature) {
-                payload.needType = 'pro';
                 payload.proAnimationHours = formData.proAnimationHours;
                 payload.proFondIA = toExcelBool(formData.proFondIA);
                 payload.proRGPD = toExcelBool(formData.proRGPD);
@@ -420,6 +409,7 @@ export const useQuoteLogic = () => {
             else if (is360) {
                 payload.needType = '360';
                 payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
+                payload.optionSpeaker = toExcelBool(formData.optionSpeaker); 
             }
 
             if (pricing) {
@@ -505,12 +495,11 @@ export const useQuoteLogic = () => {
                 ...pricing.axonautData,
                 ...AXONAUT_FIXED_DEFAULTS,
                 dateEvenement: formData.eventDate,
-                adresseLivraisonComplete: formData.deliveryFullAddress,
-                nombreJours: formData.eventDuration,
+                adresseLivraisonComplete: formData.newDeliveryAddressName
+                    ? `${formData.newDeliveryAddressName} - ${formData.deliveryFullAddress}`
+                    : formData.deliveryFullAddress, nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
                 livraisonIncluse: formData.delivery !== false,
-
-                // ✅ RÈGLE ACOMPTE
                 acomptePct: isVipPartner ? 0 : 1
             };
 

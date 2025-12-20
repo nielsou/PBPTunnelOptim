@@ -1,3 +1,5 @@
+// src/components/ui/AddressAutocomplete.jsx
+
 import React, { useEffect, useRef } from 'react';
 
 export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false }) => {
@@ -8,7 +10,6 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
     let isMounted = true;
 
     const initAutocomplete = async () => {
-      // S'assurer que la librairie est chargée
       if (!window.google || !window.google.maps || !window.google.maps.places) {
         try {
           await window.google.maps.importLibrary("places");
@@ -23,37 +24,44 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
       autoCompleteRef.current = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ["address"],
         componentRestrictions: { country: "fr" },
-        // Ajout de 'geometry' pour obtenir les coordonnées (lat/lng)
+        // On demande 'address_components' pour avoir le détail précis
         fields: ["address_components", "formatted_address", "geometry"] 
       });
 
-      // Écouter l'événement "place_changed"
       autoCompleteRef.current.addListener("place_changed", () => {
         if (!isMounted) return;
 
         const place = autoCompleteRef.current.getPlace();
-        
         if (!place.formatted_address) return;
 
         let city = '';
         let postal = '';
+        let streetNumber = '';
+        let route = '';
 
+        // 🧹 EXTRACTION INTELLIGENTE GOOGLE
         if (place.address_components) {
           place.address_components.forEach(c => {
             if (c.types.includes('locality')) city = c.long_name;
             if (c.types.includes('postal_code')) postal = c.long_name;
+            if (c.types.includes('street_number')) streetNumber = c.long_name;
+            if (c.types.includes('route')) route = c.long_name;
           });
         }
         
+        // Construction de la rue propre (Ex: "3 Rue Victor Carmignac")
+        const cleanStreet = `${streetNumber} ${route}`.trim();
+
         const lat = place.geometry ? place.geometry.location.lat() : null;
         const lng = place.geometry ? place.geometry.location.lng() : null;
 
         const result = {
-          fullAddress: place.formatted_address,
+          fullAddress: place.formatted_address, // Pour l'affichage
+          street: cleanStreet || place.formatted_address.split(',')[0], // Pour Axonaut (Rue seule)
           city: city,
           postal: postal,
-          lat: lat, // NOUVEAU
-          lng: lng  // NOUVEAU
+          lat: lat,
+          lng: lng
         };
         
         if (onAddressSelect) {
@@ -77,7 +85,6 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
       <label className='block text-sm font-semibold text-gray-800 mb-2'>
         {label} {required && <span className='text-red-500'>*</span>}
       </label>
-      
       <input
         ref={inputRef}
         type="text"

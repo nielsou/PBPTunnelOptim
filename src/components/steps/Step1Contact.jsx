@@ -3,11 +3,10 @@
 import React from 'react';
 import { User } from 'lucide-react';
 import { InputField } from '../ui/InputField';
-import { PhoneInputField } from '../ui/PhoneInputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
 export const Step1Contact = ({ formData, setFormData, customColor, currentStep, setCurrentStep }) => {
-    
+
     // Pour la facturation (si différente de la livraison)
     const handleBillingAddressSelect = (addr) => {
         setFormData(prev => ({
@@ -47,12 +46,19 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <InputField label="Email" type='email' value={formData.email} onChange={e => handleChange('email', e.target.value)} placeholder='jean@exemple.fr' required />
-                <PhoneInputField value={formData.phone} onChange={value => handleChange('phone', value)} />
+                <InputField
+                    label="Téléphone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={e => handleChange('phone', e.target.value)}
+                    placeholder="06 00 00 00 00 ou +33..."
+                    required
+                />
             </div>
 
             {/* --- BLOC ADRESSES --- */}
             <div className='bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm space-y-4'>
-                
+
                 {/* 1. Adresse de Livraison (Toujours visible) */}
                 <AddressAutocomplete
                     label="Lieu de l'événement (Livraison)"
@@ -78,7 +84,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                 {/* 3. Adresse de Facturation (Conditionnelle) */}
                 {!formData.deliverySameAsBilling && (
                     <div className='animate-in slide-in-from-top-2 pt-2'>
-                         <AddressAutocomplete
+                        <AddressAutocomplete
                             label="Adresse de facturation"
                             required
                             defaultValue={formData.billingFullAddress || ''}

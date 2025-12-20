@@ -108,7 +108,7 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         supplementKilometrique, supplementLivraisonDifficile, supplementImpression,
         supplementAnimation, commercial, dateEvenement,
         adresseLivraisonComplete, nombreJours, templateInclus, livraisonIncluse,
-        acomptePct, nombreTirages, heuresAnimations, distanceKm
+        acomptePct, nombreTirages, heuresAnimations, distanceKm, optionFondIA, optionRGPD, optionSpeaker
     } = inputs;
 
     const formatDate = (dateValue) => {
@@ -334,6 +334,45 @@ export function generateAxonautQuotationBody(inputs, companyId) {
         });
     }
 
+    // 6. OPTION FOND IA
+    if (optionFondIA > 0) {
+        productsArray.push({
+            "product_code": "P-IA",
+            "name": "[Option] Fond IA Personnalisé",
+            "price": Math.round(100 * optionFondIA) / 100,
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": 1,
+            "description": "<ul><li><p>Création de fonds sur mesure générés par Intelligence Artificielle</p></li><li><p>Intégration au logiciel de la borne</p></li></ul>",
+            "chapter": ""
+        });
+    }
+
+    // 7. OPTION RGPD
+    if (optionRGPD > 0) {
+        productsArray.push({
+            "product_code": "P-RGPD",
+            "name": "[Option] Pack Conformité & Collecte Data",
+            "price": Math.round(100 * optionRGPD) / 100,
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": 1,
+            "description": "<ul><li><p>Mise en place de l'écran de consentement (Opt-in)</p></li><li><p>Récupération sécurisée et export des emails/données des utilisateurs</p></li></ul>",
+            "chapter": ""
+        });
+    }
+
+    // 8. OPTION ENCEINTE (NOUVEAU)
+    if (optionSpeaker > 0) {
+        productsArray.push({
+            "product_code": "P-SPEAKER",
+            "name": "[Option] Enceinte Bluetooth & Musique",
+            "price": Math.round(100 * optionSpeaker) / 100,
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": 1,
+            "description": "<ul><li><p>Mise à disposition d'une enceinte puissante (type JBL PartyBox)</p></li><li><p>Playlist musicale énergisante pour l'animation 360°</p></li></ul>",
+            "chapter": ""
+        });
+    }
+
     const now = new Date();
     const expiryDate = new Date(now);
     expiryDate.setDate(now.getDate() + 14);
@@ -452,10 +491,14 @@ export const getAxonautCompanyDetails = async (companyId) => {
         let billingAddresses = [];
         let deliveryAddresses = [];
 
+        /*
         if (mainAddressFull) {
-            const mainAddressObj = { label: "Facturation", address: mainAddressFull };
-            billingAddresses.push(mainAddressObj);
+            const mainAddressObj = {
+                label: companyData.name || "Facturation", 
+                address: mainAddressFull
+            }; billingAddresses.push(mainAddressObj);
         }
+            */
 
         rawAddresses.forEach(addr => {
             const formatted = formatAddr(addr.address_street, addr.address_zip_code, addr.address_city);
@@ -463,8 +506,10 @@ export const getAxonautCompanyDetails = async (companyId) => {
 
             const addrObj = {
                 id: addr.id,
-                label: addr.name || "Adresse",
-                address: formatted
+                label: addr.name || (addr.is_for_delivery ? "Lieu" : "Adresse"),
+                address: formatted,
+                zip: addr.address_zip_code,
+                city: addr.address_city
             };
 
             if (addr.is_for_delivery === true) {
@@ -499,12 +544,6 @@ export const getAxonautCompanyDetails = async (companyId) => {
 
             let rawPhone = emp.cellphone_number || emp.phone_number || '';
             let cleanPhoneDigits = rawPhone.replace(/\D/g, '');
-
-            if (cleanPhoneDigits.startsWith('0') && cleanPhoneDigits.length === 10) {
-                cleanPhoneDigits = '+33' + cleanPhoneDigits;
-            } else if (cleanPhoneDigits.length > 0 && !cleanPhoneDigits.startsWith('+')) {
-                cleanPhoneDigits = '+' + cleanPhoneDigits;
-            }
 
             return {
                 fullName: cleanName,
@@ -612,9 +651,9 @@ export const createAxonautEmployee = async (companyId, formData) => {
         if (companyRes.ok) {
             const companyData = await companyRes.json();
             const employees = companyData.employees || [];
-            
+
             // Recherche par email (insensible à la casse)
-            const found = employees.find(e => 
+            const found = employees.find(e =>
                 e.email && e.email.toLowerCase() === formData.email.toLowerCase()
             );
 
@@ -629,7 +668,7 @@ export const createAxonautEmployee = async (companyId, formData) => {
             return await updateAxonautEmployee(existingEmployeeId, companyId, formData);
         } else {
             console.log("🔍 Contact inconnu. Création...");
-            
+
             // Logique de création standard
             const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
             const lastName = lastNameParts.join(' ') || (firstName || '');

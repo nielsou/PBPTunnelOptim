@@ -1,146 +1,179 @@
 // src/components/steps/Step4Recap.jsx
 
 import React from 'react';
-import { Check, ChevronLeft, Loader2 } from 'lucide-react'; // Ajout Loader2
+import { Check, ChevronLeft, Loader2 } from 'lucide-react';
 
-// ... (Garder les helpers formatPrice, DetailLinePrice, DetailLineTVA, getAddressSummary inchangés) ...
-const formatPrice = (price) => new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-}).format(price);
-
-const DetailLinePrice = ({ label, priceHT, isTotal = false, isTTCDisplay = false }) => {
-    const TVA_RATE_LOCAL = 1.20; 
-    let priceToDisplay = priceHT;
-    if (isTTCDisplay && !isTotal) { 
-        priceToDisplay = priceHT * TVA_RATE_LOCAL;
-    }
-    const finalPriceToDisplay = isTotal ? priceHT : priceToDisplay; 
-    return (
-        <div className={`flex justify-between items-center py-2 ${isTotal ? 'border-t-2 border-dashed border-gray-400 font-bold text-lg pt-4' : 'border-b border-gray-100'}`}>
-            <span className={isTotal ? 'text-gray-900' : 'text-gray-600'}>{label}</span>
-            <span className={isTotal ? 'text-gray-900' : 'text-gray-800'}>
-                {formatPrice(finalPriceToDisplay)}
-            </span>
-        </div>
-    );
+// Fonction utilitaire pour formater les totaux calculés (TVA, Total final)
+const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+    }).format(amount);
 };
 
-const DetailLineTVA = ({ label, totalHT }) => {
-    const TVA_RATE_LOCAL = 1.20; 
-    const tvaAmount = totalHT * (TVA_RATE_LOCAL - 1);
-    return (
-        <div className={`flex justify-between items-center py-2 border-b border-gray-100`}>
-            <span className={'text-gray-600'}>{label}</span>
-            <span className={'text-gray-800'}>{formatPrice(tvaAmount)}</span>
-        </div>
-    );
-};
-
+// Helper pour afficher proprement l'adresse
 const getAddressSummary = (fullAddressString) => {
-    if (!fullAddressString || typeof fullAddressString !== 'string') return "Adresse non spécifiée."; 
+    if (!fullAddressString || typeof fullAddressString !== 'string') return "Adresse non spécifiée.";
     return fullAddressString;
 };
 
-// AJOUT prop : isSubmitting
 export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, handleEditRequest, showMessage, isSubmitting }) => {
-    
-    // ... (Le début du composant reste identique pour les calculs) ...
-    if (!pricingData || typeof pricingData.totalHT === 'undefined' || !pricingData.axonautData) {
-        return <div className='text-center py-10 text-gray-500'>Calcul des prix en cours...</div>;
+
+    // Sécurité : Si les données de prix ne sont pas encore prêtes
+    if (!pricingData || typeof pricingData.totalHT === 'undefined' || !pricingData.details) {
+        return (
+            <div className='flex flex-col items-center justify-center py-12 space-y-4'>
+                <Loader2 className='w-8 h-8 animate-spin text-gray-400' />
+                <span className='text-gray-500 font-medium'>Calcul du devis en cours...</span>
+            </div>
+        );
     }
-    const TVA_RATE_LOCAL = 1.20; 
-    const totalHT = pricingData.totalHT;
-    const totalTTC = totalHT * TVA_RATE_LOCAL;
-    const priceSuffix = pricingData.priceSuffix;
-    const isTTCDisplay = pricingData.displayTTC;
-    
-    const { 
-        nomBorne, prixMateriel: prixMaterielHT, prixTemplate: prixTemplateHT, 
-        prixLivraison: prixLivraisonHT, supplementKilometrique: supplementKilometriqueHT, 
-        supplementLivraisonDifficile: supplementLivraisonDifficileHT, supplementImpression: supplementImpressionHT, 
-        supplementAnimation: supplementAnimationHT, distanceKm, nombreTirages, heuresAnimations
-    } = pricingData.axonautData;
 
-    // ... (Garder renderSupplements inchangé) ...
-    const renderSupplements = () => {
-        const supplements = [];
-        const totalSupplementsHT = supplementKilometriqueHT + supplementLivraisonDifficileHT + supplementImpressionHT + supplementAnimationHT;
+    const { details, totalHT, displayTTC, priceSuffix } = pricingData;
+    const TVA_RATE = 1.20; // 20%
 
-        if (supplementKilometriqueHT > 0) supplements.push(<DetailLinePrice key="kilo" label={`Supplément kilométrage (${Math.round(distanceKm)} km)`} priceHT={supplementKilometriqueHT} isTTCDisplay={isTTCDisplay} />);
-        if (supplementLivraisonDifficileHT > 0) supplements.push(<DetailLinePrice key="diff" label="Supplément livraison (accès difficile)" priceHT={supplementLivraisonDifficileHT} isTTCDisplay={isTTCDisplay} />);
-        if (supplementImpressionHT > 0) supplements.push(<DetailLinePrice key="imp" label={`Supplément impressions (${nombreTirages} ex.)`} priceHT={supplementImpressionHT} isTTCDisplay={isTTCDisplay} />);
-        if (supplementAnimationHT > 0) supplements.push(<DetailLinePrice key="anim" label={`Supplément animation (${heuresAnimations}h)`} priceHT={supplementAnimationHT} isTTCDisplay={isTTCDisplay} />);
-        if(!isTTCDisplay && totalSupplementsHT > 0) supplements.push(<div key="totalSuppHT" className="flex justify-between text-sm font-bold pt-2 border-t border-dashed mt-2 text-gray-700"><span>Total Coûts Uniques HT</span><span>{formatPrice(totalSupplementsHT)}</span></div>);
-        return supplements;
-    };
+    // Calculs des totaux finaux
+    const finalTotalTTC = totalHT * TVA_RATE;
+    const tvaAmount = finalTotalTTC - totalHT;
 
     return (
-        <div className="space-y-8">
-            <h2 className="text-3xl font-bold text-gray-900" style={{ color: customColor }}>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h2 className="text-3xl font-extrabold text-gray-900 border-b pb-4" style={{ color: customColor, borderColor: customColor }}>
                 4. Récapitulatif et Validation
             </h2>
 
-            <p className='text-lg text-gray-700'>
-                Veuillez vérifier les informations ci-dessous avant de générer votre devis.
+            <p className='text-lg text-gray-600'>
+                Veuillez vérifier l'exactitude des informations ci-dessous avant de valider votre demande.
             </p>
 
-            {/* ... (La grid des détails reste identique) ... */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
-                <div className='bg-gray-50 p-6 rounded-xl shadow-inner'>
-                    <h3 className='text-xl font-semibold mb-4 text-gray-900'>Vos informations</h3>
-                    <div className='space-y-3 text-gray-700 text-sm'>
-                        <p><strong>Nom et Prénom:</strong> {formData.fullName}</p>
-                        <p><strong>Email:</strong> {formData.email}</p>
-                        <p><strong>Téléphone:</strong> {formData.phone}</p>
-                        {formData.isPro && (<><p><strong>Nom de l'entreprise:</strong> {formData.companyName || 'Non spécifié'}</p><p><strong>Adresse de facturation:</strong> {getAddressSummary(formData.billingFullAddress)}</p></>)}
-                        <p className='pt-2 border-t border-gray-200'><strong>Adresse de l'événement:</strong> {getAddressSummary(formData.deliveryFullAddress)}</p>
-                        <p><strong>Date de l'événement:</strong> {new Date(formData.eventDate).toLocaleDateString('fr-FR')}</p>
-                        <p><strong>Durée (Jours):</strong> {formData.eventDuration} jours</p>
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+                
+                {/* BLOC 1 : INFORMATIONS CLIENT */}
+                <div className='bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm'>
+                    <h3 className='text-xl font-bold mb-6 text-gray-900 flex items-center'>
+                        Vos coordonnées
+                    </h3>
+                    <div className='space-y-4 text-gray-700 text-sm'>
+                        <div className='flex justify-between border-b border-gray-200 pb-2'>
+                            <span className='font-semibold'>Contact</span>
+                            <span>{formData.fullName}</span>
+                        </div>
+                        <div className='flex justify-between border-b border-gray-200 pb-2'>
+                            <span className='font-semibold'>Email</span>
+                            <span>{formData.email}</span>
+                        </div>
+                        <div className='flex justify-between border-b border-gray-200 pb-2'>
+                            <span className='font-semibold'>Téléphone</span>
+                            <span>{formData.phone}</span>
+                        </div>
+                        
+                        {formData.isPro && (
+                            <>
+                                <div className='flex justify-between border-b border-gray-200 pb-2'>
+                                    <span className='font-semibold'>Société</span>
+                                    <span>{formData.companyName || 'Non spécifié'}</span>
+                                </div>
+                                <div className='border-b border-gray-200 pb-2'>
+                                    <p className='font-semibold mb-1'>Adresse de facturation</p>
+                                    <p className='text-right text-gray-600'>{getAddressSummary(formData.billingFullAddress)}</p>
+                                </div>
+                            </>
+                        )}
+
+                        <div className='pt-2'>
+                            <p className='font-semibold mb-1'>Lieu de l'événement</p>
+                            <p className='text-right text-gray-600'>{getAddressSummary(formData.deliveryFullAddress)}</p>
+                        </div>
+                        <div className='flex justify-between pt-2'>
+                            <span className='font-semibold'>Date & Durée</span>
+                            <span>{new Date(formData.eventDate).toLocaleDateString('fr-FR')} ({formData.eventDuration} jours)</span>
+                        </div>
                     </div>
                 </div>
 
-                <div className='bg-white p-6 rounded-xl shadow-lg border border-gray-100'>
-                    <h3 className='text-xl font-semibold mb-4 text-gray-900'>Détails du Devis ({priceSuffix})</h3>
-                    <div className='divide-y divide-gray-100'>
-                        <DetailLinePrice label={`Location : ${nomBorne}`} priceHT={prixMaterielHT} isTTCDisplay={isTTCDisplay} />
-                        <DetailLinePrice label="Template Photo" priceHT={prixTemplateHT} isTTCDisplay={isTTCDisplay} />
-                        <DetailLinePrice label="Logistique & Frais de base" priceHT={prixLivraisonHT} isTTCDisplay={isTTCDisplay} />
-                        {renderSupplements()}
-                        {!isTTCDisplay && <DetailLineTVA label="TVA (20%)" totalHT={totalHT} />}
-                        <div className="text-right text-sm text-gray-500 mt-1 pt-3 border-t border-dashed">Total HT: {formatPrice(totalHT)}</div>
-                        <DetailLinePrice label={`Total ${priceSuffix} (Acompte 100% encaissé)`} priceHT={totalTTC} isTotal={true} />
+                {/* BLOC 2 : DÉTAILS DU PRIX (DYNAMIQUE) */}
+                <div className='bg-white p-8 rounded-2xl shadow-xl border border-gray-100 flex flex-col justify-between'>
+                    <div>
+                        <h3 className='text-xl font-bold mb-6 text-gray-900'>
+                            Détails du Devis <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
+                        </h3>
+                        
+                        {/* Liste dynamique basée sur 'details' provenant du hook */}
+                        <div className='space-y-4 mb-6'>
+                            {details.map((item, index) => (
+                                <div key={index} className='flex justify-between items-center text-sm border-b border-gray-50 pb-3 last:border-0'>
+                                    <span className='text-gray-700 font-medium'>{item.label}</span>
+                                    {/* On utilise displayPrice comme demandé */}
+                                    <span className='text-gray-900 font-bold whitespace-nowrap'>{item.displayPrice}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Section Totaux */}
+                    <div className='bg-gray-50 -mx-8 -mb-8 p-8 rounded-b-2xl border-t border-gray-100'>
+                        {/* Affichage PRO (HT + TVA + TTC) */}
+                        {!displayTTC ? (
+                            <div className='space-y-2'>
+                                <div className='flex justify-between items-center text-gray-600'>
+                                    <span>Total HT</span>
+                                    <span className='font-semibold'>{formatCurrency(totalHT)}</span>
+                                </div>
+                                <div className='flex justify-between items-center text-gray-600'>
+                                    <span>TVA (20%)</span>
+                                    <span className='font-semibold'>{formatCurrency(tvaAmount)}</span>
+                                </div>
+                                <div className='flex justify-between items-center text-xl font-extrabold text-gray-900 pt-3 border-t border-gray-200 mt-2'>
+                                    <span>Total TTC</span>
+                                    <span>{formatCurrency(finalTotalTTC)}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            /* Affichage PARTICULIER (Total TTC direct) */
+                            <div className='flex justify-between items-center text-xl font-extrabold text-gray-900'>
+                                <span>Total TTC</span>
+                                <span>{formatCurrency(finalTotalTTC)}</span>
+                            </div>
+                        )}
+                        
+                        <p className='text-xs text-center text-gray-400 mt-4 italic'>
+                            Acompte de 100% demandé à la commande
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div className='flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4 mt-6'>
+            {/* BOUTONS D'ACTION */}
+            <div className='flex flex-col md:flex-row justify-between items-center gap-4 mt-8'>
                 <button
                     onClick={handleEditRequest}
-                    disabled={isSubmitting} // Désactivé pendant l'envoi
-                    className={`w-full md:w-auto px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold text-gray-800 hover:bg-gray-100 transition-colors flex items-center space-x-2 shadow-sm justify-center ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isSubmitting}
+                    className={`w-full md:w-auto px-6 py-4 border-2 border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center space-x-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                     <ChevronLeft className='w-5 h-5' />
-                    <span>Modifier les informations</span>
+                    <span>Modifier</span>
                 </button>
 
-                {/* MODIFICATION : Bouton avec état de chargement */}
                 <button
-                    onClick={() => handleSubmit(showMessage)} 
+                    onClick={() => handleSubmit(showMessage)}
                     disabled={isSubmitting}
-                    className={`w-full md:w-auto bg-green-600 text-white py-4 px-6 rounded-xl font-bold text-xl shadow-xl transition-all duration-200 flex items-center justify-center space-x-3 
-                    ${isSubmitting ? 'opacity-80 cursor-wait' : 'hover:bg-green-700 hover:scale-[1.01]'}`}
+                    className={`w-full md:w-auto px-8 py-4 rounded-xl font-bold text-white text-lg shadow-lg transition-all transform flex items-center justify-center space-x-3 
+                    ${isSubmitting 
+                        ? 'bg-gray-400 cursor-wait' 
+                        : 'bg-green-600 hover:bg-green-700 hover:scale-[1.02] hover:shadow-xl'
+                    }`}
+                    style={!isSubmitting ? { backgroundColor: customColor } : {}}
                 >
                     {isSubmitting ? (
                         <>
                             <Loader2 className='w-6 h-6 animate-spin' />
-                            <span>Génération du devis en cours...</span>
+                            <span>Finalisation...</span>
                         </>
                     ) : (
                         <>
                             <Check className='w-6 h-6' />
-                            <span>Confirmer et recevoir le devis par email</span>
+                            <span>Valider et recevoir mon devis</span>
                         </>
                     )}
                 </button>
