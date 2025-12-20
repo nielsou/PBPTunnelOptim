@@ -290,6 +290,7 @@ export const useQuoteLogic = () => {
             supplementImpression: price_optionImpression,
 
             // autres options
+            heuresAnimations: heuresAnimPayantes,
             supplementAnimation: price_optionAnim,
             optionFondIA: price_optionIA,
             optionRGPD: price_optionRGPD,
