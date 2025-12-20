@@ -326,13 +326,24 @@ export const useQuoteLogic = () => {
     const isStepValid = () => {
         switch (currentStep) {
             case 1:
+                // Champs obligatoires pour tous (Particuliers et Pros)
                 if (!formData.fullName || !formData.email || !formData.phone || !formData.deliveryFullAddress) return false;
+
+                // Validation Email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(formData.email)) return false;
 
+                // Validation Téléphone
                 if (!formData.phone || formData.phone.trim().length < 9) return false;
 
-                if (formData.isPro && (!formData.companyName || !formData.billingFullAddress)) return false;
+                // Validation spécifique PRO
+                if (formData.isPro) {
+                    // Nom de société obligatoire
+                    if (!formData.companyName) return false;
+
+                    // Si facturation différente de livraison, l'adresse de facturation est requise
+                    if (!formData.deliverySameAsBilling && !formData.billingFullAddress) return false;
+                }
                 return true;
 
             case 2:
@@ -410,7 +421,7 @@ export const useQuoteLogic = () => {
             else if (is360) {
                 payload.needType = '360';
                 payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
-                payload.optionSpeaker = toExcelBool(formData.optionSpeaker); 
+                payload.optionSpeaker = toExcelBool(formData.optionSpeaker);
             }
 
             if (pricing) {
