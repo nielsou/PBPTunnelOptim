@@ -9,7 +9,7 @@ import { getAxonautCompanyDetails } from '../../services/axonautService';
 export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
     const [clientNumber, setClientNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [clientData, setClientData] = useState(null);
+    const [clientData, setClientData] = useState(formData.savedClientData || null);
     const [error, setError] = useState('');
     const [selectedContactIndex, setSelectedContactIndex] = useState(0);
     const [isNewBillingAddress, setIsNewBillingAddress] = useState(false);
@@ -52,6 +52,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
 
                 setFormData(prev => ({
                     ...prev,
+                    savedClientData: data,
                     isPro: !data.isB2C,
                     companyId: data.companyId,
                     companyName: data.name,
