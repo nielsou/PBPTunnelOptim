@@ -612,8 +612,8 @@ export const updateAxonautEmployee = async (employeeId, companyId, formData) => 
         firstname: firstName,
         lastname: lastName,
         email: formData.email,
-        cellphone_number: formData.phone, // Numéro envoyé tel quel, comme demandé
-        job: "Contact Photobooth (Mis à jour)"
+        cellphone_number: formData.phone, 
+        // job: "Contact Photobooth (Mis à jour)"
     };
 
     try {
@@ -679,7 +679,7 @@ export const createAxonautEmployee = async (companyId, formData) => {
                 lastname: lastName,
                 email: formData.email,
                 cellphone_number: formData.phone,
-                job: "Contact Photobooth"
+                // job: "Contact Photobooth"
             };
 
             const res = await fetch('/api/create-employee', {
