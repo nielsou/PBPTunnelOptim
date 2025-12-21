@@ -465,82 +465,51 @@ export const useQuoteLogic = () => {
         try {
             let companyId = formData.companyId;
             let billingAddressId = formData.billingAddressId;
-            let justCreatedThirdParty = false; // 🚩 FLAG pour éviter les doublons d'adresse
 
             // 1. GESTION DU TIERS
             if (!companyId) {
                 console.log("Création du tiers...");
-                // Note : createAxonautThirdParty crée le Tiers AVEC l'adresse principale (Facturation ou Livraison selon le cas)
                 const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData);
                 companyId = newId;
-                justCreatedThirdParty = true; // ✅ On marque qu'on vient de le créer
             }
 
-            // 2. LOGIQUE D'UPDATE CONTACT
+            // 2. LOGIQUE D'UPDATE 
             try {
                 await AxonautService.createAxonautEmployee(companyId, formData);
             } catch (err) {
                 console.warn("Contact déjà existant.");
             }
 
-            // 3. GESTION DES ADRESSES (CORRIGÉE)
-            if (formData.deliverySameAsBilling) {
-                // CAS A : ADRESSE IDENTIQUE
+            if (formData.saveNewBillingAddress) {
+                const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
+                    name: formData.newBillingAddressName || "Facturation",
+                    fullAddress: formData.billingFullAddress,
+                    zip: formData.billingZipCode,
+                    city: formData.billingCity
+                }, 'billing');
+                if (newBillAddr?.id) billingAddressId = newBillAddr.id;
+            }
 
-                // Si le tiers vient d'être créé, l'adresse est DÉJÀ dedans (via createThirdParty). 
-                // On ne la recrée pas pour éviter le doublon.
-                if (!justCreatedThirdParty && formData.saveNewDeliveryAddress) {
-                    const newAddr = await AxonautService.createAxonautAddress(companyId, {
-                        name: formData.newDeliveryAddressName || "Siège & Livraison",
-                        fullAddress: formData.deliveryFullAddress,
-                        zip: formData.deliveryZipCode,
-                        city: formData.deliveryCity
-                    }, 'both');
-
-                    if (newAddr?.id) billingAddressId = newAddr.id;
-                }
-
-            } else {
-                // CAS B : ADRESSES DISTINCTES
-
-                // B1. Facturation
-                // Si le tiers vient d'être créé, son adresse par défaut EST l'adresse de facturation.
-                // On ne crée une nouvelle adresse de facturation QUE si c'est un tiers existant.
-                if (!justCreatedThirdParty && formData.saveNewBillingAddress) {
-                    const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
-                        name: formData.newBillingAddressName || "Facturation",
-                        fullAddress: formData.billingFullAddress,
-                        zip: formData.billingZipCode,
-                        city: formData.billingCity
-                    }, 'billing');
-                    if (newBillAddr?.id) billingAddressId = newBillAddr.id;
-                }
-
-                // B2. Livraison
-                // Ici, c'est différent : comme l'adresse est DISTINCTE de la facturation, 
-                // il faut TOUJOURS la créer (même pour un nouveau tiers), car createThirdParty n'a créé que la facturation.
-                if (formData.saveNewDeliveryAddress) {
-                    await AxonautService.createAxonautAddress(companyId, {
-                        name: formData.newDeliveryAddressName || "Lieu Événement",
-                        fullAddress: formData.deliveryFullAddress,
-                        zip: formData.deliveryZipCode,
-                        city: formData.deliveryCity
-                    }, 'delivery');
-                }
+            if (formData.saveNewDeliveryAddress) {
+                await AxonautService.createAxonautAddress(companyId, {
+                    name: formData.newDeliveryAddressName || "Lieu Événement",
+                    fullAddress: formData.deliveryFullAddress,
+                    zip: formData.deliveryZipCode,
+                    city: formData.deliveryCity
+                }, 'delivery');
             }
 
             // 🔍 PARTENAIRE VIP
             const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(companyId?.toString());
 
-            // 4. CRÉATION DU DEVIS
+            // 3. CRÉATION DU DEVIS
             const inputsForAxonaut = {
                 ...pricing.axonautData,
                 ...AXONAUT_FIXED_DEFAULTS,
                 dateEvenement: formData.eventDate,
                 adresseLivraisonComplete: formData.newDeliveryAddressName
                     ? `${formData.newDeliveryAddressName} - ${formData.deliveryFullAddress}`
-                    : formData.deliveryFullAddress,
-                nombreJours: formData.eventDuration,
+                    : formData.deliveryFullAddress, nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
                 livraisonIncluse: formData.delivery !== false,
                 acomptePct: isVipPartner ? 0 : 1
@@ -557,7 +526,7 @@ export const useQuoteLogic = () => {
                 triggerWebhook(4, true, pricing, quoteResponse.number);
             }
 
-            // 5. FINALISATION
+            // 4. FINALISATION
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
 

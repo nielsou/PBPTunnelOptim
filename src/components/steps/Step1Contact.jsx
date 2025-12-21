@@ -151,7 +151,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                         
                         {/* AJOUT : Champ Nom de l'adresse (Toujours visible si le bloc est ouvert) */}
                         <InputField
-                            label="Nom de cette adresse"
+                            label="Nom de l'adresse de facturation"
                             placeholder="ex: Bureau, Siège..."
                             value={formData.newBillingAddressName || ''}
                             onChange={e => handleChange('newBillingAddressName', e.target.value)}
