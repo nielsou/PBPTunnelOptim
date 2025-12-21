@@ -238,8 +238,8 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 ) : (
                     <div className='space-y-3 bg-white p-4 rounded-lg border border-gray-200 shadow-inner'>
                         <InputField
-                            label="Nom de ce lieu"
-                            placeholder="ex: Mariage X, Salon Y..."
+                            label="Nom du lieu"
+                            placeholder="Hotel, salon, restaurant, particulier..."
                             value={formData.newDeliveryAddressName || ''}
                             onChange={e => setFormData(p => ({ ...p, newDeliveryAddressName: e.target.value }))}
                         />
