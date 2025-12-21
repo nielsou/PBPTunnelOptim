@@ -182,7 +182,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                         <InputField
                             label="Téléphone"
                             value={formData.phone}
-                            onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
+                            onChange={e => setFormData(p => ({ ...p, phone: e.target.value.replace(/[^0-9+]/g, '') }))}
                             required
                         />
                     </div>

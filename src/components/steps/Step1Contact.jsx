@@ -45,27 +45,27 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             {/* --- BLOC IDENTITÉ --- */}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='md:col-span-2'>
-                    <InputField 
-                        label="Nom et Prénom" 
-                        value={formData.fullName} 
-                        onChange={e => handleChange('fullName', e.target.value)} 
-                        placeholder='Jean Dupont' 
-                        required 
+                    <InputField
+                        label="Nom et Prénom"
+                        value={formData.fullName}
+                        onChange={e => handleChange('fullName', e.target.value)}
+                        placeholder='Jean Dupont'
+                        required
                     />
                 </div>
-                <InputField 
-                    label="Email" 
-                    type='email' 
-                    value={formData.email} 
-                    onChange={e => handleChange('email', e.target.value)} 
-                    placeholder='jean@exemple.fr' 
-                    required 
+                <InputField
+                    label="Email"
+                    type='email'
+                    value={formData.email}
+                    onChange={e => handleChange('email', e.target.value)}
+                    placeholder='jean@exemple.fr'
+                    required
                 />
                 <InputField
                     label="Téléphone"
                     type="tel"
                     value={formData.phone}
-                    onChange={e => handleChange('phone', e.target.value)}
+                    onChange={e => handleChange('phone', e.target.value.replace(/[^0-9+]/g, ''))}
                     placeholder="06 00 00 00 00"
                     required
                 />
@@ -95,12 +95,12 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             {/* Champ Nom Société (Reste conditionné au statut Pro) */}
             {formData.isPro && (
                 <div className='animate-in slide-in-from-top-2'>
-                    <InputField 
-                        label="Nom de la société" 
-                        value={formData.companyName} 
-                        onChange={e => handleChange('companyName', e.target.value)} 
-                        placeholder='Ma Société SAS' 
-                        required 
+                    <InputField
+                        label="Nom de la société"
+                        value={formData.companyName}
+                        onChange={e => handleChange('companyName', e.target.value)}
+                        placeholder='Ma Société SAS'
+                        required
                     />
                 </div>
             )}
@@ -120,7 +120,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                         value={formData.newDeliveryAddressName || ''}
                         onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
                     />
-                    
+
                     {/* Libellé "Adresse complète" comme sur Step1Partenaires */}
                     <AddressAutocomplete
                         label="Adresse complète"
@@ -148,7 +148,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                 {!formData.deliverySameAsBilling && (
                     <div className='animate-in slide-in-from-top-2 pt-2 space-y-3 border-t border-gray-200 mt-2'>
                         <p className='text-sm text-blue-600 font-semibold pt-2'>Détails Facturation</p>
-                        
+
                         {/* AJOUT : Champ Nom de l'adresse (Toujours visible si le bloc est ouvert) */}
                         <InputField
                             label="Nom de l'adresse de facturation"
