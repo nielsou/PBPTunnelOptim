@@ -3,6 +3,8 @@
 import { useState, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
+import { pushToDataLayer } from '../services/gtmService';
+
 import {
     TVA_RATE,
     PARIS_LAT, PARIS_LNG,
@@ -30,6 +32,14 @@ function calculateHaversineDistance(lat2, lon2) {
 }
 
 export const useQuoteLogic = () => {
+    // 1. DÉTECTION DE LA LANGUE 
+    const lang = useMemo(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('lang') === 'en' ? 'en' : 'fr';
+        }
+        return 'fr';
+    }, []);
     // États et Refs
     const [quoteId, setQuoteId] = useState(() => nanoid(10));
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -433,6 +443,12 @@ export const useQuoteLogic = () => {
     };
 
     const handleNext = () => {
+
+        pushToDataLayer({
+            'event': 'form_step_next',
+            'currentStep': currentStep
+        });
+
         if (isStepValid() && currentStep < 4) {
             if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice);
             if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice);
@@ -469,7 +485,7 @@ export const useQuoteLogic = () => {
             // 1. GESTION DU TIERS
             if (!companyId) {
                 console.log("Création du tiers...");
-                const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData);
+                const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData, lang);
                 companyId = newId;
             }
 
@@ -519,7 +535,7 @@ export const useQuoteLogic = () => {
                 inputsForAxonaut.company_address_id = billingAddressId;
             }
 
-            const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId);
+            const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId, lang);
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
 
             if (ENABLE_ZAPIER_STEP_4) {
@@ -531,7 +547,7 @@ export const useQuoteLogic = () => {
             setFinalPublicLink(signLink);
 
             if (!isCalculatorMode) {
-                await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink);
+                await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink, lang);
             } else {
                 console.log("Mode Calculette : Devis créé sans email.");
             }
@@ -559,6 +575,7 @@ export const useQuoteLogic = () => {
         isSubmitting,
         isSubmitted,
         resetForm,
-        finalPublicLink
+        finalPublicLink,
+        lang
     };
 };

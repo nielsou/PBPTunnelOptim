@@ -115,8 +115,8 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                 <div className='space-y-3'>
                     {/* AJOUT : Champ Nom du lieu (Toujours visible) */}
                     <InputField
-                        label="Nom de ce lieu"
-                        placeholder="ex: Mariage X, Salon Y..."
+                        label="Nom du lieu"
+                        placeholder="Hotel, salon, restaurant, particulier..."
                         value={formData.newDeliveryAddressName || ''}
                         onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
                     />

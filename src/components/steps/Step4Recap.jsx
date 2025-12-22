@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Check, ChevronLeft, Loader2 } from 'lucide-react';
+import { pushToDataLayer } from '../../services/gtmService';
 
 // Fonction utilitaire pour formater les totaux calculés (TVA, Total final)
 const formatCurrency = (amount) => {
@@ -48,7 +49,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
             </p>
 
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-                
+
                 {/* BLOC 1 : INFORMATIONS CLIENT */}
                 <div className='bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm'>
                     <h3 className='text-xl font-bold mb-6 text-gray-900 flex items-center'>
@@ -67,7 +68,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
                             <span className='font-semibold'>Téléphone</span>
                             <span>{formData.phone}</span>
                         </div>
-                        
+
                         {formData.isPro && (
                             <>
                                 <div className='flex justify-between border-b border-gray-200 pb-2'>
@@ -98,7 +99,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
                         <h3 className='text-xl font-bold mb-6 text-gray-900'>
                             Détails du Devis <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
                         </h3>
-                        
+
                         {/* Liste dynamique basée sur 'details' provenant du hook */}
                         <div className='space-y-4 mb-6'>
                             {details.map((item, index) => (
@@ -136,7 +137,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
                                 <span>{formatCurrency(finalTotalTTC)}</span>
                             </div>
                         )}
-                        
+
                         <p className='text-xs text-center text-gray-400 mt-4 italic'>
                             Acompte de 100% demandé à la commande
                         </p>
@@ -156,13 +157,20 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
                 </button>
 
                 <button
-                    onClick={() => handleSubmit(showMessage)}
+                    onClick={() => {
+                        pushToDataLayer({
+                            'event': 'quote_validation',
+                            'total_ht': pricingData.totalHT
+                        });
+                        handleSubmit(showMessage);
+                    }}
+
                     disabled={isSubmitting}
                     className={`w-full md:w-auto px-8 py-4 rounded-xl font-bold text-white text-lg shadow-lg transition-all transform flex items-center justify-center space-x-3 
-                    ${isSubmitting 
-                        ? 'bg-gray-400 cursor-wait' 
-                        : 'bg-green-600 hover:bg-green-700 hover:scale-[1.02] hover:shadow-xl'
-                    }`}
+                    ${isSubmitting
+                            ? 'bg-gray-400 cursor-wait'
+                            : 'bg-green-600 hover:bg-green-700 hover:scale-[1.02] hover:shadow-xl'
+                        }`}
                     style={!isSubmitting ? { backgroundColor: customColor } : {}}
                 >
                     {isSubmitting ? (

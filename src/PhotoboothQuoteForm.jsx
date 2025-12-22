@@ -181,7 +181,17 @@ export default function PhotoboothQuoteForm() {
 
                             {/* BOUTON SUIVANT : Centralisé sur isStepValid() */}
                             <button
-                                onClick={handleNext}
+                                onClick={() => {
+                                    if (!isStepValid()) {
+                                        pushToDataLayer({
+                                            'event': 'form_validation_error',
+                                            'step': currentStep,
+                                            'missing_fields': Object.keys(formData).filter(key => !formData[key] && isFieldRequired(key)) // optionnel
+                                        });
+                                    }
+                                    handleNext();
+                                }}
+
                                 disabled={!isStepValid()}
                                 className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 flex items-center space-x-2 shadow-md ${isStepValid()
                                     ? 'text-white hover:transform hover:scale-[1.02]'
