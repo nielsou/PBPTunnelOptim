@@ -124,5 +124,5 @@ export const customColor = '#BE2A55';
 // Mettez à 'true' pour activer l'envoi à cette étape, 'false' pour désactiver.
 export const ENABLE_ZAPIER_STEP_1 = false; // Contact
 export const ENABLE_ZAPIER_STEP_2 = true; // Événement
-export const ENABLE_ZAPIER_STEP_3 = false; // Configuration
+export const ENABLE_ZAPIER_STEP_3 = true; // Configuration
 export const ENABLE_ZAPIER_STEP_4 = true;  // Final (Devis complet)
