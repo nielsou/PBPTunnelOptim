@@ -134,15 +134,6 @@ export const useQuoteLogic = () => {
         const isSignature = formData.model === 'Signature';
         const is360 = formData.model === '360';
 
-        // Définition des variables de prix (Négocié ou Défaut)
-        //TODO: à refaire
-
-        // 2. Distance
-        const distanceKm = (formData.deliveryLat && formData.deliveryLng)
-            ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
-            : 0;
-        const supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
-
         let details = [];
         const NbJours = formData.eventDuration;
         const modelData = PRICING_STRATEGY[formData.model];
@@ -157,7 +148,8 @@ export const useQuoteLogic = () => {
         let heuresAnimPayantes = is360 ? parseInt(formData.proAnimationHours) - 3 : parseInt(formData.proAnimationHours);
         let price_optionAnim = modelData.animation_hour * heuresAnimPayantes;
         let totalHT = 0;
-
+        let supplementKm = 0;
+        let distanceKm = 0;
 
         {
             // PRESTATION PHOTOBOOTH OU VIDEOBOOTH
@@ -188,6 +180,13 @@ export const useQuoteLogic = () => {
             // LIVRAISON
             if (formData.delivery === true) {
 
+                // COÛT DE BASE
+                distanceKm = (formData.deliveryLat && formData.deliveryLng)
+                    ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
+                    : 0;
+
+                supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
+
                 const animationHours = parseInt(formData.proAnimationHours);
                 const isShortAnimation = isSignature && animationHours > 0 && animationHours <= 3;
                 price_livraison = isShortAnimation ? price_livraison / 2 : price_livraison;
@@ -199,6 +198,19 @@ export const useQuoteLogic = () => {
                     displayPrice: `+${priceTransformer(price_livraison).toFixed(0)}${suffix}`
                 });
                 totalHT += price_livraison;
+
+                // SUPPLEMENT KILOMETRIQUE
+                if (supplementKm > 0) {
+                    supplementKm;
+                    details.push({
+                        label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`,
+                        priceHT: supplementKm,
+                        daily: false,
+                        displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}`
+                    });
+                    totalHT += supplementKm;
+                }
+
             } else {
                 details.push({
                     label: 'Retrait (Arcueil)',
@@ -254,18 +266,6 @@ export const useQuoteLogic = () => {
                 totalHT += price_optionRGPD;
             }
 
-            // SUPPLEMENT KILOMETRIQUE
-            if (supplementKm > 0) {
-                supplementKm;
-                details.push({
-                    label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`,
-                    priceHT: supplementKm,
-                    daily: false,
-                    displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}`
-                });
-                totalHT += supplementKm;
-            }
-
             // NOUVEAU : OPTION ENCEINTE
             if (is360 && formData.optionSpeaker) {
                 details.push({
@@ -276,28 +276,31 @@ export const useQuoteLogic = () => {
                 });
                 totalHT += price_optionSpeaker;
             }
+            totalHT = Math.round(totalHT * 100) / 100;
         }
+
 
         const axonautData = {
             // base material
             nomBorne,
             nombreMachine: 1,
             nombreJours: NbJours,
-            prixMateriel: price_prestation,
+            prixMateriel: Math.round(price_prestation * 100) / 100,
 
             // livraison
             livraisonIncluse: formData.delivery,
             nombreTirages: formData.proImpressions,
-            prixLivraison: price_livraison,
-            supplementKilometrique: supplementKm,
+            prixLivraison: Math.round(price_livraison * 100) / 100,
+            supplementKilometrique: Math.round(supplementKm * 100) / 100,
+            distanceKm: distanceKm,
             supplementLivraisonDifficile: 0,
 
             // template
-            prixTemplate: price_template,
+            prixTemplate: Math.round(price_template * 100) / 100,
 
             // impression supp
             nombreTirages: formData.proImpressions,
-            supplementImpression: price_optionImpression,
+            supplementImpression: Math.round(price_optionImpression * 100) / 100,
 
             // autres options
             heuresAnimations: heuresAnimPayantes,
