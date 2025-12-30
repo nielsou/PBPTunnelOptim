@@ -374,56 +374,55 @@ export const useQuoteLogic = () => {
     };
 
     // 📍 ENVOI ZAPIER
-    const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null, isCalculatorMode = false) => {
+    const triggerWebhook = (step, pricing, quoteData = null, isCalculatorMode = false) => {
 
-        // 2. Ajoutez cette condition au tout début de la fonction
+        // On ne log rien en mode calculette
         if (isCalculatorMode) {
             console.log(`Mode Calculette : Webhook étape ${step} bloqué.`);
             return;
         }
 
+        // 1. Préparation de la date formatée
+        const formattedDate = new Date().toLocaleString('fr-FR', {
+            timeZone: 'Europe/Paris',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        }).replace(',', '');
+
+        // On récupère le companyId
+        const companyId = quoteData?.company_id || formData.companyId;
+
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
         const isSignature = formData.model === 'Signature';
         const is360 = formData.model === '360';
         const isEco = !isSignature && !is360 && formData.model !== '';
-        // Pour Zapier, illimite reste 'eco' ou une nouvelle catégorie ? 
-        // Gardons la logique précédente pour ne pas casser le Zap
 
+        // Pour toutes les étapes
         const payload = {
             quote_id: quoteId,
-            devis: axonautNumber,
             step: step,
-            //timestamp: new Date().toISOString(),
-            date: new Date().toLocaleString('fr-FR', {
-                timeZone: 'Europe/Paris',
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }).replace(',', ''),
+            [`step${step}_date`]: formattedDate,
+            full_name: formData.fullName,
+            email: formData.email,
+            phone: `'${formData.phone}`,
+            company_name: formData.isPro ? formData.companyName : "",
+            billing_address: formData.billingFullAddress || "",
+            delivery_name: formData.newDeliveryAddressName || "",
+            delivery_address: formData.deliveryFullAddress,
         };
 
-        // Étape 1
-        payload.full_name = formData.fullName;
-        payload.email = formData.email;
-        payload.phone = formData.phone;
-        if (formData.isPro) {
-            payload.company_name = formData.companyName;
-            payload.billing_address = formData.billingFullAddress;
-        }
-
         // Étape 2
-        if (step >= 2 || finalSubmit) {
-            payload.delivery_name = formData.newDeliveryAddressName || "";
-            payload.delivery_address = formData.deliveryFullAddress;
+        if (step >= 2) {
             payload.event_date = formData.eventDate;
             payload.duration = formData.eventDuration;
         }
 
         // Étape 3
-        if (step >= 3 || finalSubmit) {
+        if (step >= 3) {
             payload.model = formData.model;
 
             if (isEco) {
@@ -455,6 +454,19 @@ export const useQuoteLogic = () => {
             }
         }
 
+        if (step === 4 && quoteData) {
+            const companyId = quoteData.company_id;
+            const companyUrl = `https://axonaut.com/business/company/show/${companyId}`;
+
+            if (formData.isPro) {
+                payload.company_name = `=HYPERLINK("${companyUrl}";"${formData.companyName}")`;
+            } else {
+                payload.full_name = `=HYPERLINK("${companyUrl}";"${formData.fullName}")`;
+            }
+
+            payload.devis = `=HYPERLINK("${quoteData.public_path}";"${quoteData.number}")`;
+        }
+
         AxonautService.send_n8n_Webhook(payload);
     };
 
@@ -466,9 +478,9 @@ export const useQuoteLogic = () => {
         });
 
         if (isStepValid() && currentStep < 4) {
-            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, false, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
             setCurrentStep(currentStep + 1);
         }
     };
@@ -558,7 +570,7 @@ export const useQuoteLogic = () => {
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
 
             if (ENABLE_ZAPIER_STEP_4) {
-                triggerWebhook(4, true, pricing, quoteResponse.number, isCalculatorMode);
+                triggerWebhook(4, pricing, quoteResponse, isCalculatorMode);
             }
 
             // 4. FINALISATION
