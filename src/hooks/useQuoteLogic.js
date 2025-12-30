@@ -360,9 +360,9 @@ export const useQuoteLogic = () => {
                 return true;
 
             case 2:
-                // Seuls date et durée comptent ici
-                return (formData.eventDate && formData.eventDuration >= 1);
-
+                const today = new Date().toISOString().split('T')[0];
+                const isDateValid = formData.eventDate && formData.eventDate > today;
+                return (isDateValid && formData.eventDuration >= 1);
             case 3:
                 // Validation basée uniquement sur la présence d'un model
                 if (!formData.model) return false;

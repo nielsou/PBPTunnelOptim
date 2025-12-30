@@ -110,14 +110,14 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             {/* --- BLOC ADRESSES --- */}
             <div className='bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm space-y-5 mt-4'>
                 <h3 className='font-bold text-gray-700 uppercase text-sm tracking-wider border-b border-gray-200 pb-2 mb-4'>
-                    Localisation & Facturation
+                    Localisation de votre événement
                 </h3>
 
                 {/* 1. Adresse de Livraison (Lieu de l'événement) */}
                 <div className='space-y-3'>
                     {/* AJOUT : Champ Nom du lieu (Toujours visible) */}
                     <InputField
-                        label="Nom du lieu"
+                        label="Nom du lieu de l'événement"
                         placeholder="Hotel, salon, restaurant, particulier..."
                         value={formData.newDeliveryAddressName || ''}
                         onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
@@ -125,7 +125,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
 
                     {/* Libellé "Adresse complète" comme sur Step1Partenaires */}
                     <AddressAutocomplete
-                        label="Adresse complète"
+                        label="Adresse complète de l'événement"
                         required
                         defaultValue={formData.deliveryFullAddress || ''}
                         onAddressSelect={handleDeliveryAddressSelect}
