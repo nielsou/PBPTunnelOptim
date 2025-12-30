@@ -374,7 +374,14 @@ export const useQuoteLogic = () => {
     };
 
     // 📍 ENVOI ZAPIER
-    const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null) => {
+    const triggerWebhook = (step, finalSubmit, pricing, axonautNumber = null, isCalculatorMode = false) => {
+
+        // 2. Ajoutez cette condition au tout début de la fonction
+        if (isCalculatorMode) {
+            console.log(`Mode Calculette : Webhook étape ${step} bloqué.`);
+            return;
+        }
+
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
         const isSignature = formData.model === 'Signature';
         const is360 = formData.model === '360';
@@ -394,7 +401,7 @@ export const useQuoteLogic = () => {
                 year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit' 
+                second: '2-digit'
             }).replace(',', ''),
         };
 
@@ -444,14 +451,14 @@ export const useQuoteLogic = () => {
 
             if (pricing) {
                 payload.total_ht = pricing.totalHT;
-                payload.total_ttc = pricing.totalHT*1.2;
+                payload.total_ttc = pricing.totalHT * 1.2;
             }
         }
 
         AxonautService.send_n8n_Webhook(payload);
     };
 
-    const handleNext = () => {
+    const handleNext = (isCalculatorMode = false) => {
 
         pushToDataLayer({
             'event': 'form_step_next',
@@ -459,9 +466,9 @@ export const useQuoteLogic = () => {
         });
 
         if (isStepValid() && currentStep < 4) {
-            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice);
-            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice);
-            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, false, calculatePrice);
+            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, false, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, false, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, false, calculatePrice, null, isCalculatorMode);
             setCurrentStep(currentStep + 1);
         }
     };
@@ -548,7 +555,7 @@ export const useQuoteLogic = () => {
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
 
             if (ENABLE_ZAPIER_STEP_4) {
-                triggerWebhook(4, true, pricing, quoteResponse.number);
+                triggerWebhook(4, true, pricing, quoteResponse.number, isCalculatorMode);
             }
 
             // 4. FINALISATION

@@ -189,7 +189,7 @@ export default function PhotoboothQuoteForm() {
                                             'missing_fields': Object.keys(formData).filter(key => !formData[key] && isFieldRequired(key)) // optionnel
                                         });
                                     }
-                                    handleNext();
+                                    handleNext(isCalculatorMode);
                                 }}
 
                                 disabled={!isStepValid()}
