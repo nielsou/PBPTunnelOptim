@@ -50,6 +50,11 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 const defaultContact = data.contacts[0];
                 setSelectedContactIndex(0);
 
+                const firstAddress = data.deliveryAddresses[0];
+
+                if (firstAddress) {
+                    console.log("📍 Nom du lieu récupéré au chargement :", firstAddress.label);
+                }
                 setFormData(prev => ({
                     ...prev,
                     savedClientData: data,
@@ -60,7 +65,8 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                     email: defaultContact?.email || '',
                     phone: defaultContact?.phone || '',
                     billingFullAddress: data.defaultBillingAddress,
-                    deliveryFullAddress: data.defaultDeliveryAddress
+                    deliveryFullAddress: data.defaultDeliveryAddress,
+                    newDeliveryAddressName: data.deliveryAddresses[0]?.label || ''
                 }));
 
                 if (data.defaultDeliveryAddress) {
@@ -124,7 +130,10 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
             if (isNew) {
                 setFormData(prev => ({ ...prev, deliveryFullAddress: '', deliveryLat: null, deliveryLng: null, saveNewDeliveryAddress: true, newDeliveryAddressName: '' }));
             } else {
-                const selectedAddr = clientData.deliveryAddresses[selectedIndex]; setFormData(prev => ({
+                const selectedAddr = clientData.deliveryAddresses[selectedIndex];
+                console.log("📍 Adresse de livraison sélectionnée :", selectedAddr.label, selectedAddr.address);
+
+                setFormData(prev => ({
                     ...prev,
                     deliveryFullAddress: selectedAddr.address,
                     deliveryAddressId: selectedAddr.id,

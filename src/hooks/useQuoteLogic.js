@@ -515,6 +515,7 @@ export const useQuoteLogic = () => {
             if (formData.saveNewBillingAddress) {
                 const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
                     name: formData.newBillingAddressName || "Facturation",
+                    street: formData.billingStreet,
                     fullAddress: formData.billingFullAddress,
                     zip: formData.billingZipCode,
                     city: formData.billingCity
@@ -526,6 +527,7 @@ export const useQuoteLogic = () => {
                 await AxonautService.createAxonautAddress(companyId, {
                     name: formData.newDeliveryAddressName || "Lieu Événement",
                     fullAddress: formData.deliveryFullAddress,
+                    street: formData.deliveryStreet,
                     zip: formData.deliveryZipCode,
                     city: formData.deliveryCity
                 }, 'delivery');
@@ -541,7 +543,8 @@ export const useQuoteLogic = () => {
                 dateEvenement: formData.eventDate,
                 adresseLivraisonComplete: formData.newDeliveryAddressName
                     ? `${formData.newDeliveryAddressName} - ${formData.deliveryFullAddress}`
-                    : formData.deliveryFullAddress, nombreJours: formData.eventDuration,
+                    : formData.deliveryFullAddress,
+                nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
                 livraisonIncluse: formData.delivery !== false,
                 acomptePct: isVipPartner ? 0 : 1

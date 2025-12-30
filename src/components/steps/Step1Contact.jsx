@@ -11,11 +11,12 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
         setFormData(prev => ({
             ...prev,
             billingFullAddress: addr.fullAddress,
+            billingStreet: addr.street,
             billingLat: addr.lat,
             billingLng: addr.lng,
             billingZipCode: addr.postal,
             billingCity: addr.city,
-            saveNewBillingAddress: true // Marqueur pour création Axonaut
+            saveNewBillingAddress: true
         }));
     };
 
@@ -26,9 +27,10 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             deliveryFullAddress: addr.fullAddress,
             deliveryLat: addr.lat,
             deliveryLng: addr.lng,
+            deliveryStreet: addr.street, 
             deliveryZipCode: addr.postal,
             deliveryCity: addr.city,
-            saveNewDeliveryAddress: true // Marqueur pour création Axonaut
+            saveNewDeliveryAddress: true 
         }));
     };
 

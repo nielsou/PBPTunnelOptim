@@ -27,19 +27,10 @@ export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
     const isPro = formData.isPro;
     const fullAddressString = isPro ? (formData.billingFullAddress || formData.deliveryFullAddress) : formData.deliveryFullAddress;
 
-    let zipCode = '';
-    let city = '';
-    let streetOnly = fullAddressString;
 
-    if (fullAddressString) {
-        const addressMatch = fullAddressString.match(/\b(\d{5})\s+([^,]+)/);
-        if (addressMatch) {
-            zipCode = addressMatch[1];
-            city = addressMatch[2].trim();
-            const partBeforeZip = fullAddressString.substring(0, addressMatch.index).trim();
-            streetOnly = partBeforeZip.replace(/,\s*$/, '');
-        }
-    }
+    const streetOnly = isPro ? (formData.billingStreet || formData.deliveryStreet) : formData.deliveryStreet;
+    const zipCode = isPro ? formData.billingZipCode : formData.deliveryZipCode;
+    const city = isPro ? formData.billingCity : formData.deliveryCity;
 
     const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
     const lastName = lastNameParts.join(' ') || firstName || '';
@@ -47,9 +38,9 @@ export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
     let thirdPartyBody = {
         name: isPro ? formData.companyName : formData.fullName,
         address_street: streetOnly || 'Adresse non spécifiée',
-        address_zip_code: zipCode || '75000',
-        address_city: city || 'Paris',
-        address_country: 'France',
+        address_zip_code: zipCode || '',
+        address_city: city || '',
+        address_country: '',
         is_prospect: true,
         is_customer: false,
         isB2C: !isPro,
@@ -463,7 +454,7 @@ export const createAxonautAddress = async (companyId, addressData, type = 'deliv
     const payload = {
         company_id: parseInt(companyId),
         name: addressData.name || (type === 'delivery' ? "Lieu Événement" : "Facturation"),
-        address_street: addressData.fullAddress,
+        address_street: addressData.street || "",
         address_zip_code: addressData.zip || "",
         address_city: addressData.city || "",
         address_country: "France",
