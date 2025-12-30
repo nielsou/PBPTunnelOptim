@@ -385,27 +385,34 @@ export const useQuoteLogic = () => {
         const payload = {
             quote_id: quoteId,
             devis: axonautNumber,
-            step_completed: step,
-            timestamp: new Date().toISOString(),
+            step: step,
+            //timestamp: new Date().toISOString(),
+            date: new Date().toLocaleString('fr-FR', {
+                timeZone: 'Europe/Paris',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit' 
+            }).replace(',', ''),
         };
 
         // Étape 1
-        payload.fullName = formData.fullName;
+        payload.full_name = formData.fullName;
         payload.email = formData.email;
         payload.phone = formData.phone;
-        payload.isPro = toExcelBool(formData.isPro);
         if (formData.isPro) {
-            payload.companyName = formData.companyName;
-            payload.billingFullAddress = formData.billingFullAddress;
+            payload.company_name = formData.companyName;
+            payload.billing_address = formData.billingFullAddress;
         }
 
         // Étape 2
         if (step >= 2 || finalSubmit) {
-            payload.deliveryFullAddress = formData.deliveryFullAddress;
-            payload.eventDate = formData.eventDate;
-            payload.eventDuration = formData.eventDuration;
-            payload.deliveryLat = formData.deliveryLat;
-            payload.deliveryLng = formData.deliveryLng;
+            payload.delivery_name = formData.deliveryFullAddress; // changer pour la localisation de l'étape 1
+            payload.delivery_address = formData.deliveryFullAddress;
+            payload.event_date = formData.eventDate;
+            payload.duration = formData.eventDuration;
         }
 
         // Étape 3
@@ -414,35 +421,34 @@ export const useQuoteLogic = () => {
 
             if (isEco) {
                 payload.delivery = toExcelBool(formData.delivery);
-                payload.templateTool = toExcelBool(formData.templateTool);
+                payload.template = toExcelBool(formData.templateTool);
 
-                // NOUVEAU : Envoi des options si Starbooth
                 if (formData.model === 'illimite') {
-                    payload.proAnimationHours = formData.proAnimationHours;
-                    payload.proFondIA = toExcelBool(formData.proFondIA);
-                    payload.proRGPD = toExcelBool(formData.proRGPD);
+                    payload.animation_hours = formData.proAnimationHours;
+                    payload.option_IA = toExcelBool(formData.proFondIA);
+                    payload.option_RGPD = toExcelBool(formData.proRGPD);
                 }
             }
             else if (isSignature) {
-                payload.proAnimationHours = formData.proAnimationHours;
-                payload.proFondIA = toExcelBool(formData.proFondIA);
-                payload.proRGPD = toExcelBool(formData.proRGPD);
+                payload.animation_hours = formData.proAnimationHours;
+                payload.option_IA = toExcelBool(formData.proFondIA);
+                payload.option_RGPD = toExcelBool(formData.proRGPD);
                 payload.delivery = toExcelBool(formData.delivery);
-                payload.proImpressions = formData.proImpressions;
-                payload.templateTool = toExcelBool(formData.templateTool);
+                payload.prints = formData.proImpressions;
+                payload.template = toExcelBool(formData.templateTool);
             }
             else if (is360) {
-                payload.needType = '360';
-                payload.proAnimationHours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
-                payload.optionSpeaker = toExcelBool(formData.optionSpeaker);
+                payload.animation_hours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
+                payload.option_music = toExcelBool(formData.optionSpeaker);
             }
 
             if (pricing) {
-                payload.total_ht = pricing.totalHT.toFixed(2);
+                payload.total_ht = pricing.totalHT;
+                payload.total_ttc = pricing.totalHT*1.2;
             }
         }
 
-        AxonautService.sendZapierWebhook(payload);
+        AxonautService.send_n8n_Webhook(payload);
     };
 
     const handleNext = () => {

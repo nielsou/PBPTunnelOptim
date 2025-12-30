@@ -113,7 +113,8 @@ export const AXONAUT_FIXED_DEFAULTS = {
 };
 
 // URL Zapier (Webhook pour le suivi)
-export const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/22419571/ufzj95x/';
+// export const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/22419571/ufzj95x/';
+export const N8N_PROXY_URL = '/api/webhook-n8n';
 
 // Couleurs UI
 export const customColor = '#BE2A55';
@@ -125,4 +126,4 @@ export const customColor = '#BE2A55';
 export const ENABLE_ZAPIER_STEP_1 = false; // Contact
 export const ENABLE_ZAPIER_STEP_2 = true; // Événement
 export const ENABLE_ZAPIER_STEP_3 = true; // Configuration
-export const ENABLE_ZAPIER_STEP_4 = true;  // Final (Devis complet)
+export const ENABLE_ZAPIER_STEP_4 = true; // Final (Devis complet)

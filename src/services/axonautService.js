@@ -3,7 +3,7 @@
 import {
     AXONAUT_THEMES_MAPPING,
     AXONAUT_FIXED_DEFAULTS,
-    ZAPIER_WEBHOOK_URL,
+    N8N_PROXY_URL,
 } from '../constants';
 
 import { locales } from '../locales';
@@ -295,12 +295,19 @@ export const createAxonautEvent = async (quotationId, companyId, customerEmail, 
     }
 }
 
-export const sendZapierWebhook = async (payload) => {
-    console.log("SERVICE: Envoi Webhook Zapier...", payload);
+export const send_n8n_Webhook = async (payload) => {
+    console.log("SERVICE: Envoi Webhook via Proxy...", payload);
     try {
-        await fetch(ZAPIER_WEBHOOK_URL, { method: 'POST', body: JSON.stringify(payload) });
+        await fetch(N8N_PROXY_URL, { 
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload) 
+        });
+        console.log("✅ Webhook envoyé au proxy");
     } catch (error) {
-        console.error('Erreur Zapier', error);
+        console.error('Erreur Proxy n8n', error);
     }
 };
 
