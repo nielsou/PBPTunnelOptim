@@ -416,7 +416,7 @@ export const useQuoteLogic = () => {
 
         // Étape 2
         if (step >= 2 || finalSubmit) {
-            payload.delivery_name = formData.deliveryFullAddress; // changer pour la localisation de l'étape 1
+            payload.delivery_name = formData.newDeliveryAddressName || "";
             payload.delivery_address = formData.deliveryFullAddress;
             payload.event_date = formData.eventDate;
             payload.duration = formData.eventDuration;
