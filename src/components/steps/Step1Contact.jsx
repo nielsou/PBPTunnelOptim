@@ -161,7 +161,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
 
                         {/* Libellé "Adresse complète" comme sur Step1Partenaires */}
                         <AddressAutocomplete
-                            label="Adresse complète"
+                            label="Adresse de facturation"
                             required
                             defaultValue={formData.billingFullAddress || ''}
                             onAddressSelect={handleBillingAddressSelect}
