@@ -46,8 +46,8 @@ export const locales = {
         en: "Printing of each shot in <strong>{n} copy/copies</strong>" 
     },
     "axonaut.desc.360_base": { 
-        fr: "Mise à disposition de notre <strong>Photobooth 360</strong> avec plateau rotatif de 120 cm (jusqu'à 5 personnes)", 
-        en: "Provision of our <strong>360 Photobooth</strong> with 120 cm rotating platform (up to 5 people)" 
+        fr: "Mise à disposition de notre <strong>Videobooth 360</strong> avec plateau rotatif de 120 cm (jusqu'à 5 personnes)", 
+        en: "Provision of our <strong>360 Videobooth</strong> with 120 cm rotating platform (up to 5 people)" 
     },
     "axonaut.desc.360_details": { 
         fr: "Vidéos instantanées en illimité : vitesse normale, rapide et slowmotion", 

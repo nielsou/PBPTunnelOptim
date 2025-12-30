@@ -4,6 +4,7 @@ import {
     AXONAUT_THEMES_MAPPING,
     AXONAUT_FIXED_DEFAULTS,
     N8N_PROXY_URL,
+    PRICING_STRATEGY
 } from '../constants';
 
 import { locales } from '../locales';
@@ -133,22 +134,63 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     // --- 1. PRESTATION DE BASE ---
     let items = [];
-    if (nomBorne.includes("CineBooth")) {
+
+    // Définition des noms stricts pour la comparaison
+    const nameNum = PRICING_STRATEGY['numerique'].name;
+    const name150 = PRICING_STRATEGY['150'].name;
+    const name300 = PRICING_STRATEGY['300'].name;
+    const namePro = PRICING_STRATEGY['illimite'].name;
+    const nameSig = PRICING_STRATEGY['Signature'].name;
+    const name360 = PRICING_STRATEGY['360'].name;
+
+    // Logique CineBooth (Numérique, 150, 300)
+    if (nomBorne === nameNum || nomBorne === name150 || nomBorne === name300) {
         items.push(t('axonaut.desc.cine_base', lang));
-        if (nomBorne.includes("Numérique")) items.push(t('axonaut.desc.num_only', lang));
-        if (nomBorne.includes("150")) items.push(`${t('axonaut.desc.prints_150', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
-        if (nomBorne.includes("300")) items.push(`${t('axonaut.desc.prints_300', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
+
+        if (nomBorne === nameNum) {
+            items.push(t('axonaut.desc.num_only', lang));
+        } else if (nomBorne === name150) {
+            items.push(`${t('axonaut.desc.prints_150', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
+        } else if (nomBorne === name300) {
+            items.push(`${t('axonaut.desc.prints_300', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
+        }
+
         items.push(t('axonaut.desc.mail_5g', lang), t('axonaut.desc.download', lang));
         if (!livraisonIncluse) items.push(`<strong>${t('axonaut.log.pickup', lang)}</strong>`);
         items.push(t('axonaut.desc.self_setup', lang), t('axonaut.desc.support', lang));
-    } else if (nomBorne === "StarBooth Pro Illimité") {
-        items.push(t('axonaut.desc.star_base', lang), t('axonaut.desc.unlimited', lang), t('axonaut.desc.mail_5g', lang), t('axonaut.desc.download', lang));
+    }
+    // Logique StarBooth Pro
+    else if (nomBorne === namePro) {
+        items.push(
+            t('axonaut.desc.star_base', lang),
+            t('axonaut.desc.unlimited', lang),
+            t('axonaut.desc.mail_5g', lang),
+            t('axonaut.desc.download', lang)
+        );
         if (!livraisonIncluse) items.push(`<strong>${t('axonaut.log.pickup', lang)}</strong>`);
         items.push(t('axonaut.desc.self_setup', lang), t('axonaut.desc.support', lang));
-    } else if (nomBorne === "Signature") {
-        items.push(t('axonaut.desc.sig_base', lang), t('axonaut.desc.unlimited', lang), t('axonaut.desc.sig_multi', lang, { n: nombreTirages }), t('axonaut.desc.mail_5g', lang), t('axonaut.desc.download', lang), t('axonaut.desc.support', lang));
-    } else if (nomBorne === "Photobooth 360") {
-        items.push(t('axonaut.desc.360_base', lang), t('axonaut.desc.360_details', lang), t('axonaut.desc.mail_5g', lang), t('axonaut.desc.download', lang), t('axonaut.desc.360_opt', lang), t('axonaut.desc.360_anim', lang));
+    }
+    // Logique Signature
+    else if (nomBorne === nameSig) {
+        items.push(
+            t('axonaut.desc.sig_base', lang),
+            t('axonaut.desc.unlimited', lang),
+            t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
+            t('axonaut.desc.mail_5g', lang),
+            t('axonaut.desc.download', lang),
+            t('axonaut.desc.support', lang)
+        );
+    }
+    // Logique Photobooth 360
+    else if (nomBorne === name360) {
+        items.push(
+            t('axonaut.desc.360_base', lang),
+            t('axonaut.desc.360_details', lang),
+            t('axonaut.desc.mail_5g', lang),
+            t('axonaut.desc.download', lang),
+            t('axonaut.desc.360_opt', lang),
+            t('axonaut.desc.360_anim', lang)
+        );
     }
 
     const descriptionPrestation = `
@@ -175,8 +217,8 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     if (livraisonIncluse || totalSupplementLivraison > 0) {
         let descLog = "<ul>";
         if (livraisonIncluse) {
-            if (nomBorne === "Signature") descLog += `<li><p>${t('axonaut.log.sig_setup', lang)}</p></li>`;
-            else if (nomBorne === "Photobooth 360") descLog += `<li><p>${t('axonaut.log.360_setup', lang)}</p></li>`;
+            if (nomBorne === PRICING_STRATEGY['Signature'].name) descLog += `<li><p>${t('axonaut.log.sig_setup', lang)}</p></li>`;
+            else if (nomBorne === name360) descLog += `<li><p>${t('axonaut.log.360_setup', lang)}</p></li>`;
             else descLog += `<li><p>${t('axonaut.log.std_setup', lang)}</p></li>`;
         }
         if (supplementKilometrique > 0) descLog += `<li><p>${t('axonaut.log.km', lang, { km: Math.round(distanceKm) })}</p></li>`;
@@ -194,7 +236,7 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     }
 
     // --- 3. OPTIONS (TEMPLATE, IMPRESSION, ANIM, IA, RGPD, SPEAKER) ---
-    if (templateInclus && nomBorne !== "Photobooth 360") {
+    if (templateInclus && nomBorne !== name360) {
         const tName = prixTemplate > 0 ? t('axonaut.opt.template', lang) : `${t('axonaut.opt.template', lang)} ${t('axonaut.opt.template_free', lang)}`;
         const tDesc = `<ul><li><p>${t('axonaut.opt.template_desc1', lang)}</p></li><li><p>${t('axonaut.opt.template_desc2', lang)}</p></li><li><p>${t('axonaut.opt.template_desc3', lang)}</p></li></ul><p><em>${t('axonaut.opt.template_warn', lang)}</em></p>`;
         productsArray.push({ "product_code": "P-TEMPLATE", "name": tName, "price": Math.round(100 * prixTemplate) / 100, "tax_rate": TVA_RATE_DEC, "quantity": 1, "description": tDesc });
@@ -298,12 +340,12 @@ export const createAxonautEvent = async (quotationId, companyId, customerEmail, 
 export const send_n8n_Webhook = async (payload) => {
     console.log("SERVICE: Envoi Webhook via Proxy...", payload);
     try {
-        await fetch(N8N_PROXY_URL, { 
-            method: 'POST', 
+        await fetch(N8N_PROXY_URL, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload) 
+            body: JSON.stringify(payload)
         });
         console.log("✅ Webhook envoyé au proxy");
     } catch (error) {
