@@ -25,12 +25,10 @@ const toRfc3339 = (date) => {
 
 export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
     const isPro = formData.isPro;
-    const fullAddressString = isPro ? (formData.billingFullAddress || formData.deliveryFullAddress) : formData.deliveryFullAddress;
-
-
-    const streetOnly = isPro ? (formData.billingStreet || formData.deliveryStreet) : formData.deliveryStreet;
-    const zipCode = isPro ? formData.billingZipCode : formData.deliveryZipCode;
-    const city = isPro ? formData.billingCity : formData.deliveryCity;
+    const fullAddressString = formData.billingFullAddress || formData.deliveryFullAddress;
+    const streetOnly = formData.billingStreet || formData.deliveryStreet;
+    const zipCode = formData.billingZipCode || formData.deliveryZipCode;
+    const city = formData.billingCity || formData.deliveryCity;
 
     const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
     const lastName = lastNameParts.join(' ') || firstName || '';
@@ -111,7 +109,8 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
         supplementKilometrique, supplementLivraisonDifficile, supplementImpression,
         supplementAnimation, commercial, dateEvenement,
         adresseLivraisonComplete, nombreJours, templateInclus, livraisonIncluse,
-        acomptePct, nombreTirages, heuresAnimations, distanceKm, optionFondIA, optionRGPD, optionSpeaker
+        acomptePct, nombreTirages, heuresAnimations, distanceKm, optionFondIA, optionRGPD, optionSpeaker,
+        company_address_id
     } = inputs;
 
     const formatDate = (dateValue) => {
@@ -259,6 +258,7 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     return {
         "company_id": companyId,
+        "company_address_id": company_address_id,
         "theme_id": AXONAUT_THEMES_MAPPING[acomptePct],
         "business_manager": commercial,
         "online_payment": true,
@@ -454,6 +454,7 @@ export const createAxonautAddress = async (companyId, addressData, type = 'deliv
     const payload = {
         company_id: parseInt(companyId),
         name: addressData.name || (type === 'delivery' ? "Lieu Événement" : "Facturation"),
+        contact_name: addressData.contactName || "",
         address_street: addressData.street || "",
         address_zip_code: addressData.zip || "",
         address_city: addressData.city || "",
@@ -481,7 +482,7 @@ export const updateAxonautEmployee = async (employeeId, companyId, formData) => 
     console.log(`SERVICE: Mise à jour employé ${employeeId} pour société ${companyId}...`);
 
     const [firstName, ...lastNameParts] = formData.fullName.split(' ').filter(Boolean);
-    const lastName = lastNameParts.join(' ') || (firstName || '');
+    const lastName = lastNameParts.join(' ') || '';
 
     const payload = {
         company_id: parseInt(companyId),

@@ -48,7 +48,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='md:col-span-2'>
                     <InputField
-                        label="Nom et Prénom"
+                        label="Prénom & Nom de famille"
                         value={formData.fullName}
                         onChange={e => handleChange('fullName', e.target.value)}
                         placeholder='Jean Dupont'
@@ -56,11 +56,11 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     />
                 </div>
                 <InputField
-                    label="Email"
+                    label="Adresse email"
                     type='email'
                     value={formData.email}
                     onChange={e => handleChange('email', e.target.value)}
-                    placeholder='jean@exemple.fr'
+                    placeholder='jean@dupont.fr'
                     required
                 />
                 <InputField
@@ -68,7 +68,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     type="tel"
                     value={formData.phone}
                     onChange={e => handleChange('phone', e.target.value.replace(/[^0-9+]/g, ''))}
-                    placeholder="06 00 00 00 00"
+                    placeholder="06 12 34 56 78"
                     required
                 />
             </div>
@@ -90,7 +90,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     className='w-5 h-5 text-blue-600 rounded-lg cursor-pointer border-gray-300'
                 />
                 <label htmlFor='isPro' className='text-sm font-medium text-gray-800 cursor-pointer select-none'>
-                    Je suis un professionnel (Société, Agence...)
+                    Je suis un professionnel (société, agence...) et je souhaite voir les prix en HT
                 </label>
             </div>
 

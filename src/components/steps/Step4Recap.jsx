@@ -181,7 +181,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleSubmit, h
                     ) : (
                         <>
                             <Check className='w-6 h-6' />
-                            <span>Valider et recevoir mon devis</span>
+                            <span>Je valide ma demande</span>
                         </>
                     )}
                 </button>

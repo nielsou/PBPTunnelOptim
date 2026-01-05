@@ -24,25 +24,29 @@ export const PRICING_STRATEGY = {
         name: 'CineBooth Numérique',
         priceHT: 245.83,
         floorPriceHT: 10.00,
-        delivery: 50
+        delivery: 50,
+        animation_hour: 45
     },
     '150': {
         name: 'CineBooth 150',
         priceHT: 329.17,
         floorPriceHT: 39.00,
-        delivery: 50
+        delivery: 50,
+        animation_hour: 45
     },
     '300': {
         name: 'CineBooth 300',
         priceHT: 370.83,
         floorPriceHT: 68.00,
-        delivery: 50
+        delivery: 50,
+        animation_hour: 45
     },
     'illimite': {
         name: 'StarBooth Pro',
         priceHT: 425.83,
         floorPriceHT: 57.00,
-        delivery: 70
+        delivery: 70,
+        animation_hour: 45
     },
     'Signature': {
         name: 'Signature',

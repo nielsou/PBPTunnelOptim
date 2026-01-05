@@ -116,6 +116,14 @@ export const useQuoteLogic = () => {
         const priceHT_music360 = getEffectivePrice('360', PRICING_STRATEGY['360'].speaker);
         let price_template = getEffectivePrice('template', TEMPLATE_TOOL_PRO_PRICE_HT);
 
+
+        // COÛT DE BASE
+        let distanceKm = (formData.deliveryLat && formData.deliveryLng)
+            ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
+            : 0;
+
+        let supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
+
         // 🛡️ GROS TEST EN UNE LIGNE : Si pas de modèle, on renvoie l'objet par défaut pour ne pas planter l'UI
         if (!formData.model) return {
             totalHT: 0, details: [], displayTTC: displayTTC, priceSuffix: displayTTC ? 'TTC' : 'HT', axonautData: {},
@@ -126,6 +134,13 @@ export const useQuoteLogic = () => {
                 'illimite': priceHT_pro,
                 'Signature': priceHT_sign,
                 '360': priceHT_360,
+                // Utilisation dynamique des valeurs de constants.js
+                'deliv_numerique': PRICING_STRATEGY['numerique'].delivery + supplementKm,
+                'deliv_150': PRICING_STRATEGY['150'].delivery + supplementKm,
+                'deliv_300': PRICING_STRATEGY['300'].delivery + supplementKm,
+                'deliv_illimite': PRICING_STRATEGY['illimite'].delivery + supplementKm,
+                'deliv_Signature': PRICING_STRATEGY['Signature'].delivery + supplementKm,
+                'deliv_360': PRICING_STRATEGY['360'].delivery + supplementKm,
             },
         };
 
@@ -148,8 +163,6 @@ export const useQuoteLogic = () => {
         let heuresAnimPayantes = is360 ? parseInt(formData.proAnimationHours) - 3 : parseInt(formData.proAnimationHours);
         let price_optionAnim = modelData.animation_hour * heuresAnimPayantes;
         let totalHT = 0;
-        let supplementKm = 0;
-        let distanceKm = 0;
 
         {
             // PRESTATION PHOTOBOOTH OU VIDEOBOOTH
@@ -179,13 +192,6 @@ export const useQuoteLogic = () => {
 
             // LIVRAISON
             if (formData.delivery === true) {
-
-                // COÛT DE BASE
-                distanceKm = (formData.deliveryLat && formData.deliveryLng)
-                    ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
-                    : 0;
-
-                supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
 
                 const animationHours = parseInt(formData.proAnimationHours);
                 const isShortAnimation = isSignature && animationHours > 0 && animationHours <= 3;
@@ -315,7 +321,8 @@ export const useQuoteLogic = () => {
             details,
             displayTTC,
             priceSuffix: displayTTC ? 'TTC' : 'HT',
-            axonautData, quoteId,
+            axonautData,
+            quoteId,
             // Le détail complet pour l'UI (Step 3)
             unitaryPrices: {
                 'numerique': priceHT_num,
@@ -324,9 +331,16 @@ export const useQuoteLogic = () => {
                 'illimite': priceHT_pro,
                 'Signature': priceHT_sign,
                 '360': priceHT_360,
+                // Utilisation dynamique des valeurs de constants.js
+                'deliv_numerique': PRICING_STRATEGY['numerique'].delivery,
+                'deliv_150': PRICING_STRATEGY['150'].delivery,
+                'deliv_300': PRICING_STRATEGY['300'].delivery,
+                'deliv_illimite': PRICING_STRATEGY['illimite'].delivery,
+                'deliv_Signature': PRICING_STRATEGY['Signature'].delivery,
+                'deliv_360': PRICING_STRATEGY['360'].delivery,
+                //options
                 template: price_template,
                 livraison: price_livraison,
-                //options
                 impressionSup: OPTION_IMPRESSION_BASE_HT,
                 ia: OPTION_FONDIA_HT,
                 rgpd: OPTION_RGPD_HT,
@@ -524,9 +538,12 @@ export const useQuoteLogic = () => {
                 console.warn("Contact déjà existant.");
             }
 
+            const addressContactName = formData.isPro ? formData.companyName : formData.fullName;
+
             if (formData.saveNewBillingAddress) {
                 const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
                     name: formData.newBillingAddressName || "Facturation",
+                    contactName: addressContactName,
                     street: formData.billingStreet,
                     fullAddress: formData.billingFullAddress,
                     zip: formData.billingZipCode,
@@ -576,6 +593,9 @@ export const useQuoteLogic = () => {
             // 4. FINALISATION
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
+
+            // const proxyPayUrl = `/api/pay-proxy?url=${encodeURIComponent(signLink)}`;
+            // setFinalPublicLink(proxyPayUrl);
 
             if (!isCalculatorMode) {
                 await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink, lang);

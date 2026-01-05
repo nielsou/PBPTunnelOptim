@@ -64,51 +64,49 @@ export default function PhotoboothQuoteForm() {
     // ÉCRAN DE SUCCÈS APRÈS SOUMISSION
     if (isSubmitted) {
         return (
-            <div className='min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 font-sans text-gray-900 flex items-center justify-center'>
-                <div className='bg-white rounded-3xl shadow-2xl p-8 sm:p-12 border border-green-100 max-w-2xl w-full text-center space-y-8'>
+            <div className='min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-6 px-2 font-sans text-gray-900 flex items-center justify-center'>
+                <div className='bg-white rounded-3xl shadow-2xl p-3 sm:p-10 border border-gray-100'>
                     <div className='w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6'>
                         <Check className='w-12 h-12 text-green-600' />
                     </div>
 
-                    <h2 className='text-4xl font-extrabold text-green-800'>Merci pour votre confiance !</h2>
-
-                    <p className='text-xl text-gray-700 leading-relaxed'>
-                        Votre demande a été traitée avec succès. 🚀
-                    </p>
+                    <h2 className='text-4xl font-extrabold text-green-800 text-center mb-4'>
+                        {isCalculatorMode ? 'Devis Généré !' : 'Merci pour votre confiance !'}
+                    </h2>
 
                     <div className='bg-blue-50 p-6 rounded-xl text-left border-l-4 border-blue-500 shadow-sm'>
-                        <h3 className='font-bold text-blue-900 text-lg mb-2'>Et maintenant ?</h3>
-                        <p className='text-blue-800 mb-4'>
-                            Vous allez recevoir un email d'ici quelques instants à l'adresse <strong>{formData.email}</strong>.
-                        </p>
+                        <h3 className='font-bold text-blue-900 text-lg mb-2'>Votre commande est validée</h3>
 
-                        {/* BOUTON DE SIGNATURE DIRECTE (Si lien disponible via Axonaut) */}
-                        {finalPublicLink && (
-                            <a
-                                href={finalPublicLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-3 mb-4 transform hover:-translate-y-1'
-                            >
-                                <FileSignature className="w-6 h-6" />
-                                <span className="text-lg">Signer le devis et régler l'acompte</span>
-                            </a>
+                        {isCalculatorMode ? (
+                            <p className='text-blue-800 mb-4'>
+                                Le devis généré est disponible sur Axonaut sur la fiche client : <br />
+                                <a href={finalPublicLink} target="_blank" rel="noopener noreferrer" className="underline font-bold">
+                                    Accéder au document Axonaut
+                                </a>
+                            </p>
+                        ) : (
+                            <>
+                                <p className='text-blue-800 mb-4'>
+                                    Le récapitulatif de votre commande vous a été envoyé sur par email : <strong>{formData.email}</strong>.
+                                </p>
+                                <p className='text-blue-800 mb-4'>
+                                    Attention cependant, votre borne ne sera définitivement réservée qu'une fois votre réglement effectué :
+                                </p>
+                                {finalPublicLink && (
+                                    <a
+                                        href={finalPublicLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className='w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all shadow-md flex items-center justify-center space-x-3 mb-4'
+                                    >
+                                        <FileSignature className="w-6 h-6" />
+                                        <span className="text-lg">Payer ma commande</span>
+                                    </a>
+                                )}
+                            </>
                         )}
-
-                        <p className='text-sm text-blue-700 italic'>
-                            Le lien est également disponible dans l'email que nous venons de vous envoyer.
-                        </p>
                     </div>
-
-                    <div className='pt-4'>
-                        <button
-                            onClick={resetForm}
-                            className='w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center justify-center space-x-3 shadow-lg mx-auto'
-                        >
-                            <RefreshCcw className='w-5 h-5' />
-                            <span>Effectuer une nouvelle demande</span>
-                        </button>
-                    </div>
+                    {/* ... bouton Effectuer une nouvelle demande ... */}
                 </div>
             </div>
         );
@@ -154,7 +152,7 @@ export default function PhotoboothQuoteForm() {
     };
 
     return (
-        <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 font-sans text-gray-900'>
+        <div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-2 font-sans text-gray-900'>
             <div id="custom-alert" className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-xl z-50 hidden"></div>
             <div className='max-w-4xl mx-auto'>
                 {/* TITRE DYNAMIQUE SELON LE MODE */}
@@ -162,7 +160,7 @@ export default function PhotoboothQuoteForm() {
                     {isPartnerMode ? 'Devis Express Partenaires' : 'Devis Express Photobooth'}
                 </h1>
 
-                <div className='bg-white rounded-3xl shadow-2xl p-6 sm:p-10 border border-gray-100'>
+                <div className='bg-white rounded-3xl shadow-2xl p-3 sm:p-10 border border-gray-100'>
                     {renderStep()}
 
                     {currentStep < 4 && (
@@ -185,21 +183,23 @@ export default function PhotoboothQuoteForm() {
                                     if (!isStepValid()) {
                                         pushToDataLayer({
                                             'event': 'form_validation_error',
-                                            'step': currentStep,
-                                            'missing_fields': Object.keys(formData).filter(key => !formData[key] && isFieldRequired(key)) // optionnel
+                                            'step': currentStep
                                         });
                                     }
                                     handleNext(isCalculatorMode);
                                 }}
-
                                 disabled={!isStepValid()}
                                 className={`px-8 py-3 rounded-xl font-bold transition-all duration-200 flex items-center space-x-2 shadow-md ${isStepValid()
                                     ? 'text-white hover:transform hover:scale-[1.02]'
                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     }`}
-                                style={isStepValid() ? { backgroundColor: customColor, boxShadow: `0 4px 6px -1px ${customColor}55, 0 2px 4px -2px ${customColor}55` } : {}}
+                                style={isStepValid() ? { backgroundColor: customColor } : {}}
                             >
-                                <span>{currentStep === 3 ? 'Voir le devis' : 'Suivant'}</span>
+                                <span>
+                                    {currentStep === 3
+                                        ? (isCalculatorMode ? 'Générer le devis' : 'Voir mon panier')
+                                        : 'Suivant'}
+                                </span>
                                 <ChevronRight className='w-5 h-5' />
                             </button>
                         </div>

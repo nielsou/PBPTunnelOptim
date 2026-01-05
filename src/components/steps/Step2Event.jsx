@@ -107,15 +107,15 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
                             <Info className='w-5 h-5' />
                         </div>
                         <div>
-                            <h3 className='font-bold text-lg'>🚀 Expertise dernière minute</h3>
+                            <h3 className='font-bold text-lg'>Expertise dernière minute</h3>
                             <p className='text-sm leading-relaxed mb-3'>
-                                Nous sommes habitués à gérer les réservations urgentes avec professionnalisme. Si ce modèle n'est pas disponible, nous trouverons une solution adaptée.
+                                Nous sommes habitués à gérer les réservations urgentes avec professionnalisme. Si ce modèle n'est pas disponible, nous trouverons systématiquement une solution adaptée, comme un surclassement. 
                             </p>
                             <p className='text-sm leading-relaxed mb-3'>
-                                <strong>Gain de temps :</strong> nous vous envoyons un email dès le règlement de votre réservation pour que vous puissiez paramétrer votre template dans notre outil en ligne sans perdre une seconde.
+                                <strong>Ne perdez pas de temps :</strong> nous vous envoyons un email dès le règlement de votre réservation pour que vous puissiez paramétrer votre template (le contour de la photo) dans notre outil en ligne sans perdre une seconde.
                             </p>
                             <p className='text-xs italic opacity-80'>
-                                Dans le cas exceptionnel (très rare) où nous ne pourrions pas satisfaire votre demande, nous procédons à un remboursement intégral et immédiat.
+                                Dans le cas exceptionnel - qui ne s'est jamais produit à l'écriture de ces lignes - où nous ne pourrions pas honorer votre demande, nous procédons bien sûr à un remboursement intégral et immédiat.
                             </p>
                         </div>
                     </div>
