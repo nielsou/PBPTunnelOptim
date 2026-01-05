@@ -110,9 +110,7 @@ export const THIRD_PARTY_PROXY_URL = '/api/create-thirdparty';
 // Valeurs Fixes pour Axonaut
 export const AXONAUT_FIXED_DEFAULTS = {
     commercial: 'contact@photobooth-paris.fr',
-    // companyId: 38647018,
     acomptePct: 1, // 100%
-    company_address_id: 36619044, // ID d'adresse de facturation
     nombreMachine: 1,
 };
 

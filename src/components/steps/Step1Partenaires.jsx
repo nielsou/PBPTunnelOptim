@@ -50,6 +50,9 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                 const defaultContact = data.contacts[0];
                 setSelectedContactIndex(0);
 
+                const defaultBillingObj = data.billingAddresses[0];
+                const defaultDeliveryObj = data.deliveryAddresses[0];
+
                 const firstAddress = data.deliveryAddresses[0];
 
                 if (firstAddress) {
@@ -65,8 +68,11 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                     email: defaultContact?.email || '',
                     phone: defaultContact?.phone || '',
                     billingFullAddress: data.defaultBillingAddress,
+                    billingAddressId: defaultBillingObj?.id || null, 
                     deliveryFullAddress: data.defaultDeliveryAddress,
-                    newDeliveryAddressName: data.deliveryAddresses[0]?.label || ''
+                    newDeliveryAddressName: data.deliveryAddresses[0]?.label || '',
+                    saveNewBillingAddress: false,
+                    saveNewDeliveryAddress: false
                 }));
 
                 if (data.defaultDeliveryAddress) {
