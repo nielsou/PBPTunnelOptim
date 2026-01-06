@@ -135,30 +135,44 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     // Logique CineBooth (Numérique, 150, 300)
     if (nomBorne === nameNum || nomBorne === name150 || nomBorne === name300) {
-        items.push(t('axonaut.desc.cine_base', lang));
+        items.push(
+            t('axonaut.desc.cine_base', lang)
+        );
 
         if (nomBorne === nameNum) {
-            items.push(t('axonaut.desc.num_only', lang));
+            items.push(
+                t('axonaut.desc.num_only', lang)
+            );
         } else if (nomBorne === name150) {
-            items.push(`${t('axonaut.desc.prints_150', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
+            items.push(
+                t('axonaut.desc.prints_150', lang),
+                t('axonaut.desc.prints_1copy', lang)
+            );
         } else if (nomBorne === name300) {
-            items.push(`${t('axonaut.desc.prints_300', lang)} <strong>${t('axonaut.desc.prints_1copy', lang)}</strong>`);
+            items.push(
+                t('axonaut.desc.prints_300', lang),
+                t('axonaut.desc.prints_1copy', lang)
+            );
         }
 
-        items.push(t('axonaut.desc.mail_5g', lang), t('axonaut.desc.download', lang));
-        if (!livraisonIncluse) items.push(`<strong>${t('axonaut.log.pickup', lang)}</strong>`);
-        items.push(t('axonaut.desc.self_setup', lang), t('axonaut.desc.support', lang));
+        items.push(
+            t('axonaut.desc.mail_5g', lang),
+            t('axonaut.desc.download', lang),
+            t('axonaut.desc.support', lang)
+        );
+        if (!livraisonIncluse) items.push(t('axonaut.log.pickup', lang));
     }
     // Logique StarBooth Pro
     else if (nomBorne === namePro) {
         items.push(
             t('axonaut.desc.star_base', lang),
             t('axonaut.desc.unlimited', lang),
+            t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
             t('axonaut.desc.mail_5g', lang),
-            t('axonaut.desc.download', lang)
+            t('axonaut.desc.download', lang),
+            t('axonaut.desc.support', lang)
         );
-        if (!livraisonIncluse) items.push(`<strong>${t('axonaut.log.pickup', lang)}</strong>`);
-        items.push(t('axonaut.desc.self_setup', lang), t('axonaut.desc.support', lang));
+        if (!livraisonIncluse) items.push(t('axonaut.log.pickup', lang));
     }
     // Logique Signature
     else if (nomBorne === nameSig) {

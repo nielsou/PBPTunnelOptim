@@ -21,10 +21,10 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
 
     // Mapping des images
     const machineImages = {
-        CineBooth: '/images/machines/PAYSAGE_CineBooth_2.png',
-        illimite: '/images/machines/PAYSAGE_Starbooth_Pro.png',
-        Signature: '/images/machines/PAYSAGE_Signature_Gala_6.png',
-        '360': '/images/machines/PAYSAGE_Videobooth_360_4.png'
+        CineBooth: '/images/machines/PAYSAGE_CineBooth_2-min.png',
+        illimite: '/images/machines/PAYSAGE_Starbooth_Pro-min.png',
+        Signature: '/images/machines/PAYSAGE_Signature_Gala_6-min.png',
+        '360': '/images/machines/PAYSAGE_Videobooth_360_4-min.png'
     };
 
     const isStarbooth = formData.model === 'illimite';
@@ -345,14 +345,36 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                         )}
                         {is360 ? (
                             <div className='flex items-center justify-between bg-pink-50 p-6 rounded-[2rem] border border-pink-100'>
-                                <div className='flex items-center gap-3'><Music className='w-5 h-5 text-pink-600' /><span className='font-bold text-sm'>Enceinte & Musique</span></div>
-                                <div className='flex items-center gap-3'><span className='font-black text-pink-600 text-sm'>+{priceTransformer(unitaryPrices.speaker).toFixed(0)}€</span><input type='checkbox' checked={formData.optionSpeaker} onChange={(e) => handleChange('optionSpeaker', e.target.checked)} className='w-7 h-7 rounded-lg text-pink-600' /></div>
+                                <div>
+                                    <div className='flex items-center gap-3 mb-1'>
+                                        <Music className='w-5 h-5 text-pink-600' />
+                                        <span className='font-bold text-sm'>Enceinte & Musique</span>
+                                    </div>
+                                    <p className='text-[10px] text-pink-800 ml-8 max-w-[200px] leading-tight'>
+                                        Une ambiance musicale pour décomplexer vos invités et booster le fun !
+                                    </p>
+                                </div>
+                                <div className='flex items-center gap-3'>
+                                    <span className='font-black text-pink-600 text-sm'>+{priceTransformer(unitaryPrices.speaker).toFixed(0)}€</span>
+                                    <input type='checkbox' checked={formData.optionSpeaker} onChange={(e) => handleChange('optionSpeaker', e.target.checked)} className='w-7 h-7 rounded-lg text-pink-600' />
+                                </div>
                             </div>
                         ) : (
                             formData.isPro && (
-                                <div className='flex items-center justify-between bg-gray-900 p-6 rounded-[2rem] text-white'>
-                                    <div className='flex items-center gap-3'><Star className='w-5 h-5 text-yellow-400 fill-current' /><span className='font-bold text-sm'>Pack Data RGPD</span></div>
-                                    <div className='flex items-center gap-3'><span className='font-black text-xs text-blue-400'>+{priceTransformer(unitaryPrices.rgpd).toFixed(0)}€</span><input type='checkbox' checked={formData.proRGPD} onChange={(e) => handleChange('proRGPD', e.target.checked)} className='w-7 h-7 rounded-lg text-blue-500' /></div>
+                                <div className='flex items-center justify-between bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100'>
+                                    <div>
+                                        <div className='flex items-center gap-3 mb-1'>
+                                            <Star className='w-5 h-5 text-indigo-600 fill-current' />
+                                            <span className='font-bold text-sm text-indigo-900'>Pack Marketing & Data</span>
+                                        </div>
+                                        <p className='text-[10px] text-indigo-800 ml-8 max-w-[200px] leading-tight'>
+                                            Transformez vos invités en contacts qualifiés. Collecte d'emails certifiée RGPD pour vos campagnes et export CSV.
+                                        </p>
+                                    </div>
+                                    <div className='flex items-center gap-3'>
+                                        <span className='font-black text-indigo-600 text-sm'>+{priceTransformer(unitaryPrices.rgpd).toFixed(0)}€</span>
+                                        <input type='checkbox' checked={formData.proRGPD} onChange={(e) => handleChange('proRGPD', e.target.checked)} className='w-7 h-7 rounded-lg text-indigo-600' />
+                                    </div>
                                 </div>
                             )
                         )}

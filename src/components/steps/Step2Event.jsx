@@ -1,5 +1,5 @@
 // src/components/steps/Step2Event.jsx
-import React, { useState } from 'react'; // Ajout de useState
+import React, { useState } from 'react';
 import { MapPin, Calendar, Info, Mail, Phone, Clock } from 'lucide-react';
 import { InputField } from '../ui/InputField';
 
@@ -23,16 +23,19 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    // Nouvelle fonction pour gérer la saisie de la date avec message d'erreur
+    // Nouvelle fonction corrigée : ne vide plus le champ pendant la saisie
     const handleDateChange = (e) => {
         const selectedDate = e.target.value;
         
+        // 1. On met à jour la valeur quoi qu'il arrive (pour ne pas casser la saisie clavier)
+        handleChange('eventDate', selectedDate);
+
+        // 2. On gère l'affichage de l'erreur uniquement
         if (selectedDate && selectedDate < todayStr) {
             setDateError("La date de l'événement ne peut pas être dans le passé.");
-            handleChange('eventDate', ''); // On vide la date pour bloquer l'étape
+            // On ne vide PLUS le champ ici
         } else {
-            setDateError(''); // On efface l'erreur
-            handleChange('eventDate', selectedDate);
+            setDateError('');
         }
     };
 
@@ -56,7 +59,7 @@ export const Step2Event = ({ formData, setFormData, customColor }) => {
                         label="Date de l'événement"
                         type='date'
                         value={formData.eventDate}
-                        onChange={handleDateChange} // Utilise la nouvelle fonction de contrôle
+                        onChange={handleDateChange} // Utilise la fonction corrigée
                         required
                         min={todayStr}
                     />
