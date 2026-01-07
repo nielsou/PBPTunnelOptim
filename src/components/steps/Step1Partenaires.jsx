@@ -6,7 +6,7 @@ import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 import { getAxonautCompanyDetails } from '../../services/axonautService';
 
-export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
+export const Step1Partenaires = ({ formData, setFormData, customColor, isCalculatorMode }) => {
     const [clientNumber, setClientNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [clientData, setClientData] = useState(formData.savedClientData || null);
@@ -68,7 +68,7 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
                     email: defaultContact?.email || '',
                     phone: defaultContact?.phone || '',
                     billingFullAddress: data.defaultBillingAddress,
-                    billingAddressId: defaultBillingObj?.id || null, 
+                    billingAddressId: defaultBillingObj?.id || null,
                     deliveryFullAddress: data.defaultDeliveryAddress,
                     newDeliveryAddressName: data.deliveryAddresses[0]?.label || '',
                     saveNewBillingAddress: false,
@@ -156,7 +156,9 @@ export const Step1Partenaires = ({ formData, setFormData, customColor }) => {
     if (!clientData) {
         return (
             <div className='space-y-6'>
-                <h2 className='text-3xl font-extrabold text-gray-900 mb-2' style={{ color: customColor }}>Espace Partenaires</h2>
+                <h2 className='text-3xl font-extrabold text-gray-900 mb-2' style={{ color: customColor }}>
+                    {isCalculatorMode ? 'Entrez le numéro de votre client' : 'Entrez votre numéro Partenaire'}
+                </h2>
                 <div className='bg-blue-50 p-6 rounded-xl border border-blue-200 shadow-sm'>
                     <form onSubmit={handleSearch} className='flex gap-3'>
                         <input type="text" value={clientNumber} onChange={(e) => setClientNumber(e.target.value)} placeholder="Numéro client" className="flex-1 px-4 py-3 rounded-xl border border-gray-300 font-bold" />

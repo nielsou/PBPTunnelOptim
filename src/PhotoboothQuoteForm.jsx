@@ -123,6 +123,7 @@ export default function PhotoboothQuoteForm() {
                         setFormData={setFormData}
                         customColor={customColor}
                         handleNext={handleNext}
+                        isCalculatorMode={isCalculatorMode}
                     />;
                 }
                 return <Step1Contact
@@ -157,7 +158,12 @@ export default function PhotoboothQuoteForm() {
             <div className='max-w-4xl mx-auto'>
                 {/* TITRE DYNAMIQUE SELON LE MODE */}
                 <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center" style={{ color: customColor }}>
-                    {isPartnerMode ? 'Devis Express Partenaires' : 'Devis Express Photobooth'}
+                    {isCalculatorMode
+                        ? 'Bonjour Héloïse et Cédric !'           // 1. Titre mode Calculette
+                        : isPartnerMode
+                            ? 'Devis Partenaires Photobooth-Paris'      // 2. Titre mode Partenaire
+                            : 'Devis Express Photobooth'                // 3. Titre mode Normal (par défaut)
+                    }
                 </h1>
 
                 <div className='bg-white rounded-3xl shadow-2xl p-3 sm:p-10 border border-gray-100'>
