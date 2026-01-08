@@ -59,7 +59,7 @@ export const PRICING_STRATEGY = {
         name: 'Videobooth 360',
         priceHT: 715,
         floorPriceHT: 129.75,
-        delivery: 180,
+        delivery: 110,
         animation_hour: 90,
         speaker: 50
     },
