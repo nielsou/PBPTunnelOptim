@@ -46,6 +46,10 @@ export const useQuoteLogic = () => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [finalPublicLink, setFinalPublicLink] = useState(null);
+    const [axonautProspectLink, setAxonautProspectLink] = useState(null);
+    const [axonautQuoteId, setAxonautQuoteId] = useState(null);
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
+    const [emailSent, setEmailSent] = useState(false);
 
     // État initial du formulaire
     const initialFormState = {
@@ -511,6 +515,43 @@ export const useQuoteLogic = () => {
         setIsSubmitted(false);
         setIsSubmitting(false);
         setQuoteId(nanoid(10));
+        setAxonautProspectLink(null);
+        setAxonautQuoteId(null);
+        setIsSendingEmail(false);
+        setEmailSent(false);
+    };
+
+    const sendEmailToClient = async (showMessage) => {
+        if (!axonautQuoteId || !finalPublicLink) return;
+
+        setIsSendingEmail(true);
+        try {
+            await AxonautService.createAxonautEvent(
+                axonautQuoteId,
+                formData.companyId,
+                formData.email,
+                formData.email,
+                finalPublicLink,
+                lang
+            );
+            showMessage("Email envoyé avec succès !");
+
+            // 2. ON VALIDE L'ACTION
+            setEmailSent(true);
+
+        } catch (error) {
+            console.error("Erreur envoi email:", error);
+            showMessage("Erreur lors de l'envoi.");
+        } finally {
+            setIsSendingEmail(false);
+        }
+    };
+
+    const returnToEdit = () => {
+        setIsSubmitted(false);
+        setFinalPublicLink(null);
+        setEmailSent(false);
+        setIsSubmitting(false); 
     };
 
     // GESTION DE LA SOUMISSION 
@@ -530,6 +571,8 @@ export const useQuoteLogic = () => {
                 const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData, lang);
                 companyId = newId;
             }
+
+            setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
 
             // 2. LOGIQUE D'UPDATE 
             try {
@@ -586,6 +629,8 @@ export const useQuoteLogic = () => {
             const axonautBody = AxonautService.generateAxonautQuotationBody(inputsForAxonaut, companyId, lang);
             const quoteResponse = await AxonautService.sendAxonautQuotation(axonautBody);
 
+            setAxonautQuoteId(quoteResponse.id);
+
             if (ENABLE_ZAPIER_STEP_4) {
                 triggerWebhook(4, pricing, quoteResponse, isCalculatorMode);
             }
@@ -626,7 +671,12 @@ export const useQuoteLogic = () => {
         isSubmitting,
         isSubmitted,
         resetForm,
+        returnToEdit,
         finalPublicLink,
+        axonautProspectLink,
+        emailSent,
+        sendEmailToClient,
+        isSendingEmail,
         lang
     };
 };

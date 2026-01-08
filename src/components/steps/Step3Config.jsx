@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Wand2, Truck, Video, Zap, Gem, Ban, Music, ChevronRight, RefreshCcw, Star, Check } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
-export const Step3Config = ({ formData, setFormData, customColor, pricingData }) => {
+export const Step3Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode }) => {
     const configSectionRef = useRef(null);
     const [showCineBoothOptions, setShowCineBoothOptions] = useState(false);
 
@@ -86,67 +86,68 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData })
                 <div className='space-y-12'>
 
                     {/* --- SECTION PRÊT-À-FÊTER (CINEBOOTH) --- */}
-                    <section>
-                        <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
-                            <div className='bg-yellow-100 p-2 rounded-lg'><Zap className='w-5 h-5 text-yellow-600' /></div>
-                            Collection "Prêt-à-Fêter"
-                        </h3>
+                    {!isPartnerMode && (
+                        <section>
+                            <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
+                                <div className='bg-yellow-100 p-2 rounded-lg'><Zap className='w-5 h-5 text-yellow-600' /></div>
+                                Collection "Prêt-à-Fêter"
+                            </h3>
 
-                        {!showCineBoothOptions ? (
-                            // MODELE COMPACT : max-w-sm, h-56, p-6
-                            <div className='group bg-white border-2 border-gray-100 rounded-[2.5rem] overflow-hidden hover:border-yellow-400 transition-all hover:shadow-2xl max-w-sm mx-auto'>
-                                <div className='h-56 overflow-hidden bg-gray-100'>
-                                    <img src={machineImages.CineBooth} className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500' alt="CineBooth" />
-                                </div>
-                                <div className='p-6'>
-                                    <h4 className='font-black text-gray-900 text-2xl'>Nos offres CineBooths</h4>
-                                    <p className='text-sm text-gray-500 mt-2 mb-6'>La borne fun et accessible. Choisissez ensuite votre pack (Digital, 150 ou 300 tirages).</p>
-
-                                    {/* --- AJOUT : PRIX "À PARTIR DE" --- */}
-                                    <div className='flex flex-col mb-6'>
-                                        <span className='text-2xl font-black text-gray-900'>
-                                            À partir de {formatPricePerDay(unitaryPrices['numerique'])}
-                                        </span>
-                                        <span className='text-[10px] font-bold text-gray-500 italic mt-1 leading-tight'>
-                                            + {priceTransformer(unitaryPrices['deliv_numerique']).toFixed(0)}€ {priceSuffix} pour la livraison
-                                        </span>
+                            {!showCineBoothOptions ? (
+                                // MODELE COMPACT : max-w-sm, h-56, p-6
+                                <div className='group bg-white border-2 border-gray-100 rounded-[2.5rem] overflow-hidden hover:border-yellow-400 transition-all hover:shadow-2xl max-w-sm mx-auto'>
+                                    <div className='h-56 overflow-hidden bg-gray-100'>
+                                        <img src={machineImages.CineBooth} className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500' alt="CineBooth" />
                                     </div>
-                                    {/* ---------------------------------- */}
+                                    <div className='p-6'>
+                                        <h4 className='font-black text-gray-900 text-2xl'>Nos offres CineBooths</h4>
+                                        <p className='text-sm text-gray-500 mt-2 mb-6'>Le 1er prix de nos concurrents ? Une tablette et un rond lumlineux... Notre 1er prix ? Ecran HD, capteur Ultra HD, l'excellence du photobooth à la française. Choisissez ensuite votre pack (Digital, 150 ou 300 tirages).</p>
 
-                                    <button
-                                        onClick={() => setShowCineBoothOptions(true)}
-                                        className='w-full py-4 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-yellow-500 transition-all shadow-lg'
-                                    >
-                                        Choisir mon pack <ChevronRight className='w-5 h-5' />
+                                        {/* --- AJOUT : PRIX "À PARTIR DE" --- */}
+                                        <div className='flex flex-col mb-6'>
+                                            <span className='text-2xl font-black text-gray-900'>
+                                                À partir de {formatPricePerDay(unitaryPrices['numerique'])}
+                                            </span>
+                                            <span className='text-[10px] font-bold text-gray-500 italic mt-1 leading-tight'>
+                                                + {priceTransformer(unitaryPrices['deliv_numerique']).toFixed(0)}€ {priceSuffix} pour la livraison
+                                            </span>
+                                        </div>
+                                        {/* ---------------------------------- */}
+
+                                        <button
+                                            onClick={() => setShowCineBoothOptions(true)}
+                                            className='w-full py-4 bg-gray-900 text-white rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-yellow-500 transition-all shadow-lg'
+                                        >
+                                            Choisir mon pack <ChevronRight className='w-5 h-5' />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 animate-in zoom-in-95 duration-300 max-w-4xl mx-auto'>
+                                    {/* ... (Bloc options Cinebooth inchangé) ... */}
+                                    {[
+                                        { id: 'numerique', name: 'Pack Numérique', desc: '100% Digital' },
+                                        { id: '150', name: 'Pack 150', desc: '150 tirages papier' },
+                                        { id: '300', name: 'Pack 300', desc: '300 tirages papier' }
+                                    ].map(pack => (
+                                        <button key={pack.id} onClick={() => handleModelSelect(pack.id)} className='p-6 bg-white border-2 border-yellow-400 rounded-3xl text-left hover:shadow-xl transition-all group'>
+                                            <h5 className='font-black text-gray-900 text-lg group-hover:text-yellow-600 transition-colors'>{pack.name}</h5>
+                                            <p className='text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1 mb-4'>{pack.desc}</p>
+
+                                            {/* Harmonisation du prix dans les sous-choix aussi (Optionnel mais recommandé) */}
+                                            <div className='flex flex-col'>
+                                                <p className='font-bold text-gray-900'>{formatPricePerDay(unitaryPrices[pack.id])}</p>
+                                                <p className='text-[9px] text-gray-400 italic'>+ {priceTransformer(unitaryPrices[`deliv_${pack.id}`]).toFixed(0)}€ livr.</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    <button onClick={() => setShowCineBoothOptions(false)} className='md:col-span-3 text-center text-sm font-bold text-gray-400 py-4 hover:text-gray-600 transition-colors'>
+                                        <RefreshCcw className='w-4 h-4 inline mr-2' /> Retour au catalogue
                                     </button>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className='grid grid-cols-1 md:grid-cols-3 gap-4 animate-in zoom-in-95 duration-300 max-w-4xl mx-auto'>
-                                {/* ... (Bloc options Cinebooth inchangé) ... */}
-                                {[
-                                    { id: 'numerique', name: 'Pack Numérique', desc: '100% Digital' },
-                                    { id: '150', name: 'Pack 150', desc: '150 tirages papier' },
-                                    { id: '300', name: 'Pack 300', desc: '300 tirages papier' }
-                                ].map(pack => (
-                                    <button key={pack.id} onClick={() => handleModelSelect(pack.id)} className='p-6 bg-white border-2 border-yellow-400 rounded-3xl text-left hover:shadow-xl transition-all group'>
-                                        <h5 className='font-black text-gray-900 text-lg group-hover:text-yellow-600 transition-colors'>{pack.name}</h5>
-                                        <p className='text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1 mb-4'>{pack.desc}</p>
-
-                                        {/* Harmonisation du prix dans les sous-choix aussi (Optionnel mais recommandé) */}
-                                        <div className='flex flex-col'>
-                                            <p className='font-bold text-gray-900'>{formatPricePerDay(unitaryPrices[pack.id])}</p>
-                                            <p className='text-[9px] text-gray-400 italic'>+ {priceTransformer(unitaryPrices[`deliv_${pack.id}`]).toFixed(0)}€ livr.</p>
-                                        </div>
-                                    </button>
-                                ))}
-                                <button onClick={() => setShowCineBoothOptions(false)} className='md:col-span-3 text-center text-sm font-bold text-gray-400 py-4 hover:text-gray-600 transition-colors'>
-                                    <RefreshCcw className='w-4 h-4 inline mr-2' /> Retour au catalogue
-                                </button>
-                            </div>
-                        )}
-                    </section>
-
+                            )}
+                        </section>
+                    )}
                     {/* --- SECTION PRESTIGE (STARBOOTH & SIGNATURE) --- */}
                     <section>
                         <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
