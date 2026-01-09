@@ -86,7 +86,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                 <div className='space-y-12'>
 
                     {/* --- SECTION PRÊT-À-FÊTER (CINEBOOTH) --- */}
-                    {!isPartnerMode && (
+                    {!isPartnerClient && (
                         <section>
                             <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
                                 <div className='bg-yellow-100 p-2 rounded-lg'><Zap className='w-5 h-5 text-yellow-600' /></div>

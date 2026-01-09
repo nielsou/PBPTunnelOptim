@@ -45,7 +45,8 @@ export default function PhotoboothQuoteForm() {
         axonautProspectLink,
         sendEmailToClient,
         isSendingEmail,
-        emailSent
+        emailSent,
+        isPartnerClient
     } = useQuoteLogic();
 
     // État pour savoir si on est en mode "Partenaires"
@@ -222,6 +223,7 @@ export default function PhotoboothQuoteForm() {
                     pricingData={pricingData}
                     customColor={customColor}
                     isPartnerMode={isPartnerMode}
+                    isPartnerClient={isPartnerClient}
                 />;
             case 4:
                 return <Step4Recap

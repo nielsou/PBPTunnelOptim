@@ -89,6 +89,12 @@ export const useQuoteLogic = () => {
 
     const [formData, setFormData] = useState(initialFormState);
 
+    // On vérifie si l'ID de la société est présent dans les clés de COMPANY_SPECIFIC_PRICING
+    const isPartnerClient = useMemo(() => {
+        if (!formData.companyId) return false;
+        return Object.keys(COMPANY_SPECIFIC_PRICING).includes(formData.companyId.toString());
+    }, [formData.companyId]);
+
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(() => {
 
@@ -677,6 +683,7 @@ export const useQuoteLogic = () => {
         emailSent,
         sendEmailToClient,
         isSendingEmail,
-        lang
+        lang,
+        isPartnerClient
     };
 };
