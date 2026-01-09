@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Wand2, Truck, Video, Zap, Gem, Ban, Music, ChevronRight, RefreshCcw, Star, Check } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
-export const Step3Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode }) => {
+export const Step3Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode, isPartnerClient }) => {
     const configSectionRef = useRef(null);
     const [showCineBoothOptions, setShowCineBoothOptions] = useState(false);
 
