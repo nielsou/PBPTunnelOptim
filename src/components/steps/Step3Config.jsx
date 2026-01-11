@@ -271,7 +271,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                             <div className='flex items-start justify-between gap-4'>
                                 <div className='flex-1'>
                                     <div className='flex items-center gap-2 mb-2'><Wand2 className='w-5 h-5 text-indigo-600' /><span className='font-bold text-gray-900'>Outil Template Pro</span></div>
-                                    <p className='text-xs text-gray-600'>Personnalisez votre cadre photo avec logos et textes.</p>
+                                    <p className='text-xs text-gray-600'>Personnalisez votre cadre photo avec images, logos et textes custo.</p>
                                 </div>
                                 <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${isFreeTemplate ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>
                                     {isFreeTemplate ? 'Inclus' : `+${priceTransformer(unitaryPrices.template).toFixed(0)}€`}
@@ -287,7 +287,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                         {(isStarbooth || isSignature) && (
                             <div className='bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all'>
                                 <div className='flex gap-4 items-start mb-4'>
-                                    <img src="/images/options/option_IA_avant_apres.jpeg" className='w-28 h-28 object-cover rounded-2xl shadow-md' alt="IA" />
+                                    <img src="/images/options/option_IA_avant_apres.webp" className='w-28 h-28 object-cover rounded-2xl shadow-md' alt="IA" />
                                     <div><h4 className='font-black text-gray-900 leading-tight'>Fond Magique IA</h4><p className='text-[10px] text-gray-500 mt-2'>Décors uniques sans fond vert !</p></div>
                                 </div>
                                 <div className='flex items-center justify-between pt-4 border-t border-gray-50'>
