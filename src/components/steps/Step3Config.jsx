@@ -55,6 +55,12 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
 
     const isFreeTemplate = !formData.isPro || (formData.isPro && unitaryPrices.template === 0);
 
+    useEffect(() => {
+        if (isFreeTemplate && !formData.templateTool) {
+            handleChange('templateTool', true);
+        }
+    }, [isFreeTemplate, formData.templateTool]);
+
     return (
         <div className='space-y-12 animate-in fade-in duration-500'>
 
