@@ -103,8 +103,8 @@ export const locales = {
     "axonaut.opt.print_sup":     { fr: "[Option] Supplément Impression Multiple", en: "[Option] Multiple Printing Supplement" },
 
     // --- EMAIL ---
-    "axonaut.email.subject":  { fr: "Suite à votre demande de devis", en: "Following your quote request" },
+    "axonaut.email.subject":  { fr: "Suite à votre commande", en: "Following your order" },
     "axonaut.email.greeting": { fr: "Bonjour,", en: "Hello," },
-    "axonaut.email.body":     { fr: "Veuillez trouver ci-joint votre devis Photobooth. Vous pouvez le consulter, le signer et régler l'acompte en ligne via ce lien sécurisé :", en: "Please find attached your Photobooth quote. You can view, sign and pay the deposit online via this secure link:" },
-    "axonaut.email.footer":   { fr: "Cordialement,\nL'équipe Photobooth Paris", en: "Best regards,\nThe Photobooth Paris Team" }
+    "axonaut.email.body":     { fr: "Veuillez trouver ci-joint votre devis Photobooth. Vous pouvez le consulter et procéder en paiement en ligne via ce lien sécurisé :", en: "Please find attached your Photobooth quote. You can review and proceed to the payment online via this secure link:" },
+    "axonaut.email.footer":   { fr: "N'hésitez pas à répondre à cet email pour toute question.\n\nCordialement,\nL'équipe Photobooth Paris", en: "Press Reply if you have any questions !\n\nBest regards,\nThe Photobooth Paris Team" }
 };

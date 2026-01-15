@@ -164,7 +164,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                         {/* Grille resserrée (max-w-4xl) */}
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto'>
                             {[
-                                { id: 'illimite', name: 'Starbooth Pro', badge: 'Best-Seller', color: 'blue', desc: "La performance professionnelle...miniaturisée ! Cette borne est dotée d'un capteur Sony 4K f/1.2, d'un flash LED adaptatif et d'une imprimante thermique poids lourd pour des impressions éclair en illimité. Idéale pour les endroits difficile d'accès et les soirées edgy." },
+                                { id: 'illimite', name: 'Starbooth Pro', badge: 'Best-Seller', color: 'blue', desc: "La performance professionnelle...miniaturisée ! Cette borne est dotée d'un capteur Sony 4K f/1.2, d'un flash LED adaptatif et d'une imprimante thermique poids lourd pour des impressions éclair en illimité. Idéale pour les endroits difficile d'accès et les soirées edgy !" },
                                 { id: 'Signature', name: 'Signature', badge: 'Luxe & Studio', color: 'purple', desc: "L'élégance ultime pour vos grands moments. La présence magnétique de cette borne est idéale pour créer l'effervescence autour d'une marque ou sublimer un lieu de réception. Offrez à vos invités les plaisirs d'une séance photo professionnelle." }
                             ].map(item => (
                                 // MODELE COMPACT : max-w-sm, h-56, p-6
@@ -266,35 +266,79 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                 <div ref={configSectionRef} className='animate-in slide-in-from-bottom-8 duration-700 space-y-10 pt-4 max-w-4xl mx-auto'>
 
                     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-                        {/* Option Template */}
-                        <div className={`group flex flex-col space-y-4 p-6 rounded-3xl border-2 transition-all ${isFreeTemplate ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50 border-indigo-100 hover:border-indigo-300 shadow-sm'}`}>
-                            <div className='flex items-start justify-between gap-4'>
-                                <div className='flex-1'>
-                                    <div className='flex items-center gap-2 mb-2'><Wand2 className='w-5 h-5 text-indigo-600' /><span className='font-bold text-gray-900'>Outil Template Pro</span></div>
-                                    <p className='text-xs text-gray-600'>Personnalisez votre cadre photo avec images, logos et textes custo.</p>
+                        {/* 1. Option Template (Cadre) */}
+                        <div className={`group flex flex-col justify-between p-6 rounded-[2rem] border-2 transition-all ${isFreeTemplate ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50 border-indigo-100 hover:border-indigo-300 shadow-sm'}`}>
+
+                            <div className='flex gap-5 items-start'>
+                                <img
+                                    src="/images/options/option_template.png"
+                                    className='w-24 h-24 object-cover rounded-2xl shadow-sm shrink-0'
+                                    alt="Cadre Personnalisé"
+                                />
+                                <div>
+                                    <div className='flex items-center justify-between mb-1'>
+                                        <h4 className='font-black text-gray-900 text-lg leading-tight'>Cadre Photo</h4>
+                                        {/* Badge Prix Template : Taille augmentée à text-xs */}
+                                        <span className={`text-xs font-black px-2 py-1 rounded-full uppercase tracking-widest ${isFreeTemplate ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>
+                                            {isFreeTemplate ? 'Inclus' : `+${priceTransformer(unitaryPrices.template).toFixed(0)}€`}
+                                        </span>
+                                    </div>
+                                    <p className='text-xs text-gray-500 leading-relaxed'>
+                                        Personnalisez le contour de vos photos (logo, date, design...) via notre outil en ligne ou importez votre propre fichier.
+                                    </p>
                                 </div>
-                                <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest ${isFreeTemplate ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>
-                                    {isFreeTemplate ? 'Inclus' : `+${priceTransformer(unitaryPrices.template).toFixed(0)}€`}
-                                </span>
                             </div>
-                            <div className='flex items-center space-x-3 pt-2 border-t border-indigo-100/50'>
-                                <input type='checkbox' checked={isFreeTemplate ? true : formData.templateTool} disabled={isFreeTemplate} onChange={(e) => handleChange('templateTool', e.target.checked)} className='w-6 h-6 rounded-lg text-indigo-600 cursor-pointer' />
-                                <label className='text-sm font-bold text-gray-700 cursor-pointer'>{isFreeTemplate ? 'Option déjà incluse' : 'Activer la personnalisation'}</label>
+
+                            <div className='flex items-center justify-between pt-4 border-t border-gray-200/50 mt-4'>
+                                <label htmlFor="opt_template" className='text-sm font-bold text-gray-700 cursor-pointer select-none'>
+                                    {isFreeTemplate ? 'Option incluse' : 'Activer la personnalisation'}
+                                </label>
+                                <input
+                                    id="opt_template"
+                                    type='checkbox'
+                                    checked={isFreeTemplate ? true : formData.templateTool}
+                                    disabled={isFreeTemplate}
+                                    onChange={(e) => handleChange('templateTool', e.target.checked)}
+                                    className={`w-6 h-6 rounded-lg cursor-pointer ${isFreeTemplate ? 'text-green-600' : 'text-indigo-600'}`}
+                                />
                             </div>
                         </div>
 
-                        {/* Option IA */}
+                        {/* 2. Option IA (Fond Magique) */}
                         {(isStarbooth || isSignature) && (
-                            <div className='bg-white p-6 rounded-3xl border-2 border-gray-100 shadow-sm flex flex-col justify-between group hover:border-blue-200 transition-all'>
-                                <div className='flex gap-4 items-start mb-4'>
-                                    <img src="/images/options/option_IA_avant_apres.webp" className='w-28 h-28 object-cover rounded-2xl shadow-md' alt="IA" />
-                                    <div><h4 className='font-black text-gray-900 leading-tight'>Fond Magique IA</h4><p className='text-[10px] text-gray-500 mt-2'>Décors uniques sans fond vert !</p></div>
-                                </div>
-                                <div className='flex items-center justify-between pt-4 border-t border-gray-50'>
-                                    <div className='flex items-center gap-3'>
-                                        <input type='checkbox' id="proFondIA" checked={formData.proFondIA} onChange={(e) => handleChange('proFondIA', e.target.checked)} className='w-6 h-6 text-blue-600 rounded-lg cursor-pointer' />
-                                        <label htmlFor="proFondIA" className='text-sm font-bold text-gray-800 cursor-pointer'>Ajouter (+{priceTransformer(unitaryPrices.ia).toFixed(0)}€)</label>
+                            <div className='group flex flex-col justify-between p-6 rounded-[2rem] border-2 border-gray-100 bg-white shadow-sm hover:border-blue-200 transition-all'>
+
+                                <div className='flex gap-5 items-start'>
+                                    <img
+                                        src="/images/options/option_IA_avant_apres.webp"
+                                        className='w-24 h-24 object-cover rounded-2xl shadow-sm shrink-0'
+                                        alt="Fond IA"
+                                    />
+                                    <div>
+                                        <div className='flex items-center justify-between mb-1'>
+                                            <h4 className='font-black text-gray-900 text-lg leading-tight'>Fond IA</h4>
+                                            {/* Badge Prix IA : Taille augmentée à text-xs */}
+                                            <span className='text-xs font-black px-2 py-1 rounded-full uppercase tracking-widest bg-blue-100 text-blue-700'>
+                                                +{priceTransformer(unitaryPrices.ia).toFixed(0)}€
+                                            </span>
+                                        </div>
+                                        <p className='text-xs text-gray-500 leading-relaxed'>
+                                            L’arrière-plan est détecté par intelligence artificielle et remplacé automatiquement par le décor réaliste de votre choix !
+                                        </p>
                                     </div>
+                                </div>
+
+                                <div className='flex items-center justify-between pt-4 border-t border-gray-100 mt-4'>
+                                    <label htmlFor="proFondIA" className='text-sm font-bold text-gray-700 cursor-pointer select-none'>
+                                        Activer le fond magique
+                                    </label>
+                                    <input
+                                        type='checkbox'
+                                        id="proFondIA"
+                                        checked={formData.proFondIA}
+                                        onChange={(e) => handleChange('proFondIA', e.target.checked)}
+                                        className='w-6 h-6 text-blue-600 rounded-lg cursor-pointer'
+                                    />
                                 </div>
                             </div>
                         )}
@@ -358,7 +402,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                                         <span className='font-bold text-sm'>Enceinte & Musique</span>
                                     </div>
                                     <p className='text-[10px] text-pink-800 ml-8 max-w-[200px] leading-tight'>
-                                        Une ambiance musicale pour décomplexer vos invités et booster le fun !
+                                        Une ambiance musicale pour ambiancer vos invités et booster le fun !
                                     </p>
                                 </div>
                                 <div className='flex items-center gap-3'>

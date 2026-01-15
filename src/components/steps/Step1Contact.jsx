@@ -90,7 +90,7 @@ export const Step1Contact = ({ formData, setFormData, customColor, currentStep, 
                     className='w-5 h-5 text-blue-600 rounded-lg cursor-pointer border-gray-300'
                 />
                 <label htmlFor='isPro' className='text-sm font-medium text-gray-800 cursor-pointer select-none'>
-                    Je suis un professionnel (société, agence...) et je souhaite voir les prix en HT
+                    Je suis une société (prix HT et accès aux options pro)
                 </label>
             </div>
 
