@@ -73,7 +73,7 @@ export const OPTION_IMPRESSION_BASE_HT = 100;
 export const OPTION_IMPRESSION_PLANCHER_HT = 100;
 
 // Option Template (coût Pro)
-export const TEMPLATE_TOOL_PRO_PRICE_HT = 68.33;
+export const TEMPLATE_TOOL_PRO_PRICE_HT = 25;
 
 // Tarifs négociés
 export const COMPANY_SPECIFIC_PRICING = {

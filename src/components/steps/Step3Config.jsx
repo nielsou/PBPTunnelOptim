@@ -67,8 +67,8 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
             {/* EN-TÊTE DYNAMIQUE */}
             {!formData.model ? (
                 <div className='text-center'>
-                    <h2 className='text-3xl font-black text-gray-900 mb-2'>Quelle expérience souhaitez-vous ?</h2>
-                    <p className='text-gray-500'>Des bornes 100% conçues en France par notre équipe d'ingénieurs.</p>
+                    <h2 className='text-3xl font-black text-gray-900 mb-2'>Choisir Photobooth Paris</h2>
+                    <p className='text-gray-500'>c'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et impression professionnelle. Notre innovation ? Un système d'éclairage intelligent qui ne s'active que pendant la prise de vue. Résultat : des photos studio parfaites en préservant votre ambiance. La tech, la vraie.</p>
                 </div>
             ) : (
                 <div className='flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-0 z-10 animate-in slide-in-from-top-2'>
@@ -107,7 +107,7 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                                     </div>
                                     <div className='p-6'>
                                         <h4 className='font-black text-gray-900 text-2xl'>Nos offres CineBooths</h4>
-                                        <p className='text-sm text-gray-500 mt-2 mb-6'>Le 1er prix de nos concurrents ? Une tablette et un rond lumlineux... Notre 1er prix ? Ecran HD, capteur Ultra HD, l'excellence du photobooth à la française. Choisissez ensuite votre pack (Digital, 150 ou 300 tirages).</p>
+                                        <p className='text-sm text-gray-500 mt-2 mb-6'>Là où le marché propose souvent de simples tablettes, nous imposons l'Ultra HD dès l'entrée de gamme. La véritable expérience photo à la française, sans concession sur la technique. Disponible en packs Digital, 150 ou 300 tirages.</p>
 
                                         {/* --- AJOUT : PRIX "À PARTIR DE" --- */}
                                         <div className='flex flex-col mb-6'>
