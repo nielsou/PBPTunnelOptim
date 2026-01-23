@@ -1,6 +1,6 @@
 // src/components/steps/Step3Config.jsx
 import React, { useEffect, useRef, useState } from 'react';
-import { Wand2, Truck, Video, Zap, Gem, Ban, Music, ChevronRight, RefreshCcw, Star, Check } from 'lucide-react';
+import { Wand2, Truck, Video, Zap, Gem, Ban, Music, ChevronRight, RefreshCcw, Star, Check, Printer } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
 export const Step3Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode, isPartnerClient }) => {
@@ -265,6 +265,27 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
             {formData.model && (
                 <div ref={configSectionRef} className='animate-in slide-in-from-bottom-8 duration-700 space-y-10 pt-4 max-w-4xl mx-auto'>
 
+
+                    {/* Transport */}
+                    <div className='bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6'>
+                        <h3 className='text-xl font-black text-gray-900'>Logistique & Mise en service</h3>
+                        {(isSignature || is360) ? (
+                            <div className='bg-purple-50 border-2 border-purple-100 p-6 rounded-3xl flex items-center justify-between'>
+                                <div className='flex gap-4'><Truck className='w-6 h-6 text-purple-600' /><div><p className='font-black text-gray-900'>Livraison & Installation par technicien</p><p className='text-[10px] text-purple-700 font-black uppercase tracking-widest italic'>Inclus dans votre pack prestige</p></div></div>
+                                <span className='font-black text-purple-700'>{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
+                            </div>
+                        ) : (
+                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                <button onClick={() => handleChange('delivery', false)} className={`p-6 border-2 rounded-[2rem] transition-all text-left ${!formData.delivery ? 'border-green-600 bg-green-50' : 'border-gray-50 bg-gray-50'}`}>
+                                    <span className='font-black text-gray-800'>Retrait à Arcueil (94)</span><span className='block text-green-600 font-black text-sm mt-1'>Gratuit</span>
+                                </button>
+                                <button onClick={() => handleChange('delivery', true)} className={`p-6 border-2 rounded-[2rem] transition-all text-left ${formData.delivery ? 'border-blue-600 bg-blue-50' : 'border-gray-50 bg-gray-50'}`}>
+                                    <span className='font-black text-gray-800'>Livraison & Installation</span><span className='block text-blue-600 font-black text-sm mt-1'>+{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
                     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
                         {/* 1. Option Template (Cadre) */}
                         <div className={`group flex flex-col justify-between p-6 rounded-[2rem] border-2 transition-all ${isFreeTemplate ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50 border-indigo-100 hover:border-indigo-300 shadow-sm'}`}>
@@ -344,25 +365,37 @@ export const Step3Config = ({ formData, setFormData, customColor, pricingData, i
                         )}
                     </div>
 
-                    {/* Transport */}
-                    <div className='bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm space-y-6'>
-                        <h3 className='text-xl font-black text-gray-900'>Logistique & Mise en service</h3>
-                        {(isSignature || is360) ? (
-                            <div className='bg-purple-50 border-2 border-purple-100 p-6 rounded-3xl flex items-center justify-between'>
-                                <div className='flex gap-4'><Truck className='w-6 h-6 text-purple-600' /><div><p className='font-black text-gray-900'>Livraison & Installation par technicien</p><p className='text-[10px] text-purple-700 font-black uppercase tracking-widest italic'>Inclus dans votre pack prestige</p></div></div>
-                                <span className='font-black text-purple-700'>{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
+                    {/* --- NOUVEAU BLOC : OPTION IMPRESSIONS MULTIPLES (Starbooth & Signature) --- */}
+                    {(isStarbooth || isSignature) && (
+                        <div className='bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-bottom-2'>
+                            <div className='flex gap-4 items-start'>
+                                <div className='bg-white p-3 rounded-xl shadow-sm border border-indigo-100'>
+                                    <Printer className='w-6 h-6 text-indigo-600' />
+                                </div>
+                                <div>
+                                    <h4 className='font-black text-gray-900 text-lg'>Impressions par photo</h4>
+                                    <p className='text-xs text-indigo-800 max-w-lg leading-relaxed mt-1'>
+                                        Par défaut, la borne imprime 1 exemplaire par prise de vue. Augmentez le nombre de "prints" pour que chaque invité sur la photo reparte avec son souvenir (idéal pour les groupes).
+                                    </p>
+                                </div>
                             </div>
-                        ) : (
-                            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                <button onClick={() => handleChange('delivery', false)} className={`p-6 border-2 rounded-[2rem] transition-all text-left ${!formData.delivery ? 'border-green-600 bg-green-50' : 'border-gray-50 bg-gray-50'}`}>
-                                    <span className='font-black text-gray-800'>Retrait à Arcueil (94)</span><span className='block text-green-600 font-black text-sm mt-1'>Gratuit</span>
-                                </button>
-                                <button onClick={() => handleChange('delivery', true)} className={`p-6 border-2 rounded-[2rem] transition-all text-left ${formData.delivery ? 'border-blue-600 bg-blue-50' : 'border-gray-50 bg-gray-50'}`}>
-                                    <span className='font-black text-gray-800'>Livraison & Installation</span><span className='block text-blue-600 font-black text-sm mt-1'>+{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
-                                </button>
+
+                            <div className='w-full md:w-auto min-w-[280px]'>
+                                <select
+                                    value={formData.proImpressions}
+                                    onChange={(e) => handleChange('proImpressions', parseInt(e.target.value))}
+                                    className='w-full px-4 py-3 border-indigo-200 rounded-xl bg-white text-indigo-900 font-bold shadow-sm focus:ring-2 focus:ring-indigo-500 outline-none cursor-pointer'
+                                >
+                                    <option value={1}>1 print / photo (Inclus)</option>
+                                    {[2, 3, 4, 5].map(n => (
+                                        <option key={n} value={n}>
+                                            {n} prints (+{priceTransformer(unitaryPrices.impressionSup * (n - 1)).toFixed(0)}€ {priceSuffix} / jour)
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Services finaux */}
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
