@@ -125,7 +125,7 @@ export const customColor = '#BE2A55';
 // CONFIGURATION ZAPIER (FLAGS)
 // ======================================================================
 // Mettez à 'true' pour activer l'envoi à cette étape, 'false' pour désactiver.
-export const ENABLE_ZAPIER_STEP_1 = false; // Contact
-export const ENABLE_ZAPIER_STEP_2 = true; // Événement
-export const ENABLE_ZAPIER_STEP_3 = true; // Configuration
-export const ENABLE_ZAPIER_STEP_4 = true; // Final (Devis complet)
+export const ENABLE_WEBHOOK_STEP_1 = true; // Evenement
+export const ENABLE_WEBHOOK_STEP_2 = true; // Choix de la borne
+export const ENABLE_WEBHOOK_STEP_3 = true; // Info perso
+export const ENABLE_WEBHOOK_STEP_4 = true; // Devis

@@ -7,10 +7,9 @@ import { useQuoteLogic } from './hooks/useQuoteLogic';
 import { customColor } from './constants';
 
 // Import des Steps
-import { Step1Contact } from './components/steps/Step1Contact';
-import { Step1Partenaires } from './components/steps/Step1Partenaires';
-import { Step2Event } from './components/steps/Step2Event';
-import { Step3Config } from './components/steps/Step3Config';
+import { Step1Event } from './components/steps/Step1Event';
+import { Step2Config } from './components/steps/Step2Config';
+import { Step3Contact } from './components/steps/Step3Contact';
 import { Step4Recap } from './components/steps/Step4Recap';
 import { pushToDataLayer } from './services/gtmService';
 
@@ -193,48 +192,37 @@ export default function PhotoboothQuoteForm() {
         );
     }
 
-    // GESTION DU RENDU DES ÉTAPES
     const renderStep = () => {
+        const commonProps = { formData, setFormData, customColor };
+
         switch (currentStep) {
             case 1:
-                // Aiguillage selon le mode (Standard vs Partenaire)
                 if (isPartnerMode) {
-                    return <Step1Partenaires
-                        formData={formData}
-                        setFormData={setFormData}
-                        customColor={customColor}
-                        handleNext={handleNext}
-                        isCalculatorMode={isCalculatorMode}
-                    />;
+                    return <Step1Partenaires {...commonProps} isCalculatorMode={isCalculatorMode} />;
                 }
-                return <Step1Contact
-                    formData={formData}
-                    setFormData={setFormData}
-                    customColor={customColor}
-                    currentStep={currentStep}
-                    setCurrentStep={setCurrentStep}
-                />;
+                return <Step1Event {...commonProps} />;
             case 2:
-                return <Step2Event formData={formData} setFormData={setFormData} customColor={customColor} />;
+                return (
+                    <Step2Config
+                        {...commonProps}
+                        pricingData={pricingData}
+                        isPartnerMode={isPartnerMode}
+                        isPartnerClient={isPartnerClient}
+                    />
+                );
             case 3:
-                return <Step3Config
-                    formData={formData}
-                    setFormData={setFormData}
-                    pricingData={pricingData}
-                    customColor={customColor}
-                    isPartnerMode={isPartnerMode}
-                    isPartnerClient={isPartnerClient}
-                />;
+                return <Step3Contact {...commonProps} />;
             case 4:
-                return <Step4Recap
-                    formData={formData}
-                    pricingData={pricingData}
-                    customColor={customColor}
-                    handleSubmit={(msg) => handleSubmit(msg, isCalculatorMode)}
-                    handleEditRequest={handlePrev}
-                    showMessage={showMessage}
-                    isSubmitting={isSubmitting}
-                />;
+                return (
+                    <Step4Recap
+                        {...commonProps}
+                        pricingData={pricingData}
+                        handleSubmit={() => handleSubmit(showMessage, isCalculatorMode)}
+                        handleEditRequest={handlePrev}
+                        showMessage={showMessage}
+                        isSubmitting={isSubmitting}
+                    />
+                );
             default:
                 return null;
         }

@@ -1,9 +1,9 @@
-// src/components/steps/Step3Config.jsx
+// src/components/steps/Step2Config.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Wand2, Truck, Video, Zap, Gem, Ban, Music, ChevronRight, RefreshCcw, Star, Check, Printer } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
-export const Step3Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode, isPartnerClient }) => {
+export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerMode, isPartnerClient }) => {
     const configSectionRef = useRef(null);
     const [showCineBoothOptions, setShowCineBoothOptions] = useState(false);
 

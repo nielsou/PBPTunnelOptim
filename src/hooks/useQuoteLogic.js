@@ -14,7 +14,7 @@ import {
     OPTION_FONDIA_HT,
     OPTION_RGPD_HT,
     TEMPLATE_TOOL_PRO_PRICE_HT,
-    ENABLE_ZAPIER_STEP_1, ENABLE_ZAPIER_STEP_2, ENABLE_ZAPIER_STEP_3, ENABLE_ZAPIER_STEP_4
+    ENABLE_WEBHOOK_STEP_1, ENABLE_WEBHOOK_STEP_2, ENABLE_WEBHOOK_STEP_3, ENABLE_WEBHOOK_STEP_4
 } from '../constants';
 
 // Fonction utilitaire pour la distance
@@ -53,30 +53,19 @@ export const useQuoteLogic = () => {
 
     // État initial du formulaire
     const initialFormState = {
-        fullName: '',
-        email: '',
-        phone: '',
-        isPro: false,
-        companyName: '',
-
-        // Facturation
-        billingFullAddress: '',
-        billingLat: null,
-        billingLng: null,
-        billingZipCode: '',
-        billingCity: '',
-
-        // Livraison / Événement
+        // Événement (Nouvelle Étape 1)
+        eventType: '', // Nouveau
+        eventDate: '',
+        eventDuration: 1,
+        newDeliveryAddressName: '',
         deliveryFullAddress: '',
         deliveryLat: null,
         deliveryLng: null,
+        deliveryStreet: '',
         deliveryZipCode: '',
         deliveryCity: '',
-        deliverySameAsBilling: true,
-        eventDate: '',
-        eventDuration: 1,
 
-        // Le modèle pilote tout désormais
+        // Modèle (Étape 2)
         model: '',
         proAnimationHours: 'none',
         proFondIA: false,
@@ -85,6 +74,21 @@ export const useQuoteLogic = () => {
         proImpressions: 1,
         templateTool: false,
         optionSpeaker360: false,
+
+        // Coordonnées (Étape 3)
+        fullName: '',
+        email: '',
+        phone: '',
+        isPro: false,
+        companyName: '',
+        wantsCallback: false, // Nouveau
+        billingFullAddress: '',
+        billingStreet: '',
+        billingZipCode: '',
+        billingCity: '',
+        deliverySameAsBilling: true,
+        saveNewBillingAddress: false,
+        saveNewDeliveryAddress: true // Forcé à true car saisi à l'étape 1
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -362,51 +366,37 @@ export const useQuoteLogic = () => {
 
     const isStepValid = () => {
         switch (currentStep) {
-            case 1:
-                // Champs obligatoires pour tous (Particuliers et Pros)
-                if (!formData.fullName || !formData.email || !formData.phone || !formData.deliveryFullAddress) return false;
-
-                // Validation Email
+            case 1: // ÉVÉNEMENT
+                return (
+                    formData.eventType !== '' &&
+                    formData.eventDate !== '' &&
+                    formData.eventDate > new Date().toISOString().split('T')[0] &&
+                    formData.newDeliveryAddressName !== '' &&
+                    formData.deliveryFullAddress !== '' &&
+                    formData.deliveryLat !== null
+                );
+            case 2: // MODÈLE
+                return formData.model !== '';
+            case 3: // CONTACT
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(formData.email)) return false;
-
-                // Validation Téléphone
-                if (!formData.phone || formData.phone.trim().length < 9) return false;
-
-                // Validation spécifique PRO
+                const basicInfo = formData.fullName && emailRegex.test(formData.email) && formData.phone.length >= 9;
                 if (formData.isPro) {
-                    // Nom de société obligatoire
-                    if (!formData.companyName) return false;
-
-                    // Si facturation différente de livraison, l'adresse de facturation est requise
-                    if (!formData.deliverySameAsBilling && !formData.billingFullAddress) return false;
+                    return basicInfo && formData.companyName && (formData.deliverySameAsBilling || formData.billingFullAddress);
                 }
-                return true;
-
-            case 2:
-                const today = new Date().toISOString().split('T')[0];
-                const isDateValid = formData.eventDate && formData.eventDate > today;
-                return (isDateValid && formData.eventDuration >= 1);
-            case 3:
-                // Validation basée uniquement sur la présence d'un model
-                if (!formData.model) return false;
-                return true;
-
+                return basicInfo;
             default:
                 return true;
         }
     };
 
-    // 📍 ENVOI ZAPIER
+    // 📍 ENVOI N8N
     const triggerWebhook = (step, pricing, quoteData = null, isCalculatorMode = false) => {
 
-        // On ne log rien en mode calculette
         if (isCalculatorMode) {
             console.log(`Mode Calculette : Webhook étape ${step} bloqué.`);
             return;
         }
 
-        // 1. Préparation de la date formatée
         const formattedDate = new Date().toLocaleString('fr-FR', {
             timeZone: 'Europe/Paris',
             day: '2-digit',
@@ -417,42 +407,30 @@ export const useQuoteLogic = () => {
             second: '2-digit'
         }).replace(',', '');
 
-        // On récupère le companyId
-        const companyId = quoteData?.company_id || formData.companyId;
-
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
         const isSignature = formData.model === 'Signature';
         const is360 = formData.model === '360';
         const isEco = !isSignature && !is360 && formData.model !== '';
 
-        // Pour toutes les étapes
+        // --- PAYLOAD DE BASE (STEP 1) ---
         const payload = {
             quote_id: quoteId,
             step: step,
             [`step${step}_date`]: formattedDate,
-            full_name: formData.fullName,
-            email: formData.email,
-            phone: `'${formData.phone}`,
-            company_name: formData.isPro ? formData.companyName : "",
-            billing_address: formData.billingFullAddress || "",
+            event_type: formData.eventType,
             delivery_name: formData.newDeliveryAddressName || "",
             delivery_address: formData.deliveryFullAddress,
+            event_date: formData.eventDate,
+            duration: formData.eventDuration
         };
 
-        // Étape 2
+        // --- DONNÉES STEP 2 & + (MODÈLE ET PRIX) ---
         if (step >= 2) {
-            payload.event_date = formData.eventDate;
-            payload.duration = formData.eventDuration;
-        }
-
-        // Étape 3
-        if (step >= 3) {
             payload.model = formData.model;
 
             if (isEco) {
                 payload.delivery = toExcelBool(formData.delivery);
                 payload.template = toExcelBool(formData.templateTool);
-
                 if (formData.model === 'illimite') {
                     payload.animation_hours = formData.proAnimationHours;
                     payload.option_IA = toExcelBool(formData.proFondIA);
@@ -478,6 +456,20 @@ export const useQuoteLogic = () => {
             }
         }
 
+        // --- DONNÉES STEP 3 & + (CONTACT ET RAPPEL) ---
+        if (step >= 3) {
+            payload.full_name = formData.fullName;
+            payload.email = formData.email;
+            payload.phone = `'${formData.phone}`;
+            payload.wants_callback = toExcelBool(formData.wantsCallback); // Ajout du boolean rappel
+
+            if (formData.isPro) {
+                payload.company_name = formData.companyName;
+                payload.billing_address = formData.billingFullAddress || "";
+            }
+        }
+
+        // --- STEP 4 (LIENS AXONAUT) ---
         if (step === 4 && quoteData) {
             const companyId = quoteData.company_id;
             const companyUrl = `https://axonaut.com/business/company/show/${companyId}`;
@@ -487,7 +479,6 @@ export const useQuoteLogic = () => {
             } else {
                 payload.full_name = `=HYPERLINK("${companyUrl}";"${formData.fullName}")`;
             }
-
             payload.devis = `=HYPERLINK("${quoteData.public_path}";"${quoteData.number}")`;
         }
 
@@ -502,9 +493,9 @@ export const useQuoteLogic = () => {
         });
 
         if (isStepValid() && currentStep < 4) {
-            if (currentStep === 1 && ENABLE_ZAPIER_STEP_1) triggerWebhook(1, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 2 && ENABLE_ZAPIER_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 3 && ENABLE_ZAPIER_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 1 && ENABLE_WEBHOOK_STEP_1) triggerWebhook(1, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 2 && ENABLE_WEBHOOK_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
+            if (currentStep === 3 && ENABLE_WEBHOOK_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
             setCurrentStep(currentStep + 1);
         }
     };
@@ -557,7 +548,7 @@ export const useQuoteLogic = () => {
         setIsSubmitted(false);
         setFinalPublicLink(null);
         setEmailSent(false);
-        setIsSubmitting(false); 
+        setIsSubmitting(false);
     };
 
     // GESTION DE LA SOUMISSION 
@@ -637,7 +628,7 @@ export const useQuoteLogic = () => {
 
             setAxonautQuoteId(quoteResponse.id);
 
-            if (ENABLE_ZAPIER_STEP_4) {
+            if (ENABLE_WEBHOOK_STEP_4) {
                 triggerWebhook(4, pricing, quoteResponse, isCalculatorMode);
             }
 
