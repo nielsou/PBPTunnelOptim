@@ -68,7 +68,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
             {!formData.model ? (
                 <div className='text-center'>
                     <h2 className='text-3xl font-black text-gray-900 mb-2'>Choisir Photobooth Paris</h2>
-                    <p className='text-gray-500'>c'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et impression professionnelle. Notre innovation ? Un système d'éclairage intelligent qui ne s'active que pendant la prise de vue. Résultat : des photos studio parfaites en préservant votre ambiance. La tech, la vraie.</p>
+                    <p className='text-gray-500'>c'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et une imprimante professionnelle. Notre innovation ? Un système propriétaire d'éclairage LED intelligent qui ne s'active que pendant la prise de vue, sans impacter l'ambiance générale. Résultat : des photos studio parfaites en préservant votre ambiance. La tech, la vraie.</p>
                 </div>
             ) : (
                 <div className='flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-0 z-10 animate-in slide-in-from-top-2'>
@@ -96,7 +96,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         <section>
                             <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
                                 <div className='bg-yellow-100 p-2 rounded-lg'><Zap className='w-5 h-5 text-yellow-600' /></div>
-                                Collection "Prêt-à-Fêter"
+                                Collection Haussmanienne
                             </h3>
 
                             {!showCineBoothOptions ? (
@@ -107,7 +107,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     </div>
                                     <div className='p-6'>
                                         <h4 className='font-black text-gray-900 text-2xl'>Nos offres CineBooths</h4>
-                                        <p className='text-sm text-gray-500 mt-2 mb-6'>Là où le marché propose souvent de simples tablettes, nous imposons l'Ultra HD dès l'entrée de gamme. La véritable expérience photo à la française, sans concession sur la technique. Disponible en packs Digital, 150 ou 300 tirages.</p>
+                                        <p className='text-sm text-gray-500 mt-2 mb-6'>Nous imposons l'Ultra HD dès l'entrée de gamme. Une véritable expérience photo, sans concession sur la technique. Disponible en 100% Digital ou 150 tirages.</p>
 
                                         {/* --- AJOUT : PRIX "À PARTIR DE" --- */}
                                         <div className='flex flex-col mb-6'>
@@ -129,12 +129,12 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     </div>
                                 </div>
                             ) : (
-                                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 animate-in zoom-in-95 duration-300 max-w-4xl mx-auto'>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4 animate-in zoom-in-95 duration-300 max-w-4xl mx-auto'>
                                     {/* ... (Bloc options Cinebooth inchangé) ... */}
                                     {[
                                         { id: 'numerique', name: 'Pack Numérique', desc: '100% Digital' },
                                         { id: '150', name: 'Pack 150', desc: '150 tirages papier' },
-                                        { id: '300', name: 'Pack 300', desc: '300 tirages papier' }
+                                        //{ id: '300', name: 'Pack 300', desc: '300 tirages papier' }
                                     ].map(pack => (
                                         <button key={pack.id} onClick={() => handleModelSelect(pack.id)} className='p-6 bg-white border-2 border-yellow-400 rounded-3xl text-left hover:shadow-xl transition-all group'>
                                             <h5 className='font-black text-gray-900 text-lg group-hover:text-yellow-600 transition-colors'>{pack.name}</h5>
@@ -143,7 +143,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                             {/* Harmonisation du prix dans les sous-choix aussi (Optionnel mais recommandé) */}
                                             <div className='flex flex-col'>
                                                 <p className='font-bold text-gray-900'>{formatPricePerDay(unitaryPrices[pack.id])}</p>
-                                                <p className='text-[9px] text-gray-400 italic'>+ {priceTransformer(unitaryPrices[`deliv_${pack.id}`]).toFixed(0)}€ livr.</p>
+                                                <p className='text-[9px] text-gray-400 italic'>+ {priceTransformer(unitaryPrices[`deliv_${pack.id}`]).toFixed(0)}€ livraison.</p>
                                             </div>
                                         </button>
                                     ))}
@@ -158,14 +158,14 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                     <section>
                         <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center justify-center md:justify-start gap-3'>
                             <div className='bg-blue-100 p-2 rounded-lg'><Gem className='w-5 h-5 text-blue-600' /></div>
-                            Prestige & Événementiel
+                            Collection Prestige
                         </h3>
 
                         {/* Grille resserrée (max-w-4xl) */}
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto'>
                             {[
-                                { id: 'illimite', name: 'Starbooth Pro', badge: 'Best-Seller', color: 'blue', desc: "La performance professionnelle...miniaturisée ! Cette borne est dotée d'un capteur Sony 4K f/1.2, d'un flash LED adaptatif et d'une imprimante thermique poids lourd pour des impressions éclair en illimité. Idéale pour les endroits difficile d'accès et les soirées edgy !" },
-                                { id: 'Signature', name: 'Signature', badge: 'Luxe & Studio', color: 'purple', desc: "L'élégance ultime pour vos grands moments. La présence magnétique de cette borne est idéale pour créer l'effervescence autour d'une marque ou sublimer un lieu de réception. Offrez à vos invités les plaisirs d'une séance photo professionnelle." }
+                                { id: 'illimite', name: 'Starbooth Pro', badge: 'Best-Seller', color: 'blue', desc: "La performance professionnelle, miniaturisée ! Cette borne est dotée d'un capteur Sony 4K f/1.2, d'un flash LED adaptatif et d'une imprimante thermique poids lourd pour des impressions éclair en illimité." },
+                                { id: 'Signature', name: 'Signature', badge: 'Luxe & Studio', color: 'purple', desc: "L'élégance ultime pour vos grands moments. La présence magnétique de cette borne créé l'effervescence autour d'une marque et sublime un lieu de réception. Offrez à vos invités les plaisirs d'une séance photo professionnelle." }
                             ].map(item => (
                                 // MODELE COMPACT : max-w-sm, h-56, p-6
                                 <div key={item.id} className={`group bg-white border-2 border-gray-100 rounded-[2.5rem] overflow-hidden hover:border-${item.color}-500 transition-all hover:shadow-2xl w-full max-w-sm mx-auto`}>
