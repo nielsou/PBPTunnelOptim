@@ -3,7 +3,7 @@ import { Calendar, MapPin, Clock, Info, Mail, Phone, ChevronDown, Building2 } fr
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
-export const Step1Event = ({ formData, setFormData, customColor }) => {
+export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
     const [dateError, setDateError] = useState('');
     const todayStr = new Date().toISOString().split('T')[0];
     
@@ -39,36 +39,59 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
         const selectedDate = e.target.value;
         handleChange('eventDate', selectedDate);
         if (selectedDate && selectedDate < todayStr) {
-            setDateError("La date de l'événement ne peut pas être dans le passé.");
+            setDateError(t('step1.error.past_date'));
         } else {
             setDateError('');
         }
     };
 
     const eventTypes = [
-        { id: 'entreprise', label: "Soirée d'entreprise" },
-        { id: 'mariage', label: "Mariage" },
-        { id: 'anniversaire', label: "Anniversaire" },
-        { id: 'privee', label: "Soirée privée" },
-        { id: 'autre', label: "Autre" }
+        { id: 'entreprise', label: t('step1.type.corporate') },
+        { id: 'mariage', label: t('step1.type.wedding') },
+        { id: 'anniversaire', label: t('step1.type.birthday') },
+        { id: 'privee', label: t('step1.type.private') },
+        { id: 'autre', label: t('step1.type.other') }
     ];
 
     return (
         <div className='space-y-8 animate-in fade-in duration-500'>
-            <h2 className='text-3xl font-extrabold text-gray-900 border-b pb-2' style={{ color: customColor, borderColor: customColor }}>
-                Votre Événement
-            </h2>
 
-            {/* 1. TYPE D'ÉVÉNEMENT (D'ABORD) */}
+            {/* SÉLECTEUR DE LANGUE (DRAPEAUX) */}
+            <div className="flex justify-end gap-2 mb-4">
+                <button 
+                    onClick={() => setLang('fr')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all hover:scale-105 active:scale-95 ${
+                        lang === 'fr' 
+                        ? 'border-[#BE2A55] bg-pink-50' 
+                        : 'border-gray-100 bg-white opacity-60'
+                    }`}
+                >
+                    <span className="text-lg">🇫🇷</span>
+                    <span className="text-xs font-black">FR</span>
+                </button>
+                <button 
+                    onClick={() => setLang('en')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all hover:scale-105 active:scale-95 ${
+                        lang === 'en' 
+                        ? 'border-[#BE2A55] bg-pink-50' 
+                        : 'border-gray-100 bg-white opacity-60'
+                    }`}
+                >
+                    <span className="text-lg">🇬🇧</span>
+                    <span className="text-xs font-black">EN</span>
+                </button>
+            </div>
+
+            {/* 1. TYPE D'ÉVÉNEMENT */}
             <div className='space-y-3'>
-                <label className='block text-sm font-bold text-gray-700'>Quel type d'événement organisez-vous ? *</label>
+                <label className='block text-sm font-bold text-gray-700'>{t('step1.title')} *</label>
                 <div className="relative group">
                     <select
                         value={formData.eventType}
                         onChange={(e) => handleChange('eventType', e.target.value)}
                         className="w-full appearance-none bg-white border-2 border-gray-200 hover:border-gray-400 text-gray-900 font-bold py-4 px-5 rounded-2xl transition-all cursor-pointer focus:ring-4 focus:ring-blue-100 outline-none"
                     >
-                        <option value="" disabled>Sélectionnez le type d'événement...</option>
+                        <option value="" disabled>{t('step1.type.placeholder')}</option>
                         {eventTypes.map(type => (
                             <option key={type.id} value={type.id}>{type.label}</option>
                         ))}
@@ -79,7 +102,7 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                 </div>
             </div>
 
-            {/* 2. CASE SOCIÉTÉ (ENSUITE) */}
+            {/* 2. CASE SOCIÉTÉ */}
             <div className='flex items-center space-x-3 bg-blue-50 p-5 rounded-2xl border border-blue-200 shadow-sm'>
                 <input
                     type='checkbox'
@@ -89,7 +112,7 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                     className='w-6 h-6 text-blue-600 rounded-lg cursor-pointer border-gray-300'
                 />
                 <label htmlFor='isPro' className='flex items-center gap-2 text-sm font-bold text-blue-900 cursor-pointer select-none'>
-                    <Building2 className="w-5 h-5" /> Je suis une société (prix HT et accès aux options pro)
+                    <Building2 className="w-5 h-5" /> {t('step1.isPro')}
                 </label>
             </div>
 
@@ -97,7 +120,7 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                     <div>
                         <InputField
-                            label="Date de l'événement"
+                            label={t('step1.date.label')}
                             type='date'
                             value={formData.eventDate}
                             onChange={handleDateChange}
@@ -107,7 +130,7 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                         {dateError && <p className="text-red-500 text-xs font-bold mt-1 animate-pulse italic">⚠️ {dateError}</p>}
                     </div>
                     <InputField
-                        label="Durée (jours)"
+                        label={t('step1.duration.label')}
                         type='number'
                         value={formData.eventDuration}
                         onChange={e => handleChange('eventDuration', Math.max(1, parseInt(e.target.value) || 1))}
@@ -116,23 +139,23 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                 </div>
 
                 <div className='space-y-4'>
-                    {/* 3. NOM DU LIEU (OBLIGATOIRE) */}
+                    {/* 3. NOM DU LIEU */}
                     <InputField
-                        label="Nom du lieu (Hôtel, Restaurant, Particulier...) *"
+                        label={`${t('step1.venue.label')}`}
                         placeholder="Ex: Pavillon Royal"
                         value={formData.newDeliveryAddressName}
                         onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
                         required
                     />
                     <AddressAutocomplete
-                        label="Adresse complète du lieu"
+                        label={t('step1.address.label')}
                         required
                         defaultValue={formData.deliveryFullAddress}
                         onAddressSelect={handleAddressSelect}
                     />
                     {formData.deliveryFullAddress && !formData.deliveryLat && (
                         <p className='text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg'>
-                            ⚠️ Veuillez sélectionner l'adresse dans la liste suggérée pour calculer les frais de livraison.
+                            ⚠️ {t('step1.error.select_address')}
                         </p>
                     )}
                 </div>
@@ -144,8 +167,8 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                     <div className='flex items-start space-x-3 text-red-900'>
                         <Clock className='w-6 h-6 mt-1' />
                         <div>
-                            <h3 className='font-bold text-lg'>Réservation pour aujourd'hui ?</h3>
-                            <p className='mb-4'>Veuillez nous contacter directement :</p>
+                            <h3 className='font-bold text-lg'>{t('step1.today.title')}</h3>
+                            <p className='mb-4'>{t('step1.today.subtitle')}</p>
                             <div className='flex flex-col sm:flex-row gap-4'>
                                 <a href="tel:0142865424" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
                                     <Phone className='w-4 h-4 mr-2' /> 01 42 86 54 24
@@ -162,8 +185,8 @@ export const Step1Event = ({ formData, setFormData, customColor }) => {
                 <div className='p-6 bg-[#F3E8FF] border-2 border-purple-200 rounded-2xl flex items-start space-x-3 text-purple-900'>
                     <Info className='w-6 h-6 mt-1 text-purple-600' />
                     <div>
-                        <h3 className='font-bold text-lg'>Expertise dernière minute</h3>
-                        <p className='text-sm leading-relaxed'>Nous gérons les urgences avec professionnalisme. En cas d'indisponibilité, nous vous proposerons un surclassement adapté.</p>
+                        <h3 className='font-bold text-lg'>{t('step1.lastminute.title')}</h3>
+                        <p className='text-sm leading-relaxed'>{t('step1.lastminute.desc')}</p>
                     </div>
                 </div>
             )}

@@ -1,127 +1,111 @@
 import React from 'react';
+import { User, Mail, Phone, Building2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { InputField } from '../ui/InputField';
-import { AddressAutocomplete } from '../ui/AddressAutocomplete';
-import { PhoneCall, User, Mail, Phone, Building2, ReceiptText } from 'lucide-react';
 
-export const Step3Contact = ({ formData, setFormData, customColor }) => {
+export const Step3Contact = ({ formData, setFormData, t }) => {
     
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
     return (
-        <div className='space-y-8 animate-in fade-in duration-500'>
-            <h2 className='text-3xl font-black text-gray-900 border-b pb-4' style={{ color: customColor, borderColor: customColor }}>
-                3. Vos Coordonnées
-            </h2>
+        <div className='space-y-8 animate-in fade-in slide-in-from-right-4 duration-500'>
+            
+            {/* INFOS PERSONNELLES */}
+            <div className='space-y-6'>
+                <h3 className='text-lg font-black text-gray-900 flex items-center gap-2'>
+                    <User className='w-5 h-5 text-[#BE2A55]' />
+                    {t('step3.contact.title')}
+                </h3>
 
-            {/* --- SECTION IDENTITÉ --- */}
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div className='md:col-span-2'>
-                    <InputField 
-                        label="Prénom & Nom *" 
-                        value={formData.fullName} 
-                        onChange={e => handleChange('fullName', e.target.value)} 
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <InputField
+                        label={t('step3.name')}
                         placeholder="Jean Dupont"
-                        required 
+                        value={formData.fullName}
+                        onChange={e => handleChange('fullName', e.target.value)}
+                        required
+                    />
+                    <InputField
+                        label={t('step3.email')}
+                        type="email"
+                        placeholder="jean@exemple.com"
+                        value={formData.email}
+                        onChange={e => handleChange('email', e.target.value)}
+                        required
                     />
                 </div>
-                <InputField 
-                    label="Adresse email *" 
-                    type='email' 
-                    value={formData.email} 
-                    onChange={e => handleChange('email', e.target.value)} 
-                    placeholder="jean@exemple.fr"
-                    required 
-                />
-                <InputField 
-                    label="Téléphone *" 
-                    type="tel" 
-                    value={formData.phone} 
-                    onChange={e => handleChange('phone', e.target.value.replace(/[^0-9+]/g, ''))} 
+
+                <InputField
+                    label={t('step3.phone')}
+                    type="tel"
                     placeholder="06 12 34 56 78"
-                    required 
+                    value={formData.phone}
+                    onChange={e => handleChange('phone', e.target.value)}
+                    required
                 />
             </div>
 
-            {/* --- OPTION RAPPEL CONSEILLER --- */}
-            <div 
-                onClick={() => handleChange('wantsCallback', !formData.wantsCallback)}
-                className={`group cursor-pointer p-5 rounded-2xl border-2 transition-all flex items-center justify-between ${
-                    formData.wantsCallback 
-                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg' 
-                    : 'bg-blue-50 border-blue-100 text-blue-700 hover:bg-blue-100'
-                }`}
+            {/* OPTION RAPPEL */}
+            <div className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${
+                formData.wantsCallback 
+                ? 'border-[#BE2A55] bg-pink-50/30' 
+                : 'border-gray-100 bg-gray-50/50'
+            }`}
+            onClick={() => handleChange('wantsCallback', !formData.wantsCallback)}
             >
-                <div className='flex items-center gap-4'>
-                    <div className={`p-3 rounded-xl ${formData.wantsCallback ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
-                        <PhoneCall className={`w-6 h-6 ${formData.wantsCallback ? 'text-white' : 'text-blue-600'}`} />
-                    </div>
-                    <div>
-                        <p className='font-black text-lg leading-tight'>Besoin d'aide ?</p>
-                        <p className={`text-sm font-medium ${formData.wantsCallback ? 'text-blue-50' : 'text-blue-600'}`}>
-                            J'aimerais être rappelé demain par un conseiller
-                        </p>
-                    </div>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                    formData.wantsCallback ? 'bg-[#BE2A55] text-white' : 'bg-white text-gray-400'
+                }`}>
+                    <Phone className="w-6 h-6" />
                 </div>
-                <input 
-                    type='checkbox' 
-                    checked={formData.wantsCallback}
-                    onChange={() => {}} // Géré par le onClick du parent
-                    className='w-6 h-6 rounded-lg border-none pointer-events-none'
-                />
+                <div className='flex-1'>
+                    <h4 className='font-bold text-gray-900'>{t('step3.callback.title')}</h4>
+                    <p className='text-xs text-gray-500 font-medium'>{t('step3.callback.subtitle')}</p>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                    formData.wantsCallback ? 'bg-[#BE2A55] border-[#BE2A55]' : 'border-gray-300'
+                }`}>
+                    {formData.wantsCallback && <CheckCircle2 className='w-4 h-4 text-white' />}
+                </div>
             </div>
 
-            {/* --- BLOC FACTURATION (CONDITIONNEL SI PRO) --- */}
+            {/* FACTURATION SI PRO */}
             {formData.isPro && (
-                <div className='bg-gray-50 p-8 rounded-[2.5rem] border border-gray-200 space-y-6 animate-in slide-in-from-top-4 duration-500'>
-                    <div className='flex items-center gap-3 mb-2'>
-                        <ReceiptText className='w-6 h-6 text-gray-400' />
-                        <h3 className='text-xl font-black text-gray-900'>Détails de facturation</h3>
-                    </div>
+                <div className='pt-6 border-t border-gray-100 space-y-6 animate-in slide-in-from-top-4'>
+                    <h3 className='text-lg font-black text-gray-900 flex items-center gap-2'>
+                        <Building2 className='w-5 h-5 text-blue-600' />
+                        {t('step3.billing.title')}
+                    </h3>
 
-                    <InputField 
-                        label="Nom de la société *" 
-                        value={formData.companyName} 
-                        onChange={e => handleChange('companyName', e.target.value)} 
-                        placeholder="Ma Société SAS"
-                        required 
+                    <InputField
+                        label={t('step3.company.name')}
+                        placeholder="Ma Super Entreprise SAS"
+                        value={formData.companyName}
+                        onChange={e => handleChange('companyName', e.target.value)}
+                        required={formData.isPro}
                     />
 
-                    <div className='flex items-center space-x-3 bg-white p-4 rounded-xl border border-gray-100 shadow-sm'>
-                        <input 
-                            type='checkbox' 
-                            id='sameAddr' 
-                            checked={formData.deliverySameAsBilling} 
-                            onChange={e => handleChange('deliverySameAsBilling', e.target.checked)} 
-                            className='w-5 h-5 rounded text-blue-600 border-gray-300 focus:ring-blue-500 cursor-pointer' 
+                    <div className='flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200'>
+                        <input
+                            type='checkbox'
+                            id='sameAddress'
+                            checked={formData.billingSameAsEvent}
+                            onChange={e => handleChange('billingSameAsEvent', e.target.checked)}
+                            className='w-5 h-5 text-[#BE2A55] rounded border-gray-300 focus:ring-[#BE2A55]'
                         />
-                        <label htmlFor='sameAddr' className='text-sm font-bold text-gray-700 cursor-pointer select-none'>
-                            L'adresse de facturation est identique au lieu de l'événement
+                        <label htmlFor='sameAddress' className='text-sm font-bold text-gray-700 cursor-pointer select-none'>
+                            {t('step3.same.addr')}
                         </label>
                     </div>
-
-                    {!formData.deliverySameAsBilling && (
-                        <div className='pt-2 animate-in fade-in zoom-in-95'>
-                            <AddressAutocomplete 
-                                label="Adresse de facturation complète *" 
-                                onAddressSelect={addr => setFormData(p => ({
-                                    ...p, 
-                                    billingFullAddress: addr.fullAddress, 
-                                    billingStreet: addr.street, 
-                                    billingZipCode: addr.postal, 
-                                    billingCity: addr.city
-                                }))} 
-                                required
-                            />
-                        </div>
-                    )}
                 </div>
             )}
 
-            <div className='text-center'>
-                <p className='text-xs text-gray-400 italic'>
-                    * Champs obligatoires pour la génération du devis
+            {/* RGPD / TRUST */}
+            <div className='flex items-start gap-3 p-4 bg-green-50 rounded-2xl border border-green-100'>
+                <ShieldCheck className='w-5 h-5 text-green-600 shrink-0 mt-0.5' />
+                <p className='text-[11px] text-green-800 leading-relaxed font-medium'>
+                    {t('step3.rgpd.notice')}
                 </p>
             </div>
         </div>

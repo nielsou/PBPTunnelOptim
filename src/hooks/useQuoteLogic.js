@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import { pushToDataLayer } from '../services/gtmService';
+import { locales } from '../locales'; // Import manquant ajouté ici
 
 import {
     TVA_RATE,
@@ -16,6 +17,8 @@ import {
     TEMPLATE_TOOL_PRO_PRICE_HT,
     ENABLE_WEBHOOK_STEP_1, ENABLE_WEBHOOK_STEP_2, ENABLE_WEBHOOK_STEP_3, ENABLE_WEBHOOK_STEP_4
 } from '../constants';
+
+
 
 // Fonction utilitaire pour la distance
 function calculateHaversineDistance(lat2, lon2) {
@@ -32,14 +35,25 @@ function calculateHaversineDistance(lat2, lon2) {
 }
 
 export const useQuoteLogic = () => {
-    // 1. DÉTECTION DE LA LANGUE 
-    const lang = useMemo(() => {
+
+    // 1. Ajoutez un état pour la langue (initialisé via l'URL ou 'fr' par défaut)
+    const [lang, setLang] = useState(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             return params.get('lang') === 'en' ? 'en' : 'fr';
         }
         return 'fr';
-    }, []);
+    });
+
+    // 2. Créez une fonction de traduction simple
+    const t = (key, variables = {}) => {
+        let text = locales[key]?.[lang] || locales[key]?.['fr'] || key;
+        Object.entries(variables).forEach(([k, v]) => {
+            text = text.replace(`{${k}}`, v);
+        });
+        return text;
+    };
+
     // États et Refs
     const [quoteId, setQuoteId] = useState(() => nanoid(10));
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +100,7 @@ export const useQuoteLogic = () => {
         billingStreet: '',
         billingZipCode: '',
         billingCity: '',
-        deliverySameAsBilling: true,
+        billingSameAsEvent: true,
         saveNewBillingAddress: false,
         saveNewDeliveryAddress: true // Forcé à true car saisi à l'étape 1
     };
@@ -381,7 +395,8 @@ export const useQuoteLogic = () => {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const basicInfo = formData.fullName && emailRegex.test(formData.email) && formData.phone.length >= 9;
                 if (formData.isPro) {
-                    return basicInfo && formData.companyName && (formData.deliverySameAsBilling || formData.billingFullAddress);
+                    // Valide si les infos de base sont là ET (soit l'adresse est identique, soit une adresse de facturation est saisie)
+                    return basicInfo && formData.companyName && (formData.billingSameAsEvent || formData.billingFullAddress);
                 }
                 return basicInfo;
             default:
@@ -485,18 +500,22 @@ export const useQuoteLogic = () => {
         AxonautService.send_n8n_Webhook(payload);
     };
 
-    const handleNext = (isCalculatorMode = false) => {
-
+    const handleNext = (isCalculatorMode = false, showMessage) => {
         pushToDataLayer({
             'event': 'form_step_next',
             'currentStep': currentStep
         });
 
-        if (isStepValid() && currentStep < 4) {
+        if (isStepValid()) {
             if (currentStep === 1 && ENABLE_WEBHOOK_STEP_1) triggerWebhook(1, calculatePrice, null, isCalculatorMode);
             if (currentStep === 2 && ENABLE_WEBHOOK_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 3 && ENABLE_WEBHOOK_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
-            setCurrentStep(currentStep + 1);
+
+            if (currentStep === 3) {
+                if (ENABLE_WEBHOOK_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
+                handleSubmit(showMessage, isCalculatorMode);
+            } else {
+                setCurrentStep(currentStep + 1);
+            }
         }
     };
 
@@ -562,6 +581,13 @@ export const useQuoteLogic = () => {
             let companyId = formData.companyId;
             let billingAddressId = formData.billingAddressId;
 
+            if (formData.billingSameAsEvent) {
+                formData.billingStreet = formData.deliveryStreet;
+                formData.billingZipCode = formData.deliveryZipCode;
+                formData.billingCity = formData.deliveryCity;
+                formData.billingFullAddress = formData.deliveryFullAddress;
+            }
+
             // 1. GESTION DU TIERS
             if (!companyId) {
                 console.log("Création du tiers...");
@@ -580,12 +606,11 @@ export const useQuoteLogic = () => {
 
             const addressContactName = formData.isPro ? formData.companyName : formData.fullName;
 
-            if (formData.saveNewBillingAddress) {
+            if (formData.saveNewBillingAddress || formData.billingSameAsEvent) {
                 const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
                     name: formData.newBillingAddressName || "Facturation",
                     contactName: addressContactName,
                     street: formData.billingStreet,
-                    fullAddress: formData.billingFullAddress,
                     zip: formData.billingZipCode,
                     city: formData.billingCity
                 }, 'billing');
@@ -664,7 +689,7 @@ export const useQuoteLogic = () => {
         isStepValid,
         handleNext,
         handlePrev,
-        totalSteps: 4,
+        totalSteps: 3,
         isSubmitting,
         isSubmitted,
         resetForm,
@@ -675,6 +700,8 @@ export const useQuoteLogic = () => {
         sendEmailToClient,
         isSendingEmail,
         lang,
+        setLang,
+        t,
         isPartnerClient
     };
 };

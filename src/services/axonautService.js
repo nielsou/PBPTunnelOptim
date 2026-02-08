@@ -115,8 +115,8 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     const formatDate = (dateValue) => {
         if (!dateValue) return "---";
-        const date = new Date(dateValue);
-        return date.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-US');
+        const [year, month, day] = dateValue.split('-');
+        return `${day}/${month}/${year}`; // Toujours JJ/MM/AAAA
     };
 
     const productsArray = [];

@@ -14,7 +14,7 @@ export const pushToDataLayer = (eventData) => {
       window.parent.postMessage({
         source: 'pbp_tunnel_iframe', // Une clé unique pour identifier vos messages
         payload: eventData
-      }, '*'); // Idéalement remplacez '*' par 'https://www.photobooth-paris.fr' pour la sécurité
+      }, 'https://www.photobooth-paris.fr'); 
     }
   }
 };

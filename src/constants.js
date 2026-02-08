@@ -21,8 +21,8 @@ export const PARIS_LNG = 2.3570;
 // --- Modèles ECO (Prix plancher fixe) ---
 export const PRICING_STRATEGY = {
     'numerique': {
-        name: 'CineBooth Numérique',
-        priceHT: 245.83,
+        name: 'CineBooth Digital',
+        priceHT: 287.5,
         floorPriceHT: 10.00,
         delivery: 50,
         animation_hour: 45
@@ -43,14 +43,14 @@ export const PRICING_STRATEGY = {
     },
     'illimite': {
         name: 'StarBooth Pro',
-        priceHT: 425.83,
+        priceHT: 412.50,
         floorPriceHT: 57.00,
         delivery: 70,
         animation_hour: 45
     },
     'Signature': {
         name: 'Signature',
-        priceHT: 480,
+        priceHT: 495.83,
         floorPriceHT: 79.00,
         delivery: 110,
         animation_hour: 45
@@ -59,7 +59,7 @@ export const PRICING_STRATEGY = {
         name: 'Videobooth 360',
         priceHT: 715,
         floorPriceHT: 129.75,
-        delivery: 110,
+        delivery: 0,
         animation_hour: 90,
         speaker: 50
     },
