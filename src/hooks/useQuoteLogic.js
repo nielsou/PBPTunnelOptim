@@ -414,7 +414,7 @@ export const useQuoteLogic = () => {
         // --- PAYLOAD DE BASE ---
         const payload = {
             quote_id: quoteId,
-            version: "tunnel_optim_noprice", // Ton nouveau tag de version
+            version: "tunnel_optim_noprice",
             step: step,
             [`step${step}_date`]: formattedDate,
             event_type: formData.eventType,
@@ -465,7 +465,6 @@ export const useQuoteLogic = () => {
             if (currentStep === 2 && ENABLE_WEBHOOK_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
 
             if (currentStep === 3) {
-                if (ENABLE_WEBHOOK_STEP_3) triggerWebhook(3, calculatePrice, null, isCalculatorMode);
                 handleSubmit(showMessage, isCalculatorMode);
             } else {
                 setCurrentStep(currentStep + 1);
@@ -607,8 +606,16 @@ export const useQuoteLogic = () => {
 
             setAxonautQuoteId(quoteResponse.id);
 
-            if (ENABLE_WEBHOOK_STEP_4) {
-                triggerWebhook(4, pricing, quoteResponse, isCalculatorMode);
+            pushToDataLayer({
+                'event': 'quote_validation',
+                'quote_id': quoteId,
+                'axonaut_quote_id': quoteResponse.id,
+                'amount': pricing.totalHT,
+                'model': formData.model
+            });
+
+            if (ENABLE_WEBHOOK_STEP_3) {
+                triggerWebhook(3, pricing, quoteResponse, isCalculatorMode);
             }
 
             // 4. FINALISATION
