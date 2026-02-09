@@ -105,9 +105,12 @@ export const locales = {
     "step2.logistics.delivery": { fr: "Livraison & Installation", en: "Delivery & Installation" },
 
     "step2.option.template.name": { fr: "Cadre Photo", en: "Photo Frame" },
-    "step2.option.template.desc": { fr: "Personnalisez le contour de vos photos (logo, date, design...) via notre outil en ligne ou importez votre propre fichier.", en: "Customize your photo frames (logo, date, design...) via our online tool or import your own file." },
+    "step2.option.template.desc": {
+        fr: "Personnalisez le contour de vos photos (logo, date, design...) via notre outil en ligne, importez votre propre fichier ou choisissez parmi notre bibliothèque de modèles.",
+        en: "Customize your photo frames (logo, date, design...) via our online tool, import your own file, or choose from our template library."
+    },
     "step2.option.template.activate": { fr: "Activer la personnalisation", en: "Activate customization" },
-    "step2.option.included_label": { fr: "Option incluse", en: "Option included" },
+    "step2.option.included_label": { fr: "Option offerte", en: "Gift option" },
 
     "step2.option.ia.name": { fr: "Fond IA", en: "AI Background" },
     "step2.option.ia.desc": { fr: "L’arrière-plan est détecté par intelligence artificielle et remplacé automatiquement par le décor réaliste de votre choix !", en: "The background is detected by artificial intelligence and automatically replaced by the realistic decor of your choice!" },
