@@ -406,30 +406,15 @@ export const useQuoteLogic = () => {
 
     // 📍 ENVOI N8N
     const triggerWebhook = (step, pricing, quoteData = null, isCalculatorMode = false) => {
+        if (isCalculatorMode) return;
 
-        if (isCalculatorMode) {
-            console.log(`Mode Calculette : Webhook étape ${step} bloqué.`);
-            return;
-        }
-
-        const formattedDate = new Date().toLocaleString('fr-FR', {
-            timeZone: 'Europe/Paris',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        }).replace(',', '');
-
+        const formattedDate = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }).replace(',', '');
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
-        const isSignature = formData.model === 'Signature';
-        const is360 = formData.model === '360';
-        const isEco = !isSignature && !is360 && formData.model !== '';
 
-        // --- PAYLOAD DE BASE (STEP 1) ---
+        // --- PAYLOAD DE BASE ---
         const payload = {
             quote_id: quoteId,
+            version: "tunnel_optim_noprice", // Ton nouveau tag de version
             step: step,
             [`step${step}_date`]: formattedDate,
             event_type: formData.eventType,
@@ -439,65 +424,34 @@ export const useQuoteLogic = () => {
             duration: formData.eventDuration
         };
 
-        // --- DONNÉES STEP 2 & + (MODÈLE ET PRIX) ---
+        // Données de configuration (Étape 2)
         if (step >= 2) {
             payload.model = formData.model;
-
-            if (isEco) {
-                payload.delivery = toExcelBool(formData.delivery);
-                payload.template = toExcelBool(formData.templateTool);
-                if (formData.model === 'illimite') {
-                    payload.animation_hours = formData.proAnimationHours;
-                    payload.option_IA = toExcelBool(formData.proFondIA);
-                    payload.option_RGPD = toExcelBool(formData.proRGPD);
-                }
-            }
-            else if (isSignature) {
-                payload.animation_hours = formData.proAnimationHours;
-                payload.option_IA = toExcelBool(formData.proFondIA);
-                payload.option_RGPD = toExcelBool(formData.proRGPD);
-                payload.delivery = toExcelBool(formData.delivery);
-                payload.prints = formData.proImpressions;
-                payload.template = toExcelBool(formData.templateTool);
-            }
-            else if (is360) {
-                payload.animation_hours = (formData.proAnimationHours === 'none' || !formData.proAnimationHours) ? 3 : formData.proAnimationHours;
-                payload.option_music = toExcelBool(formData.optionSpeaker);
-            }
-
             if (pricing) {
                 payload.total_ht = pricing.totalHT;
                 payload.total_ttc = pricing.totalHT * 1.2;
             }
         }
 
-        // --- DONNÉES STEP 3 & + (CONTACT ET RAPPEL) ---
-        if (step >= 3) {
+        // Données finales (Étape 3)
+        if (step === 3) {
             payload.full_name = formData.fullName;
             payload.email = formData.email;
             payload.phone = `'${formData.phone}`;
-            payload.wants_callback = toExcelBool(formData.wantsCallback); // Ajout du boolean rappel
+            payload.wants_callback = toExcelBool(formData.wantsCallback);
 
             if (formData.isPro) {
                 payload.company_name = formData.companyName;
-                payload.billing_address = formData.billingFullAddress || "";
+            }
+
+            // Si on a déjà les infos Axonaut (après le submit réussi)
+            if (quoteData) {
+                payload.devis_link = quoteData.customer_portal_url;
+                payload.devis_number = quoteData.number;
             }
         }
 
-        // --- STEP 4 (LIENS AXONAUT) ---
-        if (step === 4 && quoteData) {
-            const companyId = quoteData.company_id;
-            const companyUrl = `https://axonaut.com/business/company/show/${companyId}`;
-
-            if (formData.isPro) {
-                payload.company_name = `=HYPERLINK("${companyUrl}";"${formData.companyName}")`;
-            } else {
-                payload.full_name = `=HYPERLINK("${companyUrl}";"${formData.fullName}")`;
-            }
-            payload.devis = `=HYPERLINK("${quoteData.public_path}";"${quoteData.number}")`;
-        }
-
-        AxonautService.send_n8n_Webhook(payload);
+        AxonautService.send_n8n_Webhook(payload); //
     };
 
     const handleNext = (isCalculatorMode = false, showMessage) => {
