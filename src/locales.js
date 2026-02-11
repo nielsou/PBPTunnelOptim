@@ -139,7 +139,8 @@ export const locales = {
     "nav.prev": { fr: "Précédent", en: "Previous" },
     "nav.next": { fr: "Suivant", en: "Next" },
     "nav.generate": { fr: "Générer le devis", en: "Generate Quote" },
-    "nav.receiving": { fr: "Vérifier & Recevoir mon devis", en: "Review & Receive my quote" },
+    "nav.receiving": { fr: "Calculer mon prix", en: "Calculate my price" }, 
+    "nav.calculating": { fr: "Calcul du prix...", en: "Calculating price..." }, 
     "nav.submitting": { fr: "Génération...", en: "Generating..." },
 
     // --- STEP 2 CONFIG (COMPLÉMENTS) ---
@@ -275,8 +276,150 @@ export const locales = {
     "axonaut.opt.print_sup": { fr: "[Option] Supplément Impression Multiple", en: "[Option] Multiple Printing Supplement" },
 
     // --- EMAIL ---
-    "axonaut.email.subject": { fr: "Suite à votre commande", en: "Following your order" },
-    "axonaut.email.greeting": { fr: "Bonjour,", en: "Hello," },
-    "axonaut.email.body": { fr: "Veuillez trouver ci-joint votre devis Photobooth. Vous pouvez le consulter et procéder en paiement en ligne via ce lien sécurisé :", en: "Please find attached your Photobooth quote. You can review and proceed to the payment online via this secure link:" },
-    "axonaut.email.footer": { fr: "N'hésitez pas à répondre à cet email pour toute question.\n\nCordialement,\nL'équipe Photobooth Paris", en: "Press Reply if you have any questions !\n\nBest regards,\nThe Photobooth Paris Team" }
+    "axonaut.email.subject": { fr: "Suite à votre commande - Photobooth Paris", en: "Regarding your order - Photobooth Paris" },
+    "axonaut.email.body": {
+        fr: `
+            <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                    <tr>
+                        <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
+                        <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                        <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Votre commande est prête !</h2>
+                        <p>Bonjour,</p>
+                        <p>Nous avons bien reçu votre demande. Vous pouvez signer votre bon de commande en ligne dès aujourd'hui, et <strong>régler votre facture jusqu'à 10 jours avant votre événement</strong>.</p>
+                        
+                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
+                            <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Une fois votre réservation confirmée :</p>
+                            <ul style="margin-bottom: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 10px;"><strong>Place sécurisée :</strong> Votre événement est définitivement bloqué dans notre planning.</li>
+                            <li style="margin-bottom: 10px;"><strong>Espace Design :</strong> Vous recevez immédiatement votre lien pour personnaliser votre cadre photo en ligne.</li>
+                            <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison et de reprise en quelques clics.</li>
+                            </ul>
+                        </div>
+
+                        <p style="text-align:center;">
+                            <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">Je réserve ma date</a>
+                        </p>
+                        
+                        <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Disponibilité garantie uniquement après signature.</em></p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                        
+                        <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">Le photobooth préféré des pros et des particuliers :</p>
+                        <p style="text-align: center; font-size: 14px; color: #555;">
+                            <strong>Mama Shelter • Crédit Agricole • Orange • Mariages</strong><br>
+                            ✨ Rejoignez les 36 800 sourires capturés en 2025 !
+                        </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
+                        &copy; {year} Photobooth Paris — Tous droits réservés.<br>
+                        <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
+                        </td>
+                    </tr>
+                    </table>
+                </td>
+                </tr>
+            </table>
+            </div>`,
+        en: `
+            <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+                <tr>
+                <td align="center">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+                    <tr>
+                        <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
+                        <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                        <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Your order is ready!</h2>
+                        <p>Hello,</p>
+                        <p>We have received your request. You can sign your order form online today, and <strong>pay your invoice up to 10 days before your event</strong>.</p>
+                        
+                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
+                            <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Once your booking is confirmed:</p>
+                            <ul style="margin-bottom: 0; padding-left: 20px;">
+                            <li style="margin-bottom: 10px;"><strong>Guaranteed Date:</strong> Your event is officially secured in our calendar.</li>
+                            <li style="margin-bottom: 10px;"><strong>Design Studio:</strong> Get instant access to our online tool to create your custom photo template.</li>
+                            <li style="margin-bottom: 0;"><strong>Easy Logistics:</strong> Confirm your delivery and pick-up slots based on real-time availability.</li>
+                            </ul>
+                        </div>
+
+                        <p style="text-align:center;">
+                            <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">Book my date</a>
+                        </p>
+                        
+                        <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Availability only guaranteed after signature.</em></p>
+                        
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                        
+                        <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">The preferred photobooth for pros and individuals:</p>
+                        <p style="text-align: center; font-size: 14px; color: #555;">
+                            <strong>Mama Shelter • Crédit Agricole • Orange • Weddings</strong><br>
+                            ✨ Join the 36,800 smiles captured in 2025!
+                        </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
+                        &copy; {year} Photobooth Paris — All rights reserved.<br>
+                        <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
+                        </td>
+                    </tr>
+                    </table>
+                </td>
+                </tr>
+            </table>
+            </div>`
+    },
+
+    // --- SUCCESS SCREEN (NEXT STEPS) ---
+    "success.step1.title": {
+        fr: "Validez votre réservation",
+        en: "Confirm your booking"
+    },
+    "success.step1.desc": {
+        fr: "Réglez l'acompte de 10% maintenant pour garantir la disponibilité de votre borne.",
+        en: "Pay a 10% deposit now to guarantee availability."
+    },
+    "success.step1.button": {
+        fr: "Payer l'acompte (Stripe)",
+        en: "Pay deposit (Stripe)"
+    },
+    "success.step2.title": {
+        fr: "Et après ?",
+        en: "What's next?"
+    },
+    "success.step2.item1.title": { fr: "Installation Flexible", en: "Flexible Setup" },
+    "success.step2.item1.text": {
+        fr: "Bloquez vos créneaux de livraison. Le petit plus : dépose la veille et reprise le lendemain possible pour plus de sérénité.",
+        en: "Schedule your delivery slots. Bonus: early drop-off and late pickup available for total peace of mind."
+    },
+
+    "success.step2.item2.title": { fr: "Studio Créatif", en: "Creative Studio" },
+    "success.step2.item2.text": {
+        fr: "Une fois votre réservation validée, vous recevrez l'accès pour créer votre cadre photo personnalisé à votre image.",
+        en: "Once your booking is confirmed, you will receive access to create your custom photo frame."
+    },
+
+    "success.step2.item3.title": { fr: "Paiement Flexible", en: "Flexible Payment" },
+    "success.step2.item3.text": {
+        fr: "Profitez de votre préparation l'esprit libre. Le solde final est à régler seulement 10 jours avant l'événement.",
+        en: "Enjoy your prep with peace of mind. The final balance is only due 10 days before the event."
+    },
+    "success.footer.disclaimer": {
+        fr: "⚠️ Disponibilité garantie uniquement après règlement de l'acompte.",
+        en: "⚠️ Availability guaranteed only upon receipt of the deposit."
+    }
 };

@@ -309,20 +309,27 @@ export const sendAxonautQuotation = async (quotationBody) => {
 export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink, lang = 'fr') => {
     const PROXY_EVENT_URL = '/api/create-event';
 
-    const emailContent = `${t('axonaut.email.greeting', lang)}\n\n${t('axonaut.email.body', lang)}\n${publicLink}\n\n${t('axonaut.email.footer', lang)}`;
+    // 1. Récupérer le template brut depuis locales.js
+    let emailHtml = t('axonaut.email.body', lang);
+
+    // 2. Remplacer les variables dynamiques {link} et {year}
+    const currentYear = new Date().getFullYear();
+    emailHtml = emailHtml
+        .replace('{link}', publicLink)
+        .replace('{year}', currentYear);
 
     const eventBody = {
         company_id: companyId,
         employee_email: formFillerEmail,
         date: toRfc3339(new Date()),
-        nature: 2,
+        nature: 2, // 2 correspond généralement à l'envoi d'un email dans Axonaut
         title: t('axonaut.email.subject', lang),
-        content: emailContent,
+        content: emailHtml, // Contient maintenant le HTML structuré
         is_done: false,
         attachments: { quotations_ids: [quotationId] },
     };
 
-    console.log("SERVICE: Création Événement Axonaut (Email)...", JSON.stringify(eventBody, null, 2));
+    console.log("SERVICE: Création Événement Axonaut (Email structuré)...");
 
     try {
         const response = await fetch(PROXY_EVENT_URL, {

@@ -1,6 +1,6 @@
 // src/hooks/useQuoteLogic.js
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react'; // <--- N'oubliez pas d'importer useEffect
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import { pushToDataLayer } from '../services/gtmService';
@@ -36,7 +36,7 @@ function calculateHaversineDistance(lat2, lon2) {
 
 export const useQuoteLogic = () => {
 
-    // 1. Ajoutez un état pour la langue (initialisé via l'URL ou 'fr' par défaut)
+    // --- GESTION LANGUE ---
     const [lang, setLang] = useState(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
@@ -45,7 +45,6 @@ export const useQuoteLogic = () => {
         return 'fr';
     });
 
-    // 2. Créez une fonction de traduction simple
     const t = (key, variables = {}) => {
         let text = locales[key]?.[lang] || locales[key]?.['fr'] || key;
         Object.entries(variables).forEach(([k, v]) => {
@@ -54,21 +53,20 @@ export const useQuoteLogic = () => {
         return text;
     };
 
-    // États et Refs
+    // --- ÉTATS ---
     const [quoteId, setQuoteId] = useState(() => nanoid(10));
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
+
+    // Autres états (Liens, etc.)
     const [finalPublicLink, setFinalPublicLink] = useState(null);
     const [axonautProspectLink, setAxonautProspectLink] = useState(null);
     const [axonautQuoteId, setAxonautQuoteId] = useState(null);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [emailSent, setEmailSent] = useState(false);
 
-    // État initial du formulaire
+    // État initial du formulaire (Constante)
     const initialFormState = {
-        // Événement (Nouvelle Étape 1)
-        eventType: '', // Nouveau
+        eventType: '',
         eventDate: '',
         eventDuration: 1,
         newDeliveryAddressName: '',
@@ -78,8 +76,6 @@ export const useQuoteLogic = () => {
         deliveryStreet: '',
         deliveryZipCode: '',
         deliveryCity: '',
-
-        // Modèle (Étape 2)
         model: '',
         proAnimationHours: 'none',
         proFondIA: false,
@@ -88,26 +84,60 @@ export const useQuoteLogic = () => {
         proImpressions: 1,
         templateTool: false,
         optionSpeaker360: false,
-
-        // Coordonnées (Étape 3)
         fullName: '',
         email: '',
         phone: '',
         isPro: false,
         companyName: '',
-        wantsCallback: false, // Nouveau
+        wantsCallback: true,
         billingFullAddress: '',
         billingStreet: '',
         billingZipCode: '',
         billingCity: '',
         billingSameAsEvent: true,
         saveNewBillingAddress: false,
-        saveNewDeliveryAddress: true // Forcé à true car saisi à l'étape 1
+        saveNewDeliveryAddress: true
     };
 
-    const [formData, setFormData] = useState(initialFormState);
+    // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
 
-    // On vérifie si l'ID de la société est présent dans les clés de COMPANY_SPECIFIC_PRICING
+    // A. Étape (Persistance)
+    // 1. Initialisation simple
+    const [currentStep, setCurrentStep] = useState(1);
+
+    // 2. Récupération après le chargement
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedStep = localStorage.getItem('pbp_step');
+            if (savedStep) setCurrentStep(parseInt(savedStep, 10));
+        }
+    }, []);
+
+    // B. Données du formulaire (Persistance)
+    const [formData, setFormData] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const savedData = localStorage.getItem('pbp_form_data');
+            if (savedData) {
+                try {
+                    return { ...initialFormState, ...JSON.parse(savedData) };
+                } catch (e) {
+                    console.error("Erreur lecture sauvegarde", e);
+                }
+            }
+        }
+        return initialFormState;
+    });
+
+    // --- 2. SAUVEGARDE AUTOMATIQUE ---
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('pbp_step', currentStep.toString());
+            localStorage.setItem('pbp_form_data', JSON.stringify(formData));
+        }
+    }, [currentStep, formData]);
+
+
+    // --- LOGIQUE MÉTIER (Reste inchangé) ---
     const isPartnerClient = useMemo(() => {
         if (!formData.companyId) return false;
         return Object.keys(COMPANY_SPECIFIC_PRICING).includes(formData.companyId.toString());
@@ -454,21 +484,25 @@ export const useQuoteLogic = () => {
         AxonautService.send_n8n_Webhook(payload); //
     };
 
-    const handleNext = (isCalculatorMode = false, showMessage) => {
-        pushToDataLayer({
-            'event': 'form_step_next',
-            'currentStep': currentStep
-        });
+    const handleNext = async (isCalculatorMode = false, showMessage) => {
+        if (!isStepValid()) return;
 
-        if (isStepValid()) {
-            if (currentStep === 1 && ENABLE_WEBHOOK_STEP_1) triggerWebhook(1, calculatePrice, null, isCalculatorMode);
-            if (currentStep === 2 && ENABLE_WEBHOOK_STEP_2) triggerWebhook(2, calculatePrice, null, isCalculatorMode);
+        // --- STEP 3 vers 4 (Création API) ---
+        if (currentStep === 3) {
+            // Cette fonction crée le devis Axonaut (spinner). Si erreur, elle stoppe tout.
+            await handleSubmit(showMessage, isCalculatorMode);
 
-            if (currentStep === 3) {
-                handleSubmit(showMessage, isCalculatorMode);
-            } else {
-                setCurrentStep(currentStep + 1);
-            }
+            // Si succès, on passe au RÉCAP
+            setCurrentStep(4);
+        }
+        // --- STEP 4 vers 5 (Validation finale) ---
+        else if (currentStep === 4) {
+            // Le client valide le récap, on affiche le PAIEMENT
+            setCurrentStep(5);
+        }
+        // --- AUTRES ÉTAPES ---
+        else {
+            setCurrentStep(prev => prev + 1);
         }
     };
 
@@ -479,9 +513,13 @@ export const useQuoteLogic = () => {
     };
 
     const resetForm = () => {
+        // On nettoie le localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('pbp_step');
+            localStorage.removeItem('pbp_form_data');
+        }
         setFormData(initialFormState);
         setCurrentStep(1);
-        setIsSubmitted(false);
         setIsSubmitting(false);
         setQuoteId(nanoid(10));
         setAxonautProspectLink(null);
@@ -517,7 +555,6 @@ export const useQuoteLogic = () => {
     };
 
     const returnToEdit = () => {
-        setIsSubmitted(false);
         setFinalPublicLink(null);
         setEmailSent(false);
         setIsSubmitting(false);
@@ -525,7 +562,8 @@ export const useQuoteLogic = () => {
 
     // GESTION DE LA SOUMISSION 
     const handleSubmit = async (showMessage, isCalculatorMode = false) => {
-        if (isSubmitting || isSubmitted) return;
+        // Garde cette sécurité
+        if (isSubmitting) return;
 
         setIsSubmitting(true);
         const pricing = calculatePrice;
@@ -606,6 +644,8 @@ export const useQuoteLogic = () => {
 
             setAxonautQuoteId(quoteResponse.id);
 
+            setFormData(prev => ({ ...prev, axonautQuoteNumber: quoteResponse.number }));
+
             pushToDataLayer({
                 'event': 'quote_validation',
                 'quote_id': quoteId,
@@ -631,11 +671,13 @@ export const useQuoteLogic = () => {
                 console.log("Mode Calculette : Devis créé sans email.");
             }
 
-            setIsSubmitted(true);
-
         } catch (error) {
             console.error("Erreur Submit:", error);
             showMessage(`Erreur: ${error.message}`);
+            // Important : On relance l'erreur pour que handleNext sache qu'il y a eu un problème
+            throw error;
+        } finally {
+            // On s'assure que le spinner s'arrête dans tous les cas
             setIsSubmitting(false);
         }
     };
@@ -652,7 +694,6 @@ export const useQuoteLogic = () => {
         handlePrev,
         totalSteps: 3,
         isSubmitting,
-        isSubmitted,
         resetForm,
         returnToEdit,
         finalPublicLink,
