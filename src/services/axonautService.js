@@ -598,3 +598,46 @@ export const createAxonautEmployee = async (companyId, formData) => {
         // Fallback : on tente quand même la création si le check échoue pour ne pas bloquer
     }
 };
+
+/**
+ * Appelle le backend pour récupérer l'URL de paiement Stripe depuis la page Axonaut
+ */
+export const getStripePaymentUrl = async (axonautPublicUrl) => {
+    // ATTENTION : Cette route doit exister sur ton serveur (backend)
+    // C'est elle qui fait le "curl" / "grep" que nous avons testé
+    const PROXY_URL = '/api/get-payment-link';
+
+    try {
+        const response = await fetch(PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: axonautPublicUrl }),
+        });
+
+        const data = await response.json();
+
+        if (data.stripeUrl) {
+            return { success: true, url: data.stripeUrl };
+        } else {
+            return { success: false, error: "Lien de paiement introuvable" };
+        }
+    } catch (error) {
+        console.error("Erreur récupération lien Stripe:", error);
+        return { success: false, error: error.message };
+    }
+};
+
+export const checkPaymentStatus = async (axonautPublicUrl) => {
+    try {
+        const response = await fetch('/api/check-payment-status', { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: axonautPublicUrl }),
+        });
+        const data = await response.json();
+        return data; // Retourne { success: true, paid: true/false }
+    } catch (error) {
+        console.error("Erreur polling paiement:", error);
+        return { success: false, error: error.message };
+    }
+};

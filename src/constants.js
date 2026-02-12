@@ -3,7 +3,7 @@
 // Constantes Axonaut
 export const AXONAUT_THEMES_MAPPING = {
     0: 310470,      // 0% d'acompte
-    0.3: 242890,    // 30% d'acompte
+    0.1: 242890,    // 30% d'acompte
     1: 310524       // 100% d'acompte
 };
 export const TVA_RATE = 1.20; // 20%
@@ -110,12 +110,13 @@ export const THIRD_PARTY_PROXY_URL = '/api/create-thirdparty';
 // Valeurs Fixes pour Axonaut
 export const AXONAUT_FIXED_DEFAULTS = {
     commercial: 'contact@photobooth-paris.fr',
-    acomptePct: 1, // 100%
+    acomptePct: 0.1, // 100%
     nombreMachine: 1,
 };
 
 // URL Zapier (Webhook pour le suivi)
 // export const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/22419571/ufzj95x/';
+
 export const N8N_PROXY_URL = '/api/webhook-n8n';
 
 // Couleurs UI

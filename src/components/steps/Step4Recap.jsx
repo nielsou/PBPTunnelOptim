@@ -1,5 +1,6 @@
-import React from 'react';
-import { Check, ChevronLeft, Loader2, CreditCard, MousePointerClick } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronLeft, Loader2, CreditCard, Info } from 'lucide-react';
+import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
 
 // Fonction utilitaire pour formater les devises
 const formatCurrency = (amount) => {
@@ -17,6 +18,47 @@ const getAddressSummary = (fullAddressString) => {
 
 export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t }) => {
 
+    const [loadingPayment, setLoadingPayment] = useState(false);
+    const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+    const pollingInterval = useRef(null);
+
+    // Nettoyage de sécurité si l'utilisateur quitte la page
+    useEffect(() => {
+        return () => {
+            if (pollingInterval.current) clearInterval(pollingInterval.current);
+        };
+    }, []);
+
+    const handlePaymentClick = async () => {
+        setLoadingPayment(true);
+        const result = await getStripePaymentUrl(formData.quotationUrl);
+
+        if (result.success) {
+            // 1. Ouvrir Stripe dans un nouvel onglet
+            window.open(result.url, '_blank');
+            setLoadingPayment(false);
+
+            // 2. Activer l'overlay de vérification
+            setIsCheckingPayment(true);
+
+            // 3. Lancer la boucle de polling
+            pollingInterval.current = setInterval(async () => {
+                console.log("🔍 Vérification du paiement...");
+                const status = await checkPaymentStatus(formData.quotationUrl);
+
+                if (status.paid) {
+                    console.log("✅ Paiement confirmé !");
+                    clearInterval(pollingInterval.current);
+                    setIsCheckingPayment(false);
+                    onValidate(); // Déclenche le passage à la Step 5
+                }
+            }, 5000); // 5 secondes
+        } else {
+            setLoadingPayment(false);
+            alert("Erreur lors de la récupération du lien de paiement.");
+        }
+    };
+
     if (!pricingData || typeof pricingData.totalHT === 'undefined' || !pricingData.details) {
         return (
             <div className='flex flex-col items-center justify-center py-12 space-y-4'>
@@ -28,11 +70,13 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
     const { details, totalHT, displayTTC, priceSuffix } = pricingData;
     const TVA_RATE = 1.20;
+    const activeAcomptePct = formData.acomptePct !== undefined ? formData.acomptePct : 0.1;
     const finalTotalTTC = totalHT * TVA_RATE;
     const tvaAmount = finalTotalTTC - totalHT;
-    
+
     // Calcul de l'acompte exact
-    const depositAmount = finalTotalTTC * 0.10;
+    const depositAmount = finalTotalTTC * activeAcomptePct;
+    const isFullPayment = activeAcomptePct === 1;
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -98,31 +142,44 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                                 <span>{formatCurrency(finalTotalTTC)}</span>
                             </div>
 
-                            {/* --- BOUTON ACOMPTE CLIQUABLE --- */}
-                            <button 
-                                onClick={onValidate}
-                                disabled={isSubmitting}
-                                className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer"
-                            >
-                                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <MousePointerClick className="w-5 h-5 text-[#BE2A55]" />
+                            {/* --- AJOUT : NOTIFICATION RÈGLEMENT TOTAL --- */}
+                            {isFullPayment && (
+                                <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                                    <div className="bg-amber-100 p-1.5 rounded-lg mt-0.5">
+                                        <Info className="w-4 h-4 text-amber-700" />
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-amber-800 font-medium">
+                                        {t('step4.notice.full_payment')}
+                                    </p>
                                 </div>
+                            )}
+
+                            {/* --- BOUTON DE PAIEMENT --- */}
+                            <button
+                                onClick={handlePaymentClick}
+                                // Ajoute isCheckingPayment ici
+                                disabled={isSubmitting || loadingPayment || isCheckingPayment}
+                                className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {/* ... icône ... */}
                                 <div className="text-center">
                                     <p className="text-[#BE2A55] font-bold text-sm uppercase tracking-wide mb-1 flex items-center justify-center gap-2">
-                                        Acompte à régler (10%)
+                                        {isFullPayment ? "Règlement de la commande (100%)" : `Acompte à régler (${activeAcomptePct * 100}%)`}
                                     </p>
                                     <p className="text-3xl font-black text-[#BE2A55]">
                                         {formatCurrency(depositAmount)}
                                     </p>
                                     <p className="text-xs text-pink-700 mt-1 italic group-hover:underline">
-                                        Cliquez ici pour régler l'acompte
+                                        {loadingPayment ? "Chargement du paiement..." : (isFullPayment ? "Cliquez ici pour régler la totalité" : "Cliquez ici pour régler l'acompte")}
                                     </p>
                                 </div>
                             </button>
-                            
-                            <p className="text-xs text-gray-400 text-center mt-3">
-                                Le solde sera dû 10 jours avant l'événement
-                            </p>
+
+                            {!isFullPayment && (
+                                <p className="text-xs text-gray-400 text-center mt-3">
+                                    Le solde sera dû 10 jours avant l'événement
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -165,20 +222,29 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 </button>
 
                 <button
-                    onClick={onValidate} 
-                    disabled={isSubmitting}
-                    className="w-full md:w-auto px-10 py-4 rounded-xl font-black text-white shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3 bg-[#BE2A55]"
+                    onClick={handlePaymentClick}
+                    // On désactive si une action est déjà en cours
+                    disabled={isSubmitting || loadingPayment || isCheckingPayment}
+                    className="w-full md:w-auto px-10 py-4 bg-[#BE2A55] text-white rounded-xl font-black flex items-center justify-center gap-3 shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {isSubmitting ? (
+                    {loadingPayment ? (
                         <Loader2 className='w-6 h-6 animate-spin' />
                     ) : (
                         <CreditCard className='w-6 h-6' />
                     )}
                     <span>
-                        {isSubmitting ? "Redirection Stripe..." : "Payer l'acompte"}
+                        {loadingPayment
+                            ? "Chargement Stripe..."
+                            : (isFullPayment ? "Régler la commande" : "Payer l'acompte") // Texte dynamique ici
+                        }
                     </span>
                 </button>
             </div>
+            {!isFullPayment && (
+                <p className="text-xs text-gray-400 text-center mt-3">
+                    Le solde sera dû 10 jours avant l'événement
+                </p>
+            )}
         </div>
     );
 };

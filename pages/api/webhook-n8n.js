@@ -4,8 +4,8 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Méthode non autorisée' });
     }
 
-    const N8N_URL = 'https://photoboothparis.app.n8n.cloud/webhook/c79fdefe-9611-4243-9916-a1ba98f707ce';
-    const N8N_URL_TEST = 'https://photoboothparis.app.n8n.cloud/webhook-test/c79fdefe-9611-4243-9916-a1ba98f707ce';
+    const N8N_URL = 'https://photoboothparis.app.n8n.cloud/webhook/bf8eec42-0e63-4a4b-ba32-2a1064217938';
+    const N8N_URL_TEST = 'https://photoboothparis.app.n8n.cloud/webhook-test/bf8eec42-0e63-4a4b-ba32-2a1064217938';
 
     try {
         const n8nResponse = await fetch(N8N_URL, {

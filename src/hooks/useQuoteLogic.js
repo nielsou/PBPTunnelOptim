@@ -36,6 +36,25 @@ function calculateHaversineDistance(lat2, lon2) {
 
 export const useQuoteLogic = () => {
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const path = window.location.pathname;
+            const isPartner = path.includes('/partenaires') || path.includes('/calculette');
+            const isCalc = path.includes('/calculette');
+
+            setFormData(prev => {
+                if (prev.isPartnerMode === isPartner && prev.isCalculatorMode === isCalc) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    isPartnerMode: isPartner,
+                    isCalculatorMode: isCalc
+                };
+            });
+        }
+    }, []);
+
     // --- GESTION LANGUE ---
     const [lang, setLang] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -96,43 +115,41 @@ export const useQuoteLogic = () => {
         billingCity: '',
         billingSameAsEvent: true,
         saveNewBillingAddress: false,
-        saveNewDeliveryAddress: true
+        saveNewDeliveryAddress: true,
+        isPartnerMode: false,
+        isCalculatorMode: false
     };
 
     // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
-
-    // A. Étape (Persistance)
-    // 1. Initialisation simple
-    const [currentStep, setCurrentStep] = useState(1);
-
-    // 2. Récupération après le chargement
-    useEffect(() => {
+    // A. Étape (Persistance Session)
+    const [currentStep, setCurrentStep] = useState(() => {
         if (typeof window !== 'undefined') {
-            const savedStep = localStorage.getItem('pbp_step');
-            if (savedStep) setCurrentStep(parseInt(savedStep, 10));
+            const savedStep = sessionStorage.getItem('pbp_session_step');
+            return savedStep ? parseInt(savedStep, 10) : 1;
         }
-    }, []);
+        return 1;
+    });
 
-    // B. Données du formulaire (Persistance)
+    // B. Données (Persistance Session)
     const [formData, setFormData] = useState(() => {
         if (typeof window !== 'undefined') {
-            const savedData = localStorage.getItem('pbp_form_data');
+            const savedData = sessionStorage.getItem('pbp_session_form_data');
             if (savedData) {
                 try {
                     return { ...initialFormState, ...JSON.parse(savedData) };
                 } catch (e) {
-                    console.error("Erreur lecture sauvegarde", e);
+                    console.error("Erreur lecture sauvegarde session", e);
                 }
             }
         }
         return initialFormState;
     });
 
-    // --- 2. SAUVEGARDE AUTOMATIQUE ---
+    // --- 2. SAUVEGARDE AUTOMATIQUE (SESSION) ---
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            localStorage.setItem('pbp_step', currentStep.toString());
-            localStorage.setItem('pbp_form_data', JSON.stringify(formData));
+            sessionStorage.setItem('pbp_session_step', currentStep.toString());
+            sessionStorage.setItem('pbp_session_form_data', JSON.stringify(formData));
         }
     }, [currentStep, formData]);
 
@@ -153,7 +170,9 @@ export const useQuoteLogic = () => {
 
         // 2. Récupération des deals du partenaire (s'il y en a)
         const partnerId = formData.companyId?.toString();
-        const partnerDeals = COMPANY_SPECIFIC_PRICING[partnerId] || {};
+        const partnerDeals = (formData.isPartnerMode && COMPANY_SPECIFIC_PRICING[partnerId])
+            ? COMPANY_SPECIFIC_PRICING[partnerId]
+            : {};
 
         // 3. Petite fonction pour vérifier si un prix est écrasé
         const getEffectivePrice = (key, defaultPrice) => {
@@ -444,7 +463,7 @@ export const useQuoteLogic = () => {
         // --- PAYLOAD DE BASE ---
         const payload = {
             quote_id: quoteId,
-            version: "tunnel_optim_noprice",
+            version: "tunnelOptim_noprice",
             step: step,
             [`step${step}_date`]: formattedDate,
             event_type: formData.eventType,
@@ -456,7 +475,30 @@ export const useQuoteLogic = () => {
 
         // Données de configuration (Étape 2)
         if (step >= 2) {
-            payload.model = formData.model;
+            payload.model = formData.model; // Colonne 'model'
+
+            // 3. CAS 360 (Vidéo)
+            payload.animation_hours = formData.proAnimationHours;
+            payload.delivery = toExcelBool(formData.delivery);
+
+            if (formData.model === '360') {
+                // 3h incluses par défaut si rien n'est sélectionné ou 'none'
+                payload.option_music = toExcelBool(formData.optionSpeaker);
+            } else {
+                payload.template = toExcelBool(formData.templateTool);
+                payload.prints = formData.proImpressions;
+
+                if (formData.model === 'Signature') {
+                    payload.option_IA = toExcelBool(formData.proFondIA);
+                    payload.option_RGPD = toExcelBool(formData.proRGPD);
+                }
+
+                if (formData.model === 'illimite') {
+                    payload.option_IA = toExcelBool(formData.proFondIA);
+                    payload.option_RGPD = toExcelBool(formData.proRGPD);
+                }
+            }
+
             if (pricing) {
                 payload.total_ht = pricing.totalHT;
                 payload.total_ttc = pricing.totalHT * 1.2;
@@ -465,19 +507,26 @@ export const useQuoteLogic = () => {
 
         // Données finales (Étape 3)
         if (step === 3) {
-            payload.full_name = formData.fullName;
+
+            payload.billing_address = formData.billingSameAsEvent
+                ? formData.deliveryFullAddress
+                : (formData.billingFullAddress || formData.deliveryFullAddress);
+
             payload.email = formData.email;
             payload.phone = `'${formData.phone}`;
             payload.wants_callback = toExcelBool(formData.wantsCallback);
-
+            const companyId = quoteData?.company_id || formData.companyId;
+            const companyUrl = `https://axonaut.com/business/company/show/${companyId}`;
+            // Restauration des Hyperliens pour Excel/Google Sheets
             if (formData.isPro) {
-                payload.company_name = formData.companyName;
+                payload.client = `=HYPERLINK("${companyUrl}";"${formData.companyName}")`;
+            } else {
+                payload.client = `=HYPERLINK("${companyUrl}";"${formData.fullName}")`;
             }
 
-            // Si on a déjà les infos Axonaut (après le submit réussi)
-            if (quoteData) {
-                payload.devis_link = quoteData.customer_portal_url;
-                payload.devis_number = quoteData.number;
+            if (quoteData.customer_portal_url || quoteData.public_path) {
+                const link = quoteData.customer_portal_url || quoteData.public_path;
+                payload.devis = `=HYPERLINK("${link}";"${quoteData.number}")`;
             }
         }
 
@@ -486,6 +535,14 @@ export const useQuoteLogic = () => {
 
     const handleNext = async (isCalculatorMode = false, showMessage) => {
         if (!isStepValid()) return;
+
+        if (currentStep === 1 && ENABLE_WEBHOOK_STEP_1) {
+            triggerWebhook(1, calculatePrice, null, isCalculatorMode);
+        }
+
+        if (currentStep === 2 && ENABLE_WEBHOOK_STEP_2) {
+            triggerWebhook(2, calculatePrice, null, isCalculatorMode);
+        }
 
         // --- STEP 3 vers 4 (Création API) ---
         if (currentStep === 3) {
@@ -621,6 +678,27 @@ export const useQuoteLogic = () => {
             // 🔍 PARTENAIRE VIP
             const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(companyId?.toString());
 
+            // --- NOUVEAU : CALCUL DE L'ACOMPTE DYNAMIQUE ---
+            const eventDateObj = new Date(formData.eventDate);
+            const today = new Date();
+            // Calcul de la différence en jours
+            const diffTime = eventDateObj - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let finalAcomptePct = 0.1; // Par défaut : 10%
+
+            if (diffDays < 7) {
+                finalAcomptePct = 1; // URGENCE (< 7 jours) : 100%
+            } else if (isVipPartner && formData.isPartnerMode) { // On utilise formData
+                finalAcomptePct = 0; // PARTENAIRE VIP : 0%
+            } else {
+                finalAcomptePct = 0.1; // STANDARD : 10%
+            }
+
+            // On sauvegarde ce pourcentage dans formData pour l'utiliser à l'étape 4
+            setFormData(prev => ({ ...prev, acomptePct: finalAcomptePct }));
+            // ------------------------------------------------
+
             // 3. CRÉATION DU DEVIS
             const inputsForAxonaut = {
                 ...pricing.axonautData,
@@ -632,7 +710,9 @@ export const useQuoteLogic = () => {
                 nombreJours: formData.eventDuration,
                 templateInclus: formData.templateTool,
                 livraisonIncluse: formData.delivery !== false,
-                acomptePct: isVipPartner ? 0 : 1
+
+                // On utilise la variable calculée
+                acomptePct: finalAcomptePct
             };
 
             if (billingAddressId) {
@@ -662,8 +742,10 @@ export const useQuoteLogic = () => {
             const signLink = quoteResponse.customer_portal_url;
             setFinalPublicLink(signLink);
 
-            // const proxyPayUrl = `/api/pay-proxy?url=${encodeURIComponent(signLink)}`;
-            // setFinalPublicLink(proxyPayUrl);
+            // --- AJOUT ICI ---
+            // On sauvegarde l'URL dans formData pour pouvoir l'utiliser à l'étape 4
+            setFormData(prev => ({ ...prev, quotationUrl: signLink }));
+            // -----------------
 
             if (!isCalculatorMode) {
                 await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink, lang);

@@ -21,6 +21,8 @@ export const redirectToStripeCheckout = async (pricingData, formData, quoteNumbe
                 amount: depositAmount,
                 currency: 'eur',
                 customer_email: formData.email,
+                description: `Acompte Devis ${quoteNumber}`, 
+                product_name: `Location photobooth-paris.fr`,
                 metadata: {
                     quote_number: quoteNumber,
                     client_name: formData.fullName,

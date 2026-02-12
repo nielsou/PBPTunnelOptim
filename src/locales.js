@@ -17,10 +17,10 @@ export const locales = {
     // --- STEP 1: ÉVÉNEMENT ---
     "step1.title": { fr: "Quel type d'événement organisez-vous ?", en: "What type of event are you organizing?" },
     "step1.type.placeholder": { fr: "Sélectionnez le type d'événement...", en: "Select event type..." },
-    "step1.type.corporate": { fr: "Soirée d'entreprise", en: "Corporate Event" },
+    "step1.type.corporate": { fr: "Evénement d'entreprise", en: "Corporate Event" },
     "step1.type.wedding": { fr: "Mariage", en: "Wedding" },
     "step1.type.birthday": { fr: "Anniversaire", en: "Birthday" },
-    "step1.type.private": { fr: "Soirée privée", en: "Private Party" },
+    "step1.type.private": { fr: "Evénement privée", en: "Private event" },
     "step1.type.other": { fr: "Autre", en: "Other" },
     "step1.isPro": { fr: "Je suis une société (prix HT et accès aux options pro)", en: "I am a company (excl. VAT prices & pro options)" },
     "step1.date.label": { fr: "Date de l'événement", en: "Event Date" },
@@ -47,8 +47,8 @@ export const locales = {
     // Header Step 2 (Version Longue restaurée)
     "step2.header.title": { fr: "Choisir Photobooth Paris", en: "Choose Photobooth Paris" },
     "step2.header.desc": {
-        fr: "c'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et une imprimante professionnelle. Notre innovation ? Un système propriétaire d'éclairage LED intelligent qui ne s'active que pendant la prise de vue. Résultat : des photos studio parfaites en préservant votre ambiance. La qualité avant tout.",
-        en: "it's choosing exclusive technology and unparalleled results. Designed in France, each of our booths integrates high-end optics and a professional printer. Our innovation? A proprietary intelligent LED lighting system that only activates during the shot. Result: perfect studio photos while preserving your ambiance. Quality above all."
+        fr: "C'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et une imprimante professionnelle. Notre innovation ? Un système propriétaire d'éclairage LED intelligent qui ne s'active que pendant la prise de vue. Résultat : des photos studio parfaites en préservant votre ambiance. La qualité avant tout.",
+        en: "It's choosing exclusive technology and unparalleled results. Designed in France, each of our booths integrates high-end optics and a professional printer. Our innovation? A proprietary intelligent LED lighting system that only activates during the shot. Result: perfect studio photos while preserving your ambiance. Quality above all."
     },
 
     "step2.collection.essential": { fr: "Collection Prêt-à-fêter !", en: "Ready-to-party Collection!" },
@@ -139,8 +139,8 @@ export const locales = {
     "nav.prev": { fr: "Précédent", en: "Previous" },
     "nav.next": { fr: "Suivant", en: "Next" },
     "nav.generate": { fr: "Générer le devis", en: "Generate Quote" },
-    "nav.receiving": { fr: "Calculer mon prix", en: "Calculate my price" }, 
-    "nav.calculating": { fr: "Calcul du prix...", en: "Calculating price..." }, 
+    "nav.receiving": { fr: "Calculer mon prix", en: "Calculate my price" },
+    "nav.calculating": { fr: "Calcul du prix...", en: "Calculating price..." },
     "nav.submitting": { fr: "Génération...", en: "Generating..." },
 
     // --- STEP 2 CONFIG (COMPLÉMENTS) ---
@@ -163,7 +163,17 @@ export const locales = {
         fr: "Vos données sont traitées uniquement pour la gestion de votre devis. Conformément au RGPD, vous disposez d'un droit d'accès et de rectification.",
         en: "Your data is processed solely for quote management. In accordance with GDPR, you have the right to access and correct your data."
     },
+    // --- NOUVEAUX CHAMPS FACTURATION ---
+    "step3.billing.label": { fr: "Adresse de facturation", en: "Billing Address" },
+    "step3.billing.btn_same": { fr: "Identique au lieu", en: "Same as venue" },
+    "step3.billing.btn_other": { fr: "Une autre adresse", en: "Different address" },
+    "step3.billing.sub_other": { fr: "Domicile, Siège social...", en: "Home, Headquarters..." },
 
+    "step3.billing.addr_name": { fr: "Nom de l'adresse", en: "Address Label" },
+    "step3.billing.addr_name_ph": { fr: "Ex: Siège Social, Bureau, Domicile...", en: "Ex: HQ, Office, Home..." },
+
+    "step3.billing.search": { fr: "Rechercher l'adresse", en: "Search address" },
+    "step3.billing.undefined": { fr: "Adresse non définie", en: "Address not defined" },
 
     // --- STEP 4: ECRAN FINAL ---
     "success.title": { fr: "Merci !", en: "Thank you!" },
@@ -172,7 +182,12 @@ export const locales = {
     "success.send_email": { fr: "M'envoyer le devis par email", en: "Send me the quote by email" },
     "success.email_sent": { fr: "Email envoyé !", en: "Email sent!" },
     "success.new_quote": { fr: "Créer un autre devis", en: "Create another quote" },
-
+    // Ajoutez ces clés (par exemple dans une nouvelle section "step4")
+    "step4.notice.full_payment": {
+        fr: "Votre événement ayant lieu dans moins de 7 jours, le règlement intégral de la commande est requis pour valider la réservation.",
+        en: "Since your event is taking place in less than 7 days, full payment is required to confirm the booking."
+    },
+    
     // --- DEVIS / QUOTATION ---
     // --- LABELS COMMUNS ---
     "axonaut.label.date": { fr: "Date", en: "Date" },

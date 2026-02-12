@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Loader2, Check } from 'lucide-react';
 import { useQuoteLogic } from './hooks/useQuoteLogic';
 import { customColor } from './constants';
 import { redirectToStripeCheckout } from './services/stripeService';
@@ -9,6 +9,7 @@ import { Step1Event } from './components/steps/Step1Event';
 import { Step2Config } from './components/steps/Step2Config';
 import { Step3Contact } from './components/steps/Step3Contact';
 import { Step4Recap } from './components/steps/Step4Recap';
+import { Step5Payment as Step5Success } from './components/steps/Step5Success';
 
 // Fonction utilitaire pour l'alerte UI
 const showMessage = (message) => {
@@ -32,11 +33,9 @@ export default function PhotoboothQuoteForm() {
         setIsClient(true);
     }, []);
 
-
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
-        handleNext, handlePrev, isStepValid, isSubmitting,
-        axonautQuoteNumber, isPartnerClient, lang, setLang, t,
+        handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
     } = useQuoteLogic();
 
     const [isPartnerMode, setIsPartnerMode] = useState(false);
@@ -80,8 +79,9 @@ export default function PhotoboothQuoteForm() {
 
     const handleStripePayment = async () => {
         try {
-            await redirectToStripeCheckout(pricingData, formData, axonautQuoteNumber);
+            await redirectToStripeCheckout(pricingData, formData, formData.axonautQuoteNumber);
         } catch (error) {
+            console.error("Erreur paiement:", error);
             showMessage("Erreur redirection paiement.");
         }
     };
@@ -121,6 +121,45 @@ export default function PhotoboothQuoteForm() {
 
                 <div className='bg-white rounded-[2.5rem] shadow-2xl p-4 sm:p-10 border border-gray-100'>
 
+                    {/* --- BARRE DE PROGRESSION (Steps 1, 2, 3) --- */}
+                    {currentStep <= 3 && (
+                        <div className="mb-10 px-4 md:px-12 pt-2">
+                            <div className="relative flex items-center justify-between">
+                                {/* Ligne arrière-plan */}
+                                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full z-0" />
+
+                                {/* Ligne de progression colorée */}
+                                <div
+                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-[#BE2A55] rounded-full z-0 transition-all duration-500 ease-out"
+                                    style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
+                                />
+
+                                {[1, 2, 3].map((step) => {
+                                    const isActive = currentStep === step;
+                                    const isCompleted = currentStep > step;
+
+                                    return (
+                                        <div key={step} className="relative z-10 flex flex-col items-center group cursor-default">
+                                            <div
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-4 transition-all duration-300 ${isActive
+                                                    ? 'bg-[#BE2A55] text-white border-[#BE2A55] scale-110 shadow-lg'
+                                                    : isCompleted
+                                                        ? 'bg-[#BE2A55] text-white border-[#BE2A55]'
+                                                        : 'bg-white text-gray-300 border-gray-100'
+                                                    }`}
+                                            >
+                                                {isCompleted ? <Check className="w-5 h-5" /> : step}
+                                            </div>
+                                            <div className={`absolute -bottom-6 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-[#BE2A55]' : 'text-gray-300'}`}>
+                                                {t(`nav.step${step}`)}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
                     {currentStep === 1 && <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} />}
                     {currentStep === 2 && <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} t={t} />}
                     {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} />}
@@ -131,11 +170,19 @@ export default function PhotoboothQuoteForm() {
                             formData={formData}
                             pricingData={pricingData}
                             customColor={customColor}
-                            // ICI : On branche directement le paiement Stripe
-                            onValidate={handleStripePayment}
+                            // Quand le polling détecte "Payé", il appelle onValidate
+                            onValidate={() => setCurrentStep(5)}
                             handleEditRequest={handlePrev}
                             isSubmitting={isSubmitting}
-                            t={t} // On passe la fonction de traduction pour le bloc "Et après"
+                            t={t}
+                        />
+                    )}
+
+                    {/* STEP 5 : SUCCÈS FINAL */}
+                    {currentStep === 5 && (
+                        <Step5Success // Utilise le nom d'import corrigé
+                            t={t}
+                            formData={formData}
                         />
                     )}
 

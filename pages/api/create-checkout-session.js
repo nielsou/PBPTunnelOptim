@@ -8,6 +8,10 @@ export default async function handler(req, res) {
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
+        payment_intent_data: {
+          description: `Acompte Devis ${metadata.quote_number}`,
+          metadata: metadata, // On remet les métadonnées aussi sur le paiement pour les retrouver facilement
+        },
         line_items: [
           {
             price_data: {
