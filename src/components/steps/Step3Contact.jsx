@@ -47,7 +47,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <InputField
                         label={t('step3.name')}
-                        placeholder="Jean Dupont"
+                        placeholder={t('step3.placeholder.name')}
                         value={formData.fullName}
                         onChange={e => handleChange('fullName', e.target.value)}
                         required
@@ -55,7 +55,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                     <InputField
                         label={t('step3.email')}
                         type="email"
-                        placeholder="jean@exemple.com"
+                        placeholder={t('step3.placeholder.email')}
                         value={formData.email}
                         onChange={e => handleChange('email', e.target.value)}
                         required
@@ -65,7 +65,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                 <InputField
                     label={t('step3.phone')}
                     type="tel"
-                    placeholder="06 12 34 56 78"
+                    placeholder={t('step3.placeholder.phone')}
                     value={formData.phone}
                     onChange={e => handleChange('phone', e.target.value)}
                     required
@@ -108,7 +108,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                     <div className="animate-in fade-in slide-in-from-top-2">
                         <InputField
                             label={t('step3.company.name')}
-                            placeholder="Ma Super Entreprise SAS"
+                            placeholder={t('step3.placeholder.company')}
                             value={formData.companyName}
                             onChange={e => handleChange('companyName', e.target.value)}
                             required={true}
@@ -182,6 +182,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                             {/* 2. RECHERCHE D'ADRESSE (CORRIGÉ : Pas d'étoile dans le label, t() utilisé) */}
                             <AddressAutocomplete
                                 label={t('step3.billing.search')}
+                                placeholder={t('step3.billing.search')}
                                 required={true}
                                 defaultValue={formData.billingFullAddress}
                                 onAddressSelect={handleBillingAddressSelect}

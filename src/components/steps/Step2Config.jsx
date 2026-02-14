@@ -8,21 +8,22 @@ const HIDE_PRICE = true
 /**
  * Composant générique pour une carte de modèle de borne
  */
-const ModelCard = ({ 
-    id, 
-    isSelected, 
-    onSelect, 
-    image, 
-    name, 
-    desc, 
-    badge, 
-    tagline, 
-    hoverColor = "blue", 
+const ModelCard = ({
+    id,
+    isSelected,
+    onSelect,
+    image,
+    name,
+    desc,
+    badge,
+    tagline,
+    hoverColor = "blue",
     icon: Icon,
     isUnlimited = false,
     priceContent,
     extraInfo,
-    hidePrice = false // Nouveau flag pour masquer le bloc prix
+    hidePrice = false,
+    t
 }) => {
     const borderClasses = {
         yellow: 'hover:border-yellow-400',
@@ -34,13 +35,12 @@ const ModelCard = ({
     return (
         <button
             onClick={() => onSelect(id)}
-            className={`group text-left bg-white border-2 rounded-[2.5rem] overflow-hidden transition-all hover:shadow-2xl w-full max-w-sm mx-auto flex flex-col ${
-                isSelected ? 'border-[#BE2A55] shadow-lg' : `border-gray-100 ${borderClasses[hoverColor] || borderClasses.blue}`
-            }`}
+            className={`group text-left bg-white border-2 rounded-[2.5rem] overflow-hidden transition-all hover:shadow-2xl w-full max-w-sm mx-auto flex flex-col ${isSelected ? 'border-[#BE2A55] shadow-lg' : `border-gray-100 ${borderClasses[hoverColor] || borderClasses.blue}`
+                }`}
         >
             <div className='relative h-52 w-full overflow-hidden bg-gray-100'>
                 <img src={image} className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500' alt={name} />
-                
+
                 {badge && (
                     <div className={`absolute top-4 right-4 text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter shadow-lg ${hoverColor === 'yellow' ? 'bg-yellow-400' : 'bg-white/90'}`}>
                         {badge}
@@ -50,7 +50,7 @@ const ModelCard = ({
                 {isUnlimited && (
                     <div className='absolute top-4 right-4 bg-white/90 backdrop-blur-md shadow-sm border border-pink-100 px-3 py-1.5 rounded-full flex items-center gap-2'>
                         <Printer className='w-3 h-3 text-pink-600' />
-                        <span className='text-[10px] font-black text-pink-600 uppercase tracking-widest'>Illimitées</span>
+                        <span className='text-[10px] font-black text-pink-600 uppercase tracking-widest'>{t('step2.badge.unlimited')}</span>
                     </div>
                 )}
 
@@ -64,9 +64,9 @@ const ModelCard = ({
 
             <div className='p-6 flex-1 flex flex-col w-full'>
                 <h4 className='font-black text-gray-900 text-2xl'>{name}</h4>
-                {hoverColor === 'yellow' && <p className='text-[10px] text-yellow-600 font-black uppercase tracking-widest mt-1 mb-2'>L'essentiel 100% Digital</p>}
+                {hoverColor === 'yellow' && <p className='text-[10px] text-yellow-600 font-black uppercase tracking-widest mt-1 mb-2'>{t('step2.model.digital.tagline')}</p>}
                 <p className='text-xs text-gray-500 mb-6 flex-1 mt-2'>{desc}</p>
-                
+
                 {/* Condition sur le flag hidePrice pour afficher ou non l'estimation budgétaire */}
                 {!hidePrice && (
                     <div className='flex flex-col border-t border-gray-50 pt-4'>
@@ -175,7 +175,8 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         <section>
                             <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'><Zap className='text-yellow-600' /> {t('step2.collection.essential')}</h3>
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                                <ModelCard 
+                                <ModelCard
+                                    t={t}
                                     id="numerique" image={machineImages.numerique} hoverColor="yellow"
                                     name={t('step2.model.digital.name')} desc={t('step2.model.digital.desc')}
                                     badge={t('step2.badge.digital')} tagline={t('step2.badge.pro')} icon={Star}
@@ -183,10 +184,11 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     hidePrice={HIDE_PRICE}
                                 />
-                                <ModelCard 
+                                <ModelCard
+                                    t={t}
                                     id="150" image={machineImages['150']} hoverColor="yellow"
                                     name={t('step2.model.150.name')} desc={t('step2.model.150.desc')}
-                                    badge={t('step2.badge.150prints')} onSelect={handleModelSelect} 
+                                    badge={t('step2.badge.150prints')} onSelect={handleModelSelect}
                                     priceContent={<PriceDisplay modelId="150" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     hidePrice={HIDE_PRICE}
@@ -199,7 +201,8 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                     <section>
                         <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'><Gem className='text-blue-600' /> {t('step2.collection.prestige')}</h3>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                            <ModelCard 
+                            <ModelCard
+                                t={t}
                                 id="illimite" image={machineImages.illimite} hoverColor="blue" isUnlimited
                                 name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
                                 tagline={t('step2.badge.pro')} icon={Star} onSelect={handleModelSelect}
@@ -207,7 +210,8 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                 hidePrice={HIDE_PRICE}
                             />
-                            <ModelCard 
+                            <ModelCard
+                                t={t}
                                 id="Signature" image={machineImages.Signature} hoverColor="purple" isUnlimited
                                 name={t('step2.model.signature.name')} desc={t('step2.model.signature.desc')}
                                 tagline={t('step2.model.signature.badge')} icon={Star} onSelect={handleModelSelect}
@@ -224,7 +228,8 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         {isMultiDay ? (
                             <div className='p-6 border-2 border-gray-200 bg-gray-50 rounded-3xl flex items-center gap-4 opacity-70 grayscale'><Ban className='text-gray-400' /><p className='text-sm font-bold text-gray-500'>{t('step2.error.360_multiday')}</p></div>
                         ) : (
-                            <ModelCard 
+                            <ModelCard
+                                t={t}
                                 id="360" image={machineImages['360']} hoverColor="pink"
                                 name={t('step2.model.360.name')} desc={t('step2.model.360.desc')}
                                 tagline={t('step2.badge.immersion')} icon={Video} onSelect={handleModelSelect}
@@ -321,10 +326,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     <select value={formData.proAnimationHours} onChange={e => handleChange('proAnimationHours', e.target.value)} className='w-full px-4 py-4 border-none rounded-2xl bg-white shadow-sm font-bold text-gray-900 text-sm'>
                                         {is360 ? (
                                             <><option value={3}>{t('step2.option.anim.360_3h')}</option>
-                                            {[4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer((h - 3) * 90).toFixed(0), s: priceSuffix })}</option>)}</>
+                                                {[4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer((h - 3) * 90).toFixed(0), s: priceSuffix })}</option>)}</>
                                         ) : (
                                             <><option value='none'>{t('step2.option.anim.none')}</option>
-                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer(h * 45).toFixed(0), s: priceSuffix })}</option>)}</>
+                                                {[1, 2, 3, 4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer(h * 45).toFixed(0), s: priceSuffix })}</option>)}</>
                                         )}
                                     </select>
                                 )}

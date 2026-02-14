@@ -306,17 +306,21 @@ export const sendAxonautQuotation = async (quotationBody) => {
     }
 }
 
-export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink, lang = 'fr') => {
+export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink, lang = 'fr', acomptePct = 0.1) => {
     const PROXY_EVENT_URL = '/api/create-event';
 
-    // 1. Récupérer le template brut depuis locales.js
-    let emailHtml = t('axonaut.email.body', lang);
+    // 1. Logique d'acompte inspirée de l'Étape 4
+    const isFullPayment = acomptePct === 1;
+    const buttonText = isFullPayment ? t('step4.payment.btn_full', lang) : t('step4.payment.btn_deposit', lang);
+    const introText = isFullPayment ? t('axonaut.email.intro_full', lang) : t('axonaut.email.intro_deposit', lang);
 
-    // 2. Remplacer les variables dynamiques {link} et {year}
-    const currentYear = new Date().getFullYear();
-    emailHtml = emailHtml
-        .replace('{link}', publicLink)
-        .replace('{year}', currentYear);
+    // 2. Récupérer le template brut et injecter TOUTES les variables
+    let emailHtml = t('axonaut.email.body', lang, {
+        link: publicLink,
+        year: new Date().getFullYear(),
+        button_text: buttonText,
+        intro_text: introText
+    });
 
     const eventBody = {
         company_id: companyId,
@@ -629,7 +633,7 @@ export const getStripePaymentUrl = async (axonautPublicUrl) => {
 
 export const checkPaymentStatus = async (axonautPublicUrl) => {
     try {
-        const response = await fetch('/api/check-payment-status', { 
+        const response = await fetch('/api/check-payment-status', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url: axonautPublicUrl }),

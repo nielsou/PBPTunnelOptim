@@ -2,6 +2,11 @@
 
 export const locales = {
 
+    // --- TITRES DE LA PAGE ---
+    "form.title.default": { fr: "Devis Express Photobooth", en: "Express Photobooth Quote" },
+    "form.title.partner": { fr: "Devis Partenaires", en: "Partner Quote" },
+    "form.title.calc": { fr: "Bonjour Héloïse et Cédric !", en: "Hello Héloïse and Cédric!" },
+
     // --- NAVIGATION BARRE ---
     "nav.step1": { fr: "Événement", en: "Event" },
     "nav.step2": { fr: "Configuration", en: "Config" }, // "Config" est souvent mieux que "Configuration" en anglais pour la place
@@ -15,6 +20,10 @@ export const locales = {
     "common.and": { fr: "et", en: "and" },
 
     // --- STEP 1: ÉVÉNEMENT ---
+    "step1.main_title": {
+        fr: "Votre devis en 3 min chrono",
+        en: "Get your quote in 3 min chrono"
+    },
     "step1.title": { fr: "Quel type d'événement organisez-vous ?", en: "What type of event are you organizing?" },
     "step1.type.placeholder": { fr: "Sélectionnez le type d'événement...", en: "Select event type..." },
     "step1.type.corporate": { fr: "Evénement d'entreprise", en: "Corporate Event" },
@@ -27,6 +36,8 @@ export const locales = {
     "step1.duration.label": { fr: "Durée (jours)", en: "Duration (days)" },
     "step1.venue.label": { fr: "Nom du lieu (Hôtel, Restaurant, Particulier...)", en: "Venue Name (Hotel, Restaurant, Private...)" },
     "step1.address.label": { fr: "Adresse complète du lieu", en: "Full delivery address" },
+    "step1.address.placeholder": { fr: "Entrez une adresse...", en: "Enter an address..." },
+    "step1.venue.placeholder": { fr: "Ex: Pavillon Royal", en: "Ex: The Ritz" },
 
     // --- STEP 1 ERREURS ---
     "step1.error.past_date": { fr: "La date ne peut pas être dans le passé", en: "Date cannot be in the past" },
@@ -61,6 +72,7 @@ export const locales = {
     "step2.badge.150prints": { fr: "150 impressions", en: "150 prints" },
     "step2.badge.unlimited": { fr: "Illimitées", en: "Unlimited" },
     "step2.badge.immersion": { fr: "Immersion", en: "Immersion" },
+    "step2.model.digital.tagline": { fr: "L'essentiel 100% Digital", en: "100% Digital Essentials" },
 
     "step2.model.digital.name": { fr: "CineBooth Digital", en: "Digital CineBooth" },
     "step2.model.digital.tagline": { fr: "L'essentiel 100% Digital", en: "100% Digital Essentials" },
@@ -148,6 +160,15 @@ export const locales = {
     "step2.check.analysis": { fr: "Analyse pour le {date}...", en: "Analysis for {date}..." },
     "step2.model.price.from": { fr: "Entre", en: "Between" },
     "step2.model.price.to": { fr: "et", en: "and" },
+    "price.detail.base": { fr: "Prestation: {name}", en: "Service: {name}" },
+    "price.detail.template": { fr: "Outil Template Professionnel", en: "Professional Template Tool" },
+    "price.detail.delivery": { fr: "Livraison, installation et reprise", en: "Delivery, setup and collection" },
+    "price.detail.km_extra": { fr: "Supplément Kilométrique ({km} km)", en: "Mileage Surcharge ({km} km)" },
+    "price.detail.pickup": { fr: "Retrait (Arcueil)", en: "Pick-up (Arcueil)" },
+    "price.detail.prints": { fr: "{qty}x supplément d'impression", en: "{qty}x printing supplement" },
+    "price.detail.ai_bg": { fr: "Fond IA (personnalisé)", en: "AI Background (custom)" },
+    "price.detail.rgpd": { fr: "Conformité RGPD", en: "GDPR Compliance" },
+    "price.detail.speaker": { fr: "Enceinte & Musique d'ambiance", en: "Speaker & Ambient Music" },
 
     // --- STEP 3: CONTACT ---
     "step3.name": { fr: "Prénom & Nom", en: "First & Last Name" },
@@ -174,6 +195,10 @@ export const locales = {
 
     "step3.billing.search": { fr: "Rechercher l'adresse", en: "Search address" },
     "step3.billing.undefined": { fr: "Adresse non définie", en: "Address not defined" },
+    "step3.placeholder.name": { fr: "Jean Dupont", en: "John Doe" },
+    "step3.placeholder.company": { fr: "Ma Super Entreprise SAS", en: "My Great Company Ltd" },
+    "step3.placeholder.email": { fr: "jean@exemple.com", en: "john@example.com" },
+    "step3.placeholder.phone": { fr: "06 12 34 56 78", en: "+44 7911 123456" },
 
     // --- STEP 4: ECRAN FINAL ---
     "success.title": { fr: "Merci !", en: "Thank you!" },
@@ -187,7 +212,45 @@ export const locales = {
         fr: "Votre événement ayant lieu dans moins de 7 jours, le règlement intégral de la commande est requis pour valider la réservation.",
         en: "Since your event is taking place in less than 7 days, full payment is required to confirm the booking."
     },
-    
+    "step4.checking_payment": {
+        fr: "Vérification du paiement...",
+        en: "Scanning for payment..."
+    },
+    "step4.title": { fr: "Récapitulatif et Validation", en: "Summary & Validation" },
+    "step4.client_details": { fr: "Vos coordonnées", en: "Your Details" },
+    "step4.label.contact": { fr: "Contact", en: "Contact" },
+    "step4.label.company": { fr: "Société", en: "Company" },
+    "step4.label.venue": { fr: "Lieu de l'événement", en: "Event Venue" },
+    "step4.label.date": { fr: "Date", en: "Date" },
+    "step4.order_title": { fr: "Votre commande", en: "Your Order" },
+    "step4.total_ttc": { fr: "Total TTC", en: "Total (incl. VAT)" },
+    "step4.balance_notice": { fr: "Le solde sera dû 10 jours avant l'événement", en: "Remaining balance due 10 days before the event" },
+    "step4.edit": { fr: "Modifier", en: "Edit" },
+    "step4.address_not_specified": { fr: "Adresse non spécifiée.", en: "Address not specified." },
+    "step4.payment.full_click": { fr: "Cliquez ici pour régler la totalité", en: "Click here to pay in full" },
+    "step4.payment.deposit_click": { fr: "Cliquez ici pour régler l'acompte", en: "Click here to pay the deposit" },
+    "step4.payment.full_title": { fr: "Règlement de la commande (100%)", en: "Order Payment (100%)" },
+    "step4.payment.deposit_title": { fr: "Acompte à régler ({pct}%)", en: "Deposit to pay ({pct}%)" },
+    "step4.payment.btn_full": { fr: "Régler la commande", en: "Pay the order" },
+    "step4.payment.btn_deposit": { fr: "Payer l'acompte", en: "Pay the deposit" },
+    "step4.error.payment_link": { fr: "Erreur lors de la récupération du lien de paiement.", en: "Error retrieving the payment link." },
+    "form.error.payment_redirect": { fr: "Erreur de redirection vers le paiement.", en: "Payment redirection error." },
+    "form.success.email_sent": { fr: "Email envoyé avec succès !", en: "Email successfully sent!" },
+    "form.error.email_send": { fr: "Erreur lors de l'envoi.", en: "Error during sending." },
+
+    "success.main_title": { fr: "C'est dans la boîte !", en: "Done and dusted!" },
+    "success.confirmation": { fr: "Merci ! Votre acompte a bien été reçu. Votre borne est officiellement réservée.", en: "Thank you! Your deposit has been received. Your booth is officially booked." },
+    "success.close_notice": { fr: "✨ Tout est en ordre, vous pouvez fermer cette fenêtre.", en: "✨ Everything is set, you can close this window." },
+
+    "loading.quote_generation.title": {
+        fr: "Génération de votre devis...",
+        en: "Generating your quote..."
+    },
+    "loading.quote_generation.subtitle": {
+        fr: "Ajustement des tarifs et de la logistique en cours...",
+        en: "Adjusting pricing and logistics..."
+    },
+
     // --- DEVIS / QUOTATION ---
     // --- LABELS COMMUNS ---
     "axonaut.label.date": { fr: "Date", en: "Date" },
@@ -199,7 +262,7 @@ export const locales = {
     // --- DESCRIPTIONS PRODUITS ---
     "axonaut.desc.cine_base": {
         fr: "Mise à disposition de notre borne photo avec capteur haute performance et flash intelligent",
-        en: "Provision of our photo booth with high-performance sensor and intelligent flash"
+        en: "Provision of our photobooth with high-performance sensor and smart flash"
     },
     "axonaut.desc.num_only": {
         fr: "Prestation 100 % numérique (aucun tirage papier)",
@@ -219,7 +282,7 @@ export const locales = {
     },
     "axonaut.desc.star_base": {
         fr: "Mise à disposition de notre borne photo <strong>Starbooth Pro</strong> avec capteur haute performance 4K et flash intelligent",
-        en: "Provision of our <strong>Starbooth Pro</strong> photo booth with high-performance 4K sensor and intelligent flash"
+        en: "Provision of our <strong>Starbooth Pro</strong> photobooth with high-performance 4K sensor and intelligent flash"
     },
     "axonaut.desc.unlimited": {
         fr: "Tirages instantanés et illimités sur papier photo Premium Digital brillant 10×15 cm",
@@ -227,7 +290,7 @@ export const locales = {
     },
     "axonaut.desc.sig_base": {
         fr: "Mise à disposition de notre borne photo haut de gamme <strong>Signature</strong> avec Reflex haute performance, flash intelligent et habillage premium",
-        en: "Provision of our premium <strong>Signature</strong> photo booth with high-performance DSLR, intelligent flash and premium finish"
+        en: "Provision of our premium <strong>Signature</strong> photobooth with high-performance DSLR, intelligent flash and premium finish"
     },
     "axonaut.desc.sig_multi": {
         fr: "Impression de chaque cliché en <strong>{n} exemplaire(s)</strong>",
@@ -291,112 +354,124 @@ export const locales = {
     "axonaut.opt.print_sup": { fr: "[Option] Supplément Impression Multiple", en: "[Option] Multiple Printing Supplement" },
 
     // --- EMAIL ---
-    "axonaut.email.subject": { fr: "Suite à votre commande - Photobooth Paris", en: "Regarding your order - Photobooth Paris" },
+    "axonaut.email.subject": {
+        fr: "Votre devis Photobooth Paris est prêt 📸",
+        en: "Your Photobooth Paris quote is ready 📸"
+    },
+
+    "axonaut.email.intro_deposit": {
+        fr: "Nous avons bien reçu votre demande. Pour bloquer définitivement votre date et la disponibilité du matériel, merci de <strong>régler votre acompte</strong> via le lien sécurisé ci-dessous. Le solde sera dû 10 jours avant votre événement.",
+        en: "We have received your request. To officially secure your date and equipment availability, please <strong>pay your deposit</strong> using the secure link below. The remaining balance will be due 10 days before your event."
+    },
+    "axonaut.email.intro_full": {
+        fr: "Nous avons bien reçu votre demande. Votre événement ayant lieu très prochainement, le <strong>règlement intégral de la commande</strong> est requis pour bloquer définitivement votre date et la disponibilité du matériel.",
+        en: "We have received your request. Since your event is taking place very soon, <strong>full payment</strong> is required to officially secure your date and equipment availability."
+    },
     "axonaut.email.body": {
         fr: `
-            <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+        <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+            <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
                 <tr>
-                <td align="center">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-                    <tr>
-                        <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
-                        <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                        <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Votre commande est prête !</h2>
-                        <p>Bonjour,</p>
-                        <p>Nous avons bien reçu votre demande. Vous pouvez signer votre bon de commande en ligne dès aujourd'hui, et <strong>régler votre facture jusqu'à 10 jours avant votre événement</strong>.</p>
-                        
-                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
-                            <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Une fois votre réservation confirmée :</p>
-                            <ul style="margin-bottom: 0; padding-left: 20px;">
-                            <li style="margin-bottom: 10px;"><strong>Place sécurisée :</strong> Votre événement est définitivement bloqué dans notre planning.</li>
-                            <li style="margin-bottom: 10px;"><strong>Espace Design :</strong> Vous recevez immédiatement votre lien pour personnaliser votre cadre photo en ligne.</li>
-                            <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison et de reprise en quelques clics.</li>
-                            </ul>
-                        </div>
-
-                        <p style="text-align:center;">
-                            <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">Je réserve ma date</a>
-                        </p>
-                        
-                        <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Disponibilité garantie uniquement après signature.</em></p>
-                        
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                        
-                        <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">Le photobooth préféré des pros et des particuliers :</p>
-                        <p style="text-align: center; font-size: 14px; color: #555;">
-                            <strong>Mama Shelter • Crédit Agricole • Orange • Mariages</strong><br>
-                            ✨ Rejoignez les 36 800 sourires capturés en 2025 !
-                        </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
-                        &copy; {year} Photobooth Paris — Tous droits réservés.<br>
-                        <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
-                        </td>
-                    </tr>
-                    </table>
-                </td>
+                    <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
+                    <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
+                    </td>
                 </tr>
-            </table>
-            </div>`,
+                <tr>
+                    <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Votre commande est prête !</h2>
+                    <p>Bonjour,</p>
+                    <p>{intro_text}</p>
+                    
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
+                        <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Une fois votre paiement validé :</p>
+                        <ul style="margin-bottom: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 10px;"><strong>Place sécurisée :</strong> Votre événement est définitivement bloqué dans notre planning.</li>
+                        <li style="margin-bottom: 10px;"><strong>Espace Design :</strong> Vous recevez immédiatement votre lien pour personnaliser votre cadre photo en ligne.</li>
+                        <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison et de reprise en quelques clics.</li>
+                        </ul>
+                    </div>
+
+                    <p style="text-align:center;">
+                        <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">{button_text}</a>
+                    </p>
+                    
+                    <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Disponibilité garantie uniquement après réception du paiement.</em></p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    
+                    <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">Le photobooth préféré des pros et des particuliers :</p>
+                    <p style="text-align: center; font-size: 14px; color: #555;">
+                        <strong>Mama Shelter • Crédit Agricole • Orange • Mariages</strong><br>
+                        ✨ Rejoignez les 36 800 sourires capturés en 2025 !
+                    </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
+                    &copy; {year} Photobooth Paris — Tous droits réservés.<br>
+                    <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
+                    </td>
+                </tr>
+                </table>
+            </td>
+            </tr>
+        </table>
+        </div>`,
         en: `
-            <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+        <div style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4; padding: 20px 0;">
+            <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
                 <tr>
-                <td align="center">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-                    <tr>
-                        <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
-                        <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                        <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Your order is ready!</h2>
-                        <p>Hello,</p>
-                        <p>We have received your request. You can sign your order form online today, and <strong>pay your invoice up to 10 days before your event</strong>.</p>
-                        
-                        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
-                            <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Once your booking is confirmed:</p>
-                            <ul style="margin-bottom: 0; padding-left: 20px;">
-                            <li style="margin-bottom: 10px;"><strong>Guaranteed Date:</strong> Your event is officially secured in our calendar.</li>
-                            <li style="margin-bottom: 10px;"><strong>Design Studio:</strong> Get instant access to our online tool to create your custom photo template.</li>
-                            <li style="margin-bottom: 0;"><strong>Easy Logistics:</strong> Confirm your delivery and pick-up slots based on real-time availability.</li>
-                            </ul>
-                        </div>
-
-                        <p style="text-align:center;">
-                            <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">Book my date</a>
-                        </p>
-                        
-                        <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Availability only guaranteed after signature.</em></p>
-                        
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-                        
-                        <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">The preferred photobooth for pros and individuals:</p>
-                        <p style="text-align: center; font-size: 14px; color: #555;">
-                            <strong>Mama Shelter • Crédit Agricole • Orange • Weddings</strong><br>
-                            ✨ Join the 36,800 smiles captured in 2025!
-                        </p>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
-                        &copy; {year} Photobooth Paris — All rights reserved.<br>
-                        <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
-                        </td>
-                    </tr>
-                    </table>
-                </td>
+                    <td style="background-color: #eaeaea; padding: 20px; text-align: center;">
+                    <img src="https://www.photobooth-paris.fr/wp-content/uploads/2019/07/logo.png" alt="Photobooth Paris" style="max-width: 150px; height: auto;">
+                    </td>
                 </tr>
-            </table>
-            </div>`
+                <tr>
+                    <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Your order is ready!</h2>
+                    <p>Hello,</p>
+                    <p>{intro_text}</p>
+                    
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
+                        <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Once your payment is confirmed:</p>
+                        <ul style="margin-bottom: 0; padding-left: 20px;">
+                        <li style="margin-bottom: 10px;"><strong>Guaranteed Date:</strong> Your event is officially secured in our calendar.</li>
+                        <li style="margin-bottom: 10px;"><strong>Design Studio:</strong> Get instant access to our online tool to create your custom photo template.</li>
+                        <li style="margin-bottom: 0;"><strong>Easy Logistics:</strong> Confirm your delivery and pick-up slots based on real-time availability.</li>
+                        </ul>
+                    </div>
+
+                    <p style="text-align:center;">
+                        <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">{button_text}</a>
+                    </p>
+                    
+                    <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Availability only guaranteed after payment receipt.</em></p>
+                    
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+                    
+                    <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">The preferred photobooth for pros and individuals:</p>
+                    <p style="text-align: center; font-size: 14px; color: #555;">
+                        <strong>Mama Shelter • Crédit Agricole • Orange • Weddings</strong><br>
+                        ✨ Join the 36,800 smiles captured in 2025!
+                    </p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background-color: #f8f8f8; padding: 20px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #e0e0e0;">
+                    &copy; {year} Photobooth Paris — All rights reserved.<br>
+                    <a href="https://www.photobooth-paris.fr" style="color: #ff0066; text-decoration: none;">www.photobooth-paris.fr</a>
+                    </td>
+                </tr>
+                </table>
+            </td>
+            </tr>
+        </table>
+        </div>`
     },
 
     // --- SUCCESS SCREEN (NEXT STEPS) ---

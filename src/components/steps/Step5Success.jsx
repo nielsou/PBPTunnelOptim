@@ -29,12 +29,11 @@ export const Step5Payment = ({ t, formData }) => {
             </div>
 
             <h2 className="text-4xl font-black text-gray-900 mb-6 tracking-tight">
-                C'est dans la boîte !
+                {t('success.main_title')}
             </h2>
 
             <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-                Merci ! Votre acompte a bien été reçu.<br />
-                Votre borne est officiellement <span className="font-bold text-[#BE2A55]">réservée</span>.
+                {t('success.confirmation')}
             </p>
 
             {/* BLOC : ET APRÈS ? */}
@@ -63,7 +62,7 @@ export const Step5Payment = ({ t, formData }) => {
             </div>
 
             <p className="mt-12 text-gray-400 font-medium text-sm italic">
-                ✨ Tout est en ordre, vous pouvez fermer cette fenêtre.
+                {t('success.close_notice')}
             </p>
         </div>
     );

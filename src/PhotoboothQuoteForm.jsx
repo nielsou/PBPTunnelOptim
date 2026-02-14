@@ -82,7 +82,7 @@ export default function PhotoboothQuoteForm() {
             await redirectToStripeCheckout(pricingData, formData, formData.axonautQuoteNumber);
         } catch (error) {
             console.error("Erreur paiement:", error);
-            showMessage("Erreur redirection paiement.");
+            showMessage(t('form.error.payment_redirect'));
         }
     };
 
@@ -96,12 +96,12 @@ export default function PhotoboothQuoteForm() {
                     <Loader2 className="w-16 h-16 text-[#BE2A55] animate-spin mx-auto" />
                     <div>
                         <h3 className="text-2xl font-black text-gray-900">
-                            {processingType === 'stock' ? t('step2.check.availability') : "Génération de votre devis..."}
+                            {processingType === 'stock' ? t('step2.check.availability') : t('loading.quote_generation.title')}
                         </h3>
                         <p className="text-gray-500 font-medium italic">
                             {processingType === 'stock'
                                 ? t('step2.check.analysis', { date: formData.eventDate?.split('-').reverse().join('/') })
-                                : "Ajustement des tarifs et de la logistique en cours..."}
+                                : t('loading.quote_generation.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -115,10 +115,11 @@ export default function PhotoboothQuoteForm() {
             <div id="custom-alert" className="fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-xl z-50 hidden"></div>
 
             <div className='max-w-4xl mx-auto'>
-                <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center">
-                    {isCalculatorMode ? 'Bonjour Héloïse et Cédric !' : isPartnerMode ? 'Devis Partenaires' : 'Devis Express Photobooth'}
-                </h1>
-
+                {(isCalculatorMode || isPartnerMode) && (
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center">
+                        {isCalculatorMode ? t('form.title.calc') : t('form.title.partner')}
+                    </h1>
+                )}
                 <div className='bg-white rounded-[2.5rem] shadow-2xl p-4 sm:p-10 border border-gray-100'>
 
                     {/* --- BARRE DE PROGRESSION (Steps 1, 2, 3) --- */}

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef } from 'react';
 
-export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false }) => {
+export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse..." }) => {
   const inputRef = useRef(null);
-  const autoCompleteRef = useRef(null); 
+  const autoCompleteRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -25,7 +25,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
         types: ["address"],
         componentRestrictions: { country: "fr" },
         // On demande 'address_components' pour avoir le détail précis
-        fields: ["address_components", "formatted_address", "geometry"] 
+        fields: ["address_components", "formatted_address", "geometry"]
       });
 
       autoCompleteRef.current.addListener("place_changed", () => {
@@ -48,7 +48,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
             if (c.types.includes('route')) route = c.long_name;
           });
         }
-        
+
         // Construction de la rue propre (Ex: "3 Rue Victor Carmignac")
         const cleanStreet = `${streetNumber} ${route}`.trim();
 
@@ -63,9 +63,9 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
           lat: lat,
           lng: lng
         };
-        
+
         if (onAddressSelect) {
-            onAddressSelect(result);
+          onAddressSelect(result);
         }
       });
     };
@@ -75,7 +75,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
     return () => {
       isMounted = false;
       if (autoCompleteRef.current) {
-          window.google.maps.event.clearInstanceListeners(autoCompleteRef.current);
+        window.google.maps.event.clearInstanceListeners(autoCompleteRef.current);
       }
     };
   }, [onAddressSelect]);
@@ -89,7 +89,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
         ref={inputRef}
         type="text"
         defaultValue={defaultValue}
-        placeholder="Entrez une adresse..."
+        placeholder={placeholder}
         className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900 placeholder-gray-400"
         required={required}
       />

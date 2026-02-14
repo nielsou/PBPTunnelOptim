@@ -6,7 +6,7 @@ import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
     const [dateError, setDateError] = useState('');
     const todayStr = new Date().toISOString().split('T')[0];
-    
+
     const getDaysDiff = (selectedDate) => {
         if (!selectedDate) return null;
         const start = new Date(todayStr);
@@ -24,10 +24,10 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
             deliveryFullAddress: addr.fullAddress,
             deliveryLat: addr.lat,
             deliveryLng: addr.lng,
-            deliveryStreet: addr.street, 
+            deliveryStreet: addr.street,
             deliveryZipCode: addr.postal,
             deliveryCity: addr.city,
-            saveNewDeliveryAddress: true 
+            saveNewDeliveryAddress: true
         }));
     };
 
@@ -56,30 +56,40 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
     return (
         <div className='space-y-8 animate-in fade-in duration-500'>
 
-            {/* SÉLECTEUR DE LANGUE (DRAPEAUX) */}
-            <div className="flex justify-end gap-2 mb-4">
-                <button 
-                    onClick={() => setLang('fr')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all hover:scale-105 active:scale-95 ${
-                        lang === 'fr' 
-                        ? 'border-[#BE2A55] bg-pink-50' 
-                        : 'border-gray-100 bg-white opacity-60'
-                    }`}
-                >
-                    <span className="text-lg">🇫🇷</span>
-                    <span className="text-xs font-black">FR</span>
-                </button>
-                <button 
-                    onClick={() => setLang('en')}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 transition-all hover:scale-105 active:scale-95 ${
-                        lang === 'en' 
-                        ? 'border-[#BE2A55] bg-pink-50' 
-                        : 'border-gray-100 bg-white opacity-60'
-                    }`}
-                >
-                    <span className="text-lg">🇬🇧</span>
-                    <span className="text-xs font-black">EN</span>
-                </button>
+            {/* --- HEADER ÉTAPE 1 : TITRE PRINCIPAL & DRAPEAUX --- */}
+            <div className="mb-8 text-center">
+
+                {/* Titre principal bien visible avec grosse horloge */}
+                <h2 className="flex items-center justify-center gap-3 text-2xl md:text-3xl font-black text-gray-900 mb-6 leading-tight">
+                    <Clock className="w-8 h-8 text-[#BE2A55] flex-shrink-0" />
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-[#BE2A55]">
+                        {t('step1.main_title')}
+                    </span>
+                </h2>
+
+                {/* Sélecteur de langue centré juste en dessous */}
+                <div className="flex justify-center gap-3">
+                    <button
+                        onClick={() => setLang('fr')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'fr'
+                                ? 'border-[#BE2A55] bg-pink-50'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                            }`}
+                    >
+                        <span className="text-xl">🇫🇷</span>
+                        <span className="text-sm font-black">FR</span>
+                    </button>
+                    <button
+                        onClick={() => setLang('en')}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'en'
+                                ? 'border-[#BE2A55] bg-pink-50'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                            }`}
+                    >
+                        <span className="text-xl">🇬🇧</span>
+                        <span className="text-sm font-black">EN</span>
+                    </button>
+                </div>
             </div>
 
             {/* 1. TYPE D'ÉVÉNEMENT */}
@@ -142,13 +152,14 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                     {/* 3. NOM DU LIEU */}
                     <InputField
                         label={`${t('step1.venue.label')}`}
-                        placeholder="Ex: Pavillon Royal"
+                        placeholder={t('step1.venue.placeholder')}
                         value={formData.newDeliveryAddressName}
                         onChange={e => handleChange('newDeliveryAddressName', e.target.value)}
                         required
                     />
                     <AddressAutocomplete
                         label={t('step1.address.label')}
+                        placeholder={t('step1.address.placeholder')}
                         required
                         defaultValue={formData.deliveryFullAddress}
                         onAddressSelect={handleAddressSelect}

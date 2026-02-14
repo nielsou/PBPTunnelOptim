@@ -244,7 +244,7 @@ export const useQuoteLogic = () => {
         {
             // PRESTATION PHOTOBOOTH OU VIDEOBOOTH
             details.push({
-                label: 'Prestation: ' + nomBorne,
+                label: t('price.detail.base', { name: nomBorne }),
                 priceHT: price_prestation,
                 daily: true,
                 displayPrice: `${priceTransformer(price_prestation).toFixed(0)}${suffix}`
@@ -256,10 +256,10 @@ export const useQuoteLogic = () => {
 
                 let templateDisplay = (price_template > 0)
                     ? `${priceTransformer(price_template).toFixed(0)}${suffix}`
-                    : 'Offert';
+                    : t('common.included');
 
                 details.push({
-                    label: 'Outil Template Professionnel',
+                    label: t('price.detail.template'),
                     priceHT: price_template,
                     daily: false,
                     displayPrice: templateDisplay
@@ -275,7 +275,7 @@ export const useQuoteLogic = () => {
                 price_livraison = isShortAnimation ? price_livraison / 2 : price_livraison;
 
                 details.push({
-                    label: 'Livraison, installation et reprise',
+                    label: t('price.detail.delivery'),
                     priceHT: price_livraison,
                     daily: false,
                     displayPrice: `+${priceTransformer(price_livraison).toFixed(0)}${suffix}`
@@ -286,7 +286,7 @@ export const useQuoteLogic = () => {
                 if (supplementKm > 0) {
                     supplementKm;
                     details.push({
-                        label: `Supplément Kilométrique (${Math.round(distanceKm)} km)`,
+                        label: t('price.detail.km_extra', { km: Math.round(distanceKm) }),
                         priceHT: supplementKm,
                         daily: false,
                         displayPrice: `+${priceTransformer(supplementKm).toFixed(0)}${suffix}`
@@ -296,17 +296,17 @@ export const useQuoteLogic = () => {
 
             } else {
                 details.push({
-                    label: 'Retrait (Arcueil)',
+                    label: t('price.detail.pickup'),
                     priceHT: 0,
                     daily: false,
-                    displayPrice: 'Gratuit'
+                    displayPrice: t('common.free')
                 });
             }
 
             // OPTION IMPRESSION 
             if (formData.proImpressions > 1) {
                 details.push({
-                    label: `${NbJours * (formData.proImpressions - 1)}x supplément d'impression`,
+                    label: t('price.detail.prints', { qty: NbJours * (formData.proImpressions - 1) }),
                     priceHT: price_optionImpression,
                     daily: true,
                     displayPrice: `+${priceTransformer(price_optionImpression).toFixed(0)}${suffix}`
@@ -318,7 +318,7 @@ export const useQuoteLogic = () => {
             // OPTION ANIM
             if (heuresAnimPayantes > 0) {
                 details.push({
-                    label: `Animation ${heuresAnimPayantes}h`,
+                    label: `${t('step2.option.anim.label')} ${heuresAnimPayantes}h`, // <-- Était codé en dur
                     priceHT: price_optionAnim,
                     daily: false,
                     displayPrice: `+${priceTransformer(price_optionAnim).toFixed(0)}${suffix}`
@@ -330,7 +330,7 @@ export const useQuoteLogic = () => {
             // OPTION FOND IA
             if (formData.proFondIA) {
                 details.push({
-                    label: 'Fond IA (personnalisé)',
+                    label: t('price.detail.ai_bg'),
                     priceHT: price_optionIA,
                     daily: false,
                     displayPrice: `+${priceTransformer(price_optionIA).toFixed(0)}${suffix}`
@@ -341,7 +341,7 @@ export const useQuoteLogic = () => {
             // OPTION RGPD
             if (formData.proRGPD) {
                 details.push({
-                    label: 'Conformité RGPD',
+                    label: t('price.detail.rgpd'),
                     priceHT: price_optionRGPD,
                     daily: false,
                     displayPrice: `+${priceTransformer(price_optionRGPD).toFixed(0)}${suffix}`
@@ -352,7 +352,7 @@ export const useQuoteLogic = () => {
             // NOUVEAU : OPTION ENCEINTE
             if (is360 && formData.optionSpeaker) {
                 details.push({
-                    label: 'Enceinte & Musique d\'ambiance',
+                    label: t('price.detail.speaker'),
                     priceHT: price_optionSpeaker,
                     daily: false,
                     displayPrice: `+${priceTransformer(price_optionSpeaker).toFixed(0)}${suffix}`
@@ -596,16 +596,17 @@ export const useQuoteLogic = () => {
                 formData.email,
                 formData.email,
                 finalPublicLink,
-                lang
+                lang,
+                formData.acomptePct
             );
-            showMessage("Email envoyé avec succès !");
+            showMessage(t('form.success.email_sent'));
 
             // 2. ON VALIDE L'ACTION
             setEmailSent(true);
 
         } catch (error) {
             console.error("Erreur envoi email:", error);
-            showMessage("Erreur lors de l'envoi.");
+            showMessage(t('form.error.email_send'));
         } finally {
             setIsSendingEmail(false);
         }
@@ -748,7 +749,15 @@ export const useQuoteLogic = () => {
             // -----------------
 
             if (!isCalculatorMode) {
-                await AxonautService.createAxonautEvent(quoteResponse.id, companyId, formData.email, formData.email, signLink, lang);
+                await AxonautService.createAxonautEvent(
+                    quoteResponse.id,
+                    companyId,
+                    formData.email,
+                    formData.email,
+                    signLink,
+                    lang,
+                    finalAcomptePct 
+                );
             } else {
                 console.log("Mode Calculette : Devis créé sans email.");
             }

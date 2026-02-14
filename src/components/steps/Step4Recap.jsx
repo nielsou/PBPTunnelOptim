@@ -12,7 +12,7 @@ const formatCurrency = (amount) => {
 };
 
 const getAddressSummary = (fullAddressString) => {
-    if (!fullAddressString || typeof fullAddressString !== 'string') return "Adresse non spécifiée.";
+    if (!fullAddressString || typeof fullAddressString !== 'string') return t('step4.address_not_specified');
     return fullAddressString;
 };
 
@@ -20,16 +20,20 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
+    const [activeSource, setActiveSource] = useState(null);
     const pollingInterval = useRef(null);
+    const pollingTimeout = useRef(null);
 
     // Nettoyage de sécurité si l'utilisateur quitte la page
     useEffect(() => {
         return () => {
             if (pollingInterval.current) clearInterval(pollingInterval.current);
+            if (pollingTimeout.current) clearTimeout(pollingTimeout.current);
         };
     }, []);
 
-    const handlePaymentClick = async () => {
+    const handlePaymentClick = async (source) => {
+        setActiveSource(source);
         setLoadingPayment(true);
         const result = await getStripePaymentUrl(formData.quotationUrl);
 
@@ -49,13 +53,23 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 if (status.paid) {
                     console.log("✅ Paiement confirmé !");
                     clearInterval(pollingInterval.current);
+                    clearTimeout(pollingTimeout.current); // <--- AJOUT : On coupe le minuteur de 15s
                     setIsCheckingPayment(false);
                     onValidate(); // Déclenche le passage à la Step 5
                 }
             }, 5000); // 5 secondes
+
+            // 4. AJOUT : Arrêt forcé après 10 secondes 
+            pollingTimeout.current = setTimeout(() => {
+                console.log("⏱️ Fin de la vérification auto. Retour à la normale.");
+                if (pollingInterval.current) clearInterval(pollingInterval.current);
+                setIsCheckingPayment(false);
+                setActiveSource(null);
+            }, 10000);
+
         } else {
             setLoadingPayment(false);
-            alert("Erreur lors de la récupération du lien de paiement.");
+            alert(t('step4.error.payment_link'));
         }
     };
 
@@ -63,7 +77,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
         return (
             <div className='flex flex-col items-center justify-center py-12 space-y-4'>
                 <Loader2 className='w-8 h-8 animate-spin text-gray-400' />
-                <span className='text-gray-500 font-medium'>Calcul du devis en cours...</span>
+                <span className='text-gray-500 font-medium'>{t('nav.calculating')}</span>
             </div>
         );
     }
@@ -81,17 +95,17 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-3xl font-extrabold text-gray-900 border-b pb-4" style={{ color: customColor, borderColor: customColor }}>
-                Récapitulatif et Validation
+                {t('step4.title')}
             </h2>
 
             <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
 
                 {/* BLOC 1 : INFO CLIENT */}
                 <div className='bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm'>
-                    <h3 className='text-xl font-bold mb-6 text-gray-900'>Vos coordonnées</h3>
+                    <h3 className='text-xl font-bold mb-6 text-gray-900'>{t('step4.client_details')}</h3>
                     <div className='space-y-4 text-gray-700 text-sm'>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
-                            <span className='font-semibold'>Contact</span>
+                            <span className='font-semibold'>{t('step4.label.contact')}</span>
                             <span>{formData.fullName}</span>
                         </div>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
@@ -99,21 +113,21 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                             <span>{formData.email}</span>
                         </div>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
-                            <span className='font-semibold'>Téléphone</span>
+                            <span className='font-semibold'>{t('step3.phone')}</span>
                             <span>{formData.phone}</span>
                         </div>
                         {formData.isPro && (
                             <div className='flex justify-between border-b border-gray-200 pb-2'>
-                                <span className='font-semibold'>Société</span>
+                                <span className='font-semibold'>{t('step4.label.company')}</span>
                                 <span>{formData.companyName}</span>
                             </div>
                         )}
                         <div className='pt-2'>
-                            <p className='font-semibold mb-1'>Lieu de l'événement</p>
+                            <p className='font-semibold mb-1'>{t('step4.label.venue')}</p>
                             <p className='text-right text-gray-600'>{getAddressSummary(formData.deliveryFullAddress)}</p>
                         </div>
                         <div className='flex justify-between pt-2'>
-                            <span className='font-semibold'>Date</span>
+                            <span className='font-semibold'>{t('step4.label.date')}</span>
                             <span>{new Date(formData.eventDate).toLocaleDateString('fr-FR')} ({formData.eventDuration} jours)</span>
                         </div>
                     </div>
@@ -123,7 +137,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 <div className='flex flex-col gap-6'>
                     <div className='bg-white p-8 rounded-2xl shadow-xl border border-gray-100'>
                         <h3 className='text-xl font-bold mb-6 text-gray-900'>
-                            Votre commande <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
+                            {t('step4.order_title')} <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
                         </h3>
 
                         <div className='space-y-4 mb-6'>
@@ -138,7 +152,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                         {/* Zone Total & Acompte */}
                         <div className='bg-gray-50 -mx-8 -mb-8 p-8 rounded-b-2xl border-t border-gray-100'>
                             <div className='flex justify-between items-center text-xl font-extrabold text-gray-900 mb-4'>
-                                <span>Total TTC</span>
+                                <span>{t('step4.total_ttc')}</span>
                                 <span>{formatCurrency(finalTotalTTC)}</span>
                             </div>
 
@@ -156,28 +170,36 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
                             {/* --- BOUTON DE PAIEMENT --- */}
                             <button
-                                onClick={handlePaymentClick}
-                                // Ajoute isCheckingPayment ici
+                                onClick={() => handlePaymentClick('block')} // <--- Source 'block'
                                 disabled={isSubmitting || loadingPayment || isCheckingPayment}
                                 className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {/* ... icône ... */}
                                 <div className="text-center">
-                                    <p className="text-[#BE2A55] font-bold text-sm uppercase tracking-wide mb-1 flex items-center justify-center gap-2">
-                                        {isFullPayment ? "Règlement de la commande (100%)" : `Acompte à régler (${activeAcomptePct * 100}%)`}
-                                    </p>
-                                    <p className="text-3xl font-black text-[#BE2A55]">
-                                        {formatCurrency(depositAmount)}
-                                    </p>
-                                    <p className="text-xs text-pink-700 mt-1 italic group-hover:underline">
-                                        {loadingPayment ? "Chargement du paiement..." : (isFullPayment ? "Cliquez ici pour régler la totalité" : "Cliquez ici pour régler l'acompte")}
-                                    </p>
+                                    {/* Affichage conditionnel du SCANNING */}
+                                    {(activeSource === 'block' && (loadingPayment || isCheckingPayment)) ? (
+                                        <div className="flex flex-col items-center py-2 animate-pulse">
+                                            <Loader2 className="w-8 h-8 animate-spin text-[#BE2A55] mb-2" />
+                                            <p className="text-[#BE2A55] font-black text-sm uppercase tracking-wide">
+                                                {t('step4.checking_payment')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="text-[#BE2A55] font-bold text-sm uppercase tracking-wide mb-1 flex items-center justify-center gap-2">
+                                                {isFullPayment ? t('step4.payment.full_title') : t('step4.payment.deposit_title', { pct: activeAcomptePct * 100 })}
+                                            </p>
+                                            <p className="text-3xl font-black text-[#BE2A55]">{formatCurrency(depositAmount)}</p>
+                                            <p className="text-xs text-pink-700 mt-1 italic group-hover:underline">
+                                                {isFullPayment ? t('step4.payment.full_click') : t('step4.payment.deposit_click')}
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
                             </button>
 
                             {!isFullPayment && (
                                 <p className="text-xs text-gray-400 text-center mt-3">
-                                    Le solde sera dû 10 jours avant l'événement
+                                    {t('step4.balance_notice')}
                                 </p>
                             )}
                         </div>
@@ -218,31 +240,30 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                     className="w-full md:w-auto px-6 py-4 border-2 border-gray-300 rounded-xl font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center justify-center space-x-2"
                 >
                     <ChevronLeft className='w-5 h-5' />
-                    <span>Modifier</span>
+                    <span>{t('step4.edit')}</span>
                 </button>
 
                 <button
-                    onClick={handlePaymentClick}
-                    // On désactive si une action est déjà en cours
+                    onClick={() => handlePaymentClick('main')} // <--- Source 'main'
                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
                     className="w-full md:w-auto px-10 py-4 bg-[#BE2A55] text-white rounded-xl font-black flex items-center justify-center gap-3 shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {loadingPayment ? (
-                        <Loader2 className='w-6 h-6 animate-spin' />
+                    {(activeSource === 'main' && (loadingPayment || isCheckingPayment)) ? (
+                        <>
+                            <Loader2 className='w-6 h-6 animate-spin' />
+                            <span>{t('step4.checking_payment')}</span>
+                        </>
                     ) : (
-                        <CreditCard className='w-6 h-6' />
+                        <>
+                            <CreditCard className='w-6 h-6' />
+                            <span>{isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit')}</span>
+                        </>
                     )}
-                    <span>
-                        {loadingPayment
-                            ? "Chargement Stripe..."
-                            : (isFullPayment ? "Régler la commande" : "Payer l'acompte") // Texte dynamique ici
-                        }
-                    </span>
                 </button>
             </div>
             {!isFullPayment && (
                 <p className="text-xs text-gray-400 text-center mt-3">
-                    Le solde sera dû 10 jours avant l'événement
+                    {t('step4.balance_notice')}
                 </p>
             )}
         </div>
