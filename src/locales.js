@@ -65,7 +65,12 @@ export const locales = {
     "step2.collection.essential": { fr: "Collection Prêt-à-fêter !", en: "Ready-to-party Collection!" },
     "step2.collection.prestige": { fr: "Collection Prestige", en: "Prestige Collection" },
     "step2.collection.immersive": { fr: "Expérience Immersive", en: "Immersive Experience" },
-
+    "step2.logistics.distance_notice": { fr: "Tarif ajusté selon l'adresse de votre événement", en: "Rate adjusted based on your event location" },
+    "step2.logistics.prestige_km": {
+        fr: "Votre lieu de réception étant éloigné de Paris, un ajustement logistique de {price}€ s'applique.",
+        en: "As your venue is far from Paris, a logistics adjustment of {price}€ applies."
+    },
+    "step2.logistics.pro_badge_km": { fr: "Livraison de base incluse", en: "Base delivery included" },
     // Badges & Modèles (Descriptions Longues restaurées)
     "step2.badge.pro": { fr: "Pro", en: "Pro" },
     "step2.badge.digital": { fr: "100% digital", en: "100% digital" },

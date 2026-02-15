@@ -72,8 +72,8 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                     <button
                         onClick={() => setLang('fr')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'fr'
-                                ? 'border-[#BE2A55] bg-pink-50'
-                                : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                            ? 'border-[#BE2A55] bg-pink-50'
+                            : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
                             }`}
                     >
                         <span className="text-xl">🇫🇷</span>
@@ -82,8 +82,8 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                     <button
                         onClick={() => setLang('en')}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'en'
-                                ? 'border-[#BE2A55] bg-pink-50'
-                                : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                            ? 'border-[#BE2A55] bg-pink-50'
+                            : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
                             }`}
                     >
                         <span className="text-xl">🇬🇧</span>
@@ -94,7 +94,9 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
 
             {/* 1. TYPE D'ÉVÉNEMENT */}
             <div className='space-y-3'>
-                <label className='block text-sm font-bold text-gray-700'>{t('step1.title')} *</label>
+                <label className='block text-sm font-bold text-gray-700'>
+                    {t('step1.title')} <span className="text-red-500">*</span>
+                </label>
                 <div className="relative group">
                     <select
                         value={formData.eventType}

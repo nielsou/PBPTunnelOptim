@@ -1,6 +1,6 @@
 // src/components/steps/Step2Config.jsx
 import React, { useEffect, useRef } from 'react';
-import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer } from 'lucide-react';
+import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer, Package } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
 const HIDE_PRICE = true
@@ -250,16 +250,53 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         <h3 className='text-xl font-black text-gray-900'>{t('step2.logistics.title')}</h3>
                         {(isSignature || is360) ? (
                             <div className='bg-purple-50 border-2 border-purple-100 p-6 rounded-3xl flex items-center justify-between'>
-                                <div className='flex gap-4'><Truck className='text-purple-600' /><div><p className='font-black text-gray-900'>{t('step2.logistics.pro_setup')}</p><p className='text-[10px] text-purple-700 font-black uppercase tracking-widest'>{t('step2.logistics.pro_badge')}</p></div></div>
-                                <span className='font-black text-purple-700'>{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
+                                <div className='flex gap-4'>
+                                    <Truck className='text-purple-600' />
+                                    <div>
+                                        <p className='font-black text-gray-900'>{t('step2.logistics.pro_setup')}</p>
+
+                                        {pricingData.axonautData?.supplementKilometrique > 0 ? (
+                                            <p className='text-[11px] text-purple-800 font-medium italic mt-1'>
+                                                {t('step2.logistics.prestige_km', { price: priceTransformer(pricingData.axonautData.supplementKilometrique).toFixed(0) })}
+                                            </p>
+                                        ) : (
+                                            <p className='text-[10px] text-purple-700 font-black uppercase tracking-widest mt-1'>
+                                                {t('step2.logistics.pro_badge')}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                <span className='font-black text-purple-700 text-lg'>
+                                    {pricingData.axonautData?.supplementKilometrique > 0
+                                        ? `+${priceTransformer(pricingData.axonautData.supplementKilometrique).toFixed(0)}€`
+                                        : t('common.included')}
+                                </span>
                             </div>
                         ) : (
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                <button onClick={() => handleChange('delivery', false)} className={`p-6 border-2 rounded-[2rem] ${!formData.delivery ? 'border-green-600 bg-green-50' : 'border-gray-50 bg-gray-50'}`}>
-                                    <span className='font-black text-gray-800'>{t('step2.logistics.pickup')}</span><span className='block text-green-600 font-black text-sm'>{t('common.free')}</span>
+                                <button
+                                    onClick={() => handleChange('delivery', false)}
+                                    className={`p-6 border-2 rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${!formData.delivery ? 'border-green-600 bg-green-50 scale-[1.02] shadow-sm' : 'border-gray-50 bg-gray-50 hover:border-green-200'}`}
+                                >
+                                    <Package className={`w-8 h-8 mb-2 ${!formData.delivery ? 'text-green-600' : 'text-gray-400'}`} />
+                                    <span className='font-black text-gray-800 text-lg'>{t('step2.logistics.pickup')}</span>
+                                    <span className='block text-green-600 font-black mt-1'>{t('common.free')}</span>
                                 </button>
-                                <button onClick={() => handleChange('delivery', true)} className={`p-6 border-2 rounded-[2rem] ${formData.delivery ? 'border-blue-600 bg-blue-50' : 'border-gray-50 bg-gray-50'}`}>
-                                    <span className='font-black text-gray-800'>{t('step2.logistics.delivery')}</span><span className='block text-blue-600 font-black text-sm'>+{priceTransformer(unitaryPrices.livraison).toFixed(0)}€</span>
+
+                                <button
+                                    onClick={() => handleChange('delivery', true)}
+                                    className={`p-6 border-2 rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${formData.delivery ? 'border-blue-600 bg-blue-50 scale-[1.02] shadow-sm' : 'border-gray-50 bg-gray-50 hover:border-blue-200'}`}
+                                >
+                                    <Truck className={`w-8 h-8 mb-2 ${formData.delivery ? 'text-blue-600' : 'text-gray-400'}`} />
+                                    <span className='font-black text-gray-800 text-lg'>{t('step2.logistics.delivery')}</span>
+                                    <span className='block text-blue-600 font-black mt-1'>
+                                        +{priceTransformer(unitaryPrices.livraison + (pricingData.axonautData?.supplementKilometrique || 0)).toFixed(0)}€
+                                    </span>
+                                    {(pricingData.axonautData?.supplementKilometrique > 0) && (
+                                        <span className='block mt-2 text-xs text-gray-500 font-medium italic'>
+                                            {t('step2.logistics.distance_notice')}
+                                        </span>
+                                    )}
                                 </button>
                             </div>
                         )}

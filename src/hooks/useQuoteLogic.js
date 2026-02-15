@@ -374,7 +374,7 @@ export const useQuoteLogic = () => {
             livraisonIncluse: formData.delivery,
             nombreTirages: formData.proImpressions,
             prixLivraison: Math.round(price_livraison * 100) / 100,
-            supplementKilometrique: Math.round(supplementKm * 100) / 100,
+            supplementKilometrique: formData.delivery ? Math.round(supplementKm * 100) / 100 : 0,
             distanceKm: distanceKm,
             supplementLivraisonDifficile: 0,
 
@@ -756,7 +756,7 @@ export const useQuoteLogic = () => {
                     formData.email,
                     signLink,
                     lang,
-                    finalAcomptePct 
+                    finalAcomptePct
                 );
             } else {
                 console.log("Mode Calculette : Devis créé sans email.");
