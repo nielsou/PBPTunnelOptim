@@ -360,17 +360,17 @@ export const locales = {
 
     // --- EMAIL ---
     "axonaut.email.subject": {
-        fr: "[Photobooth Paris] Votre commande vous attend  📸",
-        en: "[Photobooth Paris] Your order is waiting for you 📸"
+        fr: "Votre devis Photobooth Paris est prêt 📸",
+        en: "Your Photobooth Paris quote is ready 📸"
     },
 
     "axonaut.email.intro_deposit": {
-        fr: "Nous avons bien reçu votre demande. Pour bloquer définitivement votre date et la disponibilité du matériel, merci de <strong>régler votre acompte</strong> via le lien sécurisé ci-dessous. Le solde sera dû 10 jours avant votre événement.",
-        en: "We have received your request. To officially secure your date and equipment availability, please <strong>pay your deposit</strong> using the secure link below. The remaining balance will be due 10 days before your event."
+        fr: "Nous avons bien reçu votre demande de location. Pour vous assurer de la disponibilité du matériel, réglez votre acompte sans plus tarder, directement en ligne via le lien sécurisé ci-dessous, et réglez le solde ultérieurement, 10 jours avant votre événement.",
+        en: "We have received your rental request. To ensure equipment availability, please pay your deposit without delay, directly online via the secure link below. The remaining balance will be due 10 days before your event."
     },
     "axonaut.email.intro_full": {
-        fr: "Nous avons bien reçu votre demande. Votre événement ayant lieu très prochainement, le <strong>règlement intégral de la commande</strong> est requis pour bloquer définitivement votre date et la disponibilité du matériel.",
-        en: "We have received your request. Since your event is taking place very soon, <strong>full payment</strong> is required to officially secure your date and equipment availability."
+        fr: "Nous avons bien reçu votre demande de location. Votre événement ayant lieu très prochainement, le <strong>règlement intégral de la commande</strong> est requis sans plus tarder via le lien sécurisé ci-dessous, pour vous assurer de la disponibilité du matériel.",
+        en: "We have received your rental request. Since your event is taking place very soon, <strong>full payment</strong> is required without delay via the secure link below, to ensure equipment availability."
     },
     "axonaut.email.body": {
         fr: `
@@ -386,16 +386,16 @@ export const locales = {
                 </tr>
                 <tr>
                     <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Votre commande est prête !</h2>
+                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Confirmez votre réservation !</h2>
                     <p>Bonjour,</p>
                     <p>{intro_text}</p>
                     
                     <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
-                        <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Une fois votre paiement validé :</p>
+                        <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Une fois votre règlement effectué :</p>
                         <ul style="margin-bottom: 0; padding-left: 20px;">
-                        <li style="margin-bottom: 10px;"><strong>Place sécurisée :</strong> Votre événement est définitivement bloqué dans notre planning.</li>
-                        <li style="margin-bottom: 10px;"><strong>Espace Design :</strong> Vous recevez immédiatement votre lien pour personnaliser votre cadre photo en ligne.</li>
-                        <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison (7 jours sur 7) et de reprise en quelques clics.</li>
+                        <li style="margin-bottom: 10px;"><strong>Réservation confirmée :</strong> Votre événement est définitivement programmé dans notre planning.</li>
+                        <li style="margin-bottom: 10px;"><strong>Personnalisation simplifiée :</strong> Vous recevez immédiatement votre lien pour designer le cadre entourant votre photo, via notre outil en ligne.</li>
+                        <li style="margin-bottom: 0;"><strong>Logistique adaptée :</strong> Validez vos créneaux de livraison (dépose et reprise) en fonction de vos disponibilités, en quelques clics.</li>
                         </ul>
                     </div>
 
@@ -404,12 +404,17 @@ export const locales = {
                     </p>
                     
                     <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Disponibilité garantie uniquement après réception du paiement.</em></p>
+
+                    <p style="text-align: center; font-size: 15px; color: #333; margin-top: 30px;">
+                        Une question ? Besoin d'une information supplémentaire ?<br>Contactez-nous au <strong>01 42 86 54 24</strong> ou répondez directement à cet e-mail.
+                    </p>
                     
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
                     
                     <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">Le photobooth préféré des pros et des particuliers :</p>
                     <p style="text-align: center; font-size: 14px; color: #555;">
-                        <strong>Mama Shelter • Crédit Agricole • Orange • Mariages</strong><br>
+                        <strong>Mama Shelter • Crédit Agricole • Orange • L'Oréal</strong><br>
+                        <strong>Mariages • Anniversaires • Bar Mitzvah • EVJF</strong><br>
                         ✨ Rejoignez les 36 800 sourires capturés en 2025 !
                     </p>
                     </td>
@@ -438,16 +443,16 @@ export const locales = {
                 </tr>
                 <tr>
                     <td style="padding: 30px 20px; font-size: 16px; line-height: 1.6; color: #333333;">
-                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Your order is ready!</h2>
+                    <h2 style="color: #ff0066; font-size: 22px; margin: 0 0 20px 0; text-align: center; font-weight: bold;">Confirm your booking!</h2>
                     <p>Hello,</p>
                     <p>{intro_text}</p>
                     
                     <div style="background-color: #f9f9f9; padding: 20px; border-radius: 12px; margin: 25px 0;">
                         <p style="margin-top: 0; font-weight: bold; color: #ff0066;">Once your payment is confirmed:</p>
                         <ul style="margin-bottom: 0; padding-left: 20px;">
-                        <li style="margin-bottom: 10px;"><strong>Guaranteed Date:</strong> Your event is officially secured in our calendar.</li>
-                        <li style="margin-bottom: 10px;"><strong>Design Studio:</strong> Get instant access to our online tool to create your custom photo template.</li>
-                        <li style="margin-bottom: 0;"><strong>Easy Logistics:</strong> Confirm your delivery and pick-up slots based on real-time availability.</li>
+                        <li style="margin-bottom: 10px;"><strong>Booking confirmed:</strong> Your event is officially scheduled in our calendar.</li>
+                        <li style="margin-bottom: 10px;"><strong>Easy customization:</strong> You will immediately receive a link to design your photo frame via our online tool.</li>
+                        <li style="margin-bottom: 0;"><strong>Tailored logistics:</strong> Confirm your delivery and pickup slots based on your availability in just a few clicks.</li>
                         </ul>
                     </div>
 
@@ -455,13 +460,18 @@ export const locales = {
                         <a href="{link}" style="display: inline-block; padding: 16px 30px; background-color: #ff0066; color: #ffffff !important; text-decoration: none; font-weight: bold; border-radius: 50px; font-size: 18px; box-shadow: 0 4px 15px rgba(255, 0, 102, 0.3);">{button_text}</a>
                     </p>
                     
-                    <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Availability only guaranteed after payment receipt.</em></p>
+                    <p style="font-size: 13px; color: #666; text-align: center; margin-top: 15px;">⚠️ <em>Availability guaranteed only upon receipt of the payment.</em></p>
+
+                    <p style="text-align: center; font-size: 15px; color: #333; margin-top: 30px;">
+                        Any questions? Need more information?<br>Contact us at <strong>+33 1 42 86 54 24</strong> or simply reply to this email.
+                    </p>
                     
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
                     
                     <p style="text-align: center; font-weight: bold; margin-bottom: 10px;">The preferred photobooth for pros and individuals:</p>
                     <p style="text-align: center; font-size: 14px; color: #555;">
-                        <strong>Mama Shelter • Crédit Agricole • Orange • Weddings</strong><br>
+                        <strong>Mama Shelter • Crédit Agricole • Orange • L'Oréal</strong><br>
+                        <strong>Weddings • Birthdays • Bar Mitzvah • Bachelorette parties</strong><br>
                         ✨ Join the 36,800 smiles captured in 2025!
                     </p>
                     </td>

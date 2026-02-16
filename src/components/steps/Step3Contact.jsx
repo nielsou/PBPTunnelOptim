@@ -4,9 +4,26 @@ import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
 export const Step3Contact = ({ formData, setFormData, t }) => {
-    
+
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const formatName = (str) => {
+        if (!str) return '';
+        // 1. Trim et nettoyage des espaces multiples
+        let cleaned = str.trim().replace(/\s+/g, ' ');
+        // 2. Tout en minuscules
+        cleaned = cleaned.toLowerCase();
+        // 3. Majuscule au début et après tout caractère qui n'est pas une lettre (inclut les accents À-ÿ)
+        cleaned = cleaned.replace(/(^|[^a-zA-ZÀ-ÿ])([a-zA-ZÀ-ÿ])/g, (match, separator, letter) => separator + letter.toUpperCase());
+        return cleaned;
+    };
+
+    const handleNameBlur = () => {
+        if (formData.fullName) {
+            handleChange('fullName', formatName(formData.fullName));
+        }
     };
 
     const handleBillingAddressSelect = (addr) => {
@@ -15,10 +32,10 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
             billingFullAddress: addr.fullAddress,
             billingLat: addr.lat,
             billingLng: addr.lng,
-            billingStreet: addr.street, 
+            billingStreet: addr.street,
             billingZipCode: addr.postal,
             billingCity: addr.city,
-            saveNewBillingAddress: true 
+            saveNewBillingAddress: true
         }));
     };
 
@@ -36,7 +53,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
 
     return (
         <div className='space-y-8 animate-in fade-in slide-in-from-right-4 duration-500'>
-            
+
             {/* 1. INFOS PERSONNELLES */}
             <div className='space-y-6'>
                 <h3 className='text-lg font-black text-gray-900 flex items-center gap-2'>
@@ -50,6 +67,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                         placeholder={t('step3.placeholder.name')}
                         value={formData.fullName}
                         onChange={e => handleChange('fullName', e.target.value)}
+                        onBlur={handleNameBlur}
                         required
                     />
                     <InputField
@@ -73,25 +91,22 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
             </div>
 
             {/* 2. OPTION RAPPEL */}
-            <div className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${
-                formData.wantsCallback 
-                ? 'border-[#BE2A55] bg-pink-50/30' 
-                : 'border-gray-100 bg-gray-50/50'
-            }`}
-            onClick={() => handleChange('wantsCallback', !formData.wantsCallback)}
+            <div className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${formData.wantsCallback
+                    ? 'border-[#BE2A55] bg-pink-50/30'
+                    : 'border-gray-100 bg-gray-50/50'
+                }`}
+                onClick={() => handleChange('wantsCallback', !formData.wantsCallback)}
             >
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                    formData.wantsCallback ? 'bg-[#BE2A55] text-white' : 'bg-white text-gray-400'
-                }`}>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${formData.wantsCallback ? 'bg-[#BE2A55] text-white' : 'bg-white text-gray-400'
+                    }`}>
                     <Phone className="w-6 h-6" />
                 </div>
                 <div className='flex-1'>
                     <h4 className='font-bold text-gray-900'>{t('step3.callback.title')}</h4>
                     <p className='text-xs text-gray-500 font-medium'>{t('step3.callback.subtitle')}</p>
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                    formData.wantsCallback ? 'bg-[#BE2A55] border-[#BE2A55]' : 'border-gray-300'
-                }`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${formData.wantsCallback ? 'bg-[#BE2A55] border-[#BE2A55]' : 'border-gray-300'
+                    }`}>
                     {formData.wantsCallback && <CheckCircle2 className='w-4 h-4 text-white' />}
                 </div>
             </div>
@@ -119,21 +134,19 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                 {/* BLOC ADRESSE DE FACTURATION */}
                 <div className='space-y-3'>
                     <label className='block text-sm font-semibold text-gray-800'>{t('step3.billing.label')}</label>
-                    
+
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                         {/* OPTION A : IDENTIQUE */}
-                        <button 
+                        <button
                             onClick={() => handleChange('billingSameAsEvent', true)}
-                            className={`p-4 rounded-xl border-2 text-left transition-all ${
-                                formData.billingSameAsEvent 
-                                ? 'border-blue-600 bg-blue-50' 
-                                : 'border-gray-200 hover:border-blue-300'
-                            }`}
+                            className={`p-4 rounded-xl border-2 text-left transition-all ${formData.billingSameAsEvent
+                                    ? 'border-blue-600 bg-blue-50'
+                                    : 'border-gray-200 hover:border-blue-300'
+                                }`}
                         >
                             <div className='flex items-center gap-3 mb-2'>
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                                    formData.billingSameAsEvent ? 'border-blue-600 bg-blue-600' : 'border-gray-400'
-                                }`}>
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${formData.billingSameAsEvent ? 'border-blue-600 bg-blue-600' : 'border-gray-400'
+                                    }`}>
                                     {formData.billingSameAsEvent && <CheckCircle2 className='w-3 h-3 text-white' />}
                                 </div>
                                 <span className='font-bold text-gray-900'>{t('step3.billing.btn_same')}</span>
@@ -144,18 +157,16 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                         </button>
 
                         {/* OPTION B : AUTRE ADRESSE */}
-                        <button 
+                        <button
                             onClick={switchToOtherAddress}
-                            className={`p-4 rounded-xl border-2 text-left transition-all ${
-                                !formData.billingSameAsEvent 
-                                ? 'border-blue-600 bg-blue-50' 
-                                : 'border-gray-200 hover:border-blue-300'
-                            }`}
+                            className={`p-4 rounded-xl border-2 text-left transition-all ${!formData.billingSameAsEvent
+                                    ? 'border-blue-600 bg-blue-50'
+                                    : 'border-gray-200 hover:border-blue-300'
+                                }`}
                         >
                             <div className='flex items-center gap-3 mb-2'>
-                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                                    !formData.billingSameAsEvent ? 'border-blue-600 bg-blue-600' : 'border-gray-400'
-                                }`}>
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${!formData.billingSameAsEvent ? 'border-blue-600 bg-blue-600' : 'border-gray-400'
+                                    }`}>
                                     {!formData.billingSameAsEvent && <CheckCircle2 className='w-3 h-3 text-white' />}
                                 </div>
                                 <span className='font-bold text-gray-900'>{t('step3.billing.btn_other')}</span>
@@ -169,7 +180,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                     {/* CHAMPS SUPPLÉMENTAIRES */}
                     {!formData.billingSameAsEvent && (
                         <div className='animate-in fade-in slide-in-from-top-2 pt-4 bg-gray-50 p-5 rounded-xl border border-gray-200 space-y-4'>
-                            
+
                             {/* 1. NOM DE L'ADRESSE (CORRIGÉ : Pas d'étoile dans le label, t() utilisé) */}
                             <InputField
                                 label={t('step3.billing.addr_name')}
