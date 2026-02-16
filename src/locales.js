@@ -360,8 +360,8 @@ export const locales = {
 
     // --- EMAIL ---
     "axonaut.email.subject": {
-        fr: "Votre devis Photobooth Paris est prêt 📸",
-        en: "Your Photobooth Paris quote is ready 📸"
+        fr: "[Photobooth Paris] Votre commande vous attends  📸",
+        en: "[Photobooth Paris] Your order is waiting for you 📸"
     },
 
     "axonaut.email.intro_deposit": {
@@ -395,7 +395,7 @@ export const locales = {
                         <ul style="margin-bottom: 0; padding-left: 20px;">
                         <li style="margin-bottom: 10px;"><strong>Place sécurisée :</strong> Votre événement est définitivement bloqué dans notre planning.</li>
                         <li style="margin-bottom: 10px;"><strong>Espace Design :</strong> Vous recevez immédiatement votre lien pour personnaliser votre cadre photo en ligne.</li>
-                        <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison et de reprise en quelques clics.</li>
+                        <li style="margin-bottom: 0;"><strong>Logistique simplifiée :</strong> Vous validez vos créneaux de livraison (7 jours sur 7) et de reprise en quelques clics.</li>
                         </ul>
                     </div>
 
