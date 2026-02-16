@@ -360,7 +360,7 @@ export const locales = {
 
     // --- EMAIL ---
     "axonaut.email.subject": {
-        fr: "[Photobooth Paris] Votre commande vous attends  📸",
+        fr: "[Photobooth Paris] Votre commande vous attend  📸",
         en: "[Photobooth Paris] Your order is waiting for you 📸"
     },
 
