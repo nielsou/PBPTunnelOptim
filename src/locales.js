@@ -360,8 +360,8 @@ export const locales = {
 
     // --- EMAIL ---
     "axonaut.email.subject": {
-        fr: "Votre devis Photobooth Paris est prêt 📸",
-        en: "Your Photobooth Paris quote is ready 📸"
+        fr: "[Photobooth Paris] Votre commande vous attend 📸",
+        en: "[Photobooth Paris] Your order is waiting for you 📸"
     },
 
     "axonaut.email.intro_deposit": {
