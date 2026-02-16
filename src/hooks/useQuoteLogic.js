@@ -524,7 +524,7 @@ export const useQuoteLogic = () => {
                 payload.client = `=HYPERLINK("${companyUrl}";"${formData.fullName}")`;
             }
 
-            payload.name = formData.fullName;
+            payload.contact = formData.fullName;
 
 
             if (quoteData.customer_portal_url || quoteData.public_path) {
