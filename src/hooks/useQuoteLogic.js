@@ -38,6 +38,14 @@ export const useQuoteLogic = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
+
+            const params = new URLSearchParams(window.location.search);
+
+            // Lecture des informations de tracking
+            const utm_source = params.get('utm_source') || '';
+            const utm_medium = params.get('utm_medium') || '';
+            const utm_campaign = params.get('utm_campaign') || '';
+
             const path = window.location.pathname;
             const isPartner = path.includes('/partenaires') || path.includes('/calculette');
             const isCalc = path.includes('/calculette');
@@ -48,6 +56,9 @@ export const useQuoteLogic = () => {
                 }
                 return {
                     ...prev,
+                    utm_source,
+                    utm_medium,
+                    utm_campaign,
                     isPartnerMode: isPartner,
                     isCalculatorMode: isCalc
                 };
@@ -117,7 +128,10 @@ export const useQuoteLogic = () => {
         saveNewBillingAddress: false,
         saveNewDeliveryAddress: true,
         isPartnerMode: false,
-        isCalculatorMode: false
+        isCalculatorMode: false,
+        utm_source: '',
+        utm_medium: '',
+        utm_campaign: ''
     };
 
     // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
@@ -130,19 +144,33 @@ export const useQuoteLogic = () => {
         return 1;
     });
 
+    // 1. Définir une fonction pour extraire les UTM instantanément
+    const getUrlParams = () => {
+        if (typeof window === 'undefined') return {};
+        const params = new URLSearchParams(window.location.search);
+        return {
+            utm_source: params.get('utm_source') || '',
+            utm_medium: params.get('utm_medium') || '',
+            utm_campaign: params.get('utm_campaign') || ''
+        };
+    };
+
+    const urlParams = getUrlParams(); // Lecture immédiate
+
     // B. Données (Persistance Session)
     const [formData, setFormData] = useState(() => {
         if (typeof window !== 'undefined') {
             const savedData = sessionStorage.getItem('pbp_session_form_data');
             if (savedData) {
                 try {
+                    const parsed = JSON.parse(savedData);
                     return { ...initialFormState, ...JSON.parse(savedData) };
                 } catch (e) {
                     console.error("Erreur lecture sauvegarde session", e);
                 }
             }
         }
-        return initialFormState;
+        return { ...initialFormState, ...urlParams };
     });
 
     // --- 2. SAUVEGARDE AUTOMATIQUE (SESSION) ---
@@ -470,7 +498,10 @@ export const useQuoteLogic = () => {
             delivery_name: formData.newDeliveryAddressName || "",
             delivery_address: formData.deliveryFullAddress,
             event_date: formData.eventDate,
-            duration: formData.eventDuration
+            duration: formData.eventDuration,
+            utm_source: formData.utm_source,
+            utm_medium: formData.utm_medium,
+            utm_campaign: formData.utm_campaign
         };
 
         // Données de configuration (Étape 2)
@@ -798,6 +829,7 @@ export const useQuoteLogic = () => {
         lang,
         setLang,
         t,
-        isPartnerClient
+        isPartnerClient,
+        triggerWebhook
     };
 };

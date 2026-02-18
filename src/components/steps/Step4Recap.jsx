@@ -16,7 +16,7 @@ const getAddressSummary = (fullAddressString) => {
     return fullAddressString;
 };
 
-export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t }) => {
+export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook}) => {
 
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
@@ -33,6 +33,8 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
     }, []);
 
     const handlePaymentClick = async (source) => {
+        triggerWebhook(4, pricingData, null, false);
+        
         setActiveSource(source);
         setLoadingPayment(true);
         const result = await getStripePaymentUrl(formData.quotationUrl);

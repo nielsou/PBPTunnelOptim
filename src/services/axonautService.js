@@ -25,7 +25,6 @@ const toRfc3339 = (date) => {
 
 export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
     const isPro = formData.isPro;
-    const fullAddressString = formData.billingFullAddress || formData.deliveryFullAddress;
     const streetOnly = formData.billingStreet || formData.deliveryStreet;
     const zipCode = formData.billingZipCode || formData.deliveryZipCode;
     const city = formData.billingCity || formData.deliveryCity;

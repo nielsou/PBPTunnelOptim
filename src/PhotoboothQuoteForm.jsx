@@ -36,6 +36,7 @@ export default function PhotoboothQuoteForm() {
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
         handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
+        triggerWebhook
     } = useQuoteLogic();
 
     const [isPartnerMode, setIsPartnerMode] = useState(false);
@@ -176,6 +177,7 @@ export default function PhotoboothQuoteForm() {
                             handleEditRequest={handlePrev}
                             isSubmitting={isSubmitting}
                             t={t}
+                            triggerWebhook={triggerWebhook}
                         />
                     )}
 
