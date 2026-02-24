@@ -298,8 +298,8 @@ export const locales = {
         en: "Provision of our premium <strong>Signature</strong> photobooth with high-performance DSLR, intelligent flash and premium finish"
     },
     "axonaut.desc.sig_multi": {
-        fr: "Impression de chaque cliché en <strong>{n} exemplaire(s)</strong>",
-        en: "Printing of each shot in <strong>{n} copy/copies</strong>"
+        fr: "Option <strong>{extra} tirage(s) additionnel(s)</strong> : imprimez jusqu'à {total} photos pour chaque prise de vue !",
+        en: "Option <strong>{extra} additional print(s)</strong>: print up to {total} photos for each shot!"
     },
     "axonaut.desc.360_base": {
         fr: "Mise à disposition de notre <strong>Videobooth 360</strong> avec plateau rotatif de 120 cm (jusqu'à 5 personnes)",

@@ -166,7 +166,8 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
         items.push(
             t('axonaut.desc.star_base', lang),
             t('axonaut.desc.unlimited', lang),
-            t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
+            t('axonaut.desc.prints_1copy', lang),
+            // t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
             t('axonaut.desc.mail_5g', lang),
             t('axonaut.desc.download', lang),
             t('axonaut.desc.support', lang)
@@ -178,7 +179,8 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
         items.push(
             t('axonaut.desc.sig_base', lang),
             t('axonaut.desc.unlimited', lang),
-            t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
+            t('axonaut.desc.prints_1copy', lang),
+            // t('axonaut.desc.sig_multi', lang, { n: nombreTirages }),
             t('axonaut.desc.mail_5g', lang),
             t('axonaut.desc.download', lang),
             t('axonaut.desc.support', lang)
@@ -246,7 +248,16 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     }
 
     if (supplementImpression > 0) {
-        productsArray.push({ "product_code": "P-PRINT-SUP", "name": t('axonaut.opt.print_sup', lang), "price": Math.round(100 * supplementImpression / (nombreMachine * nombreJours * (nombreTirages - 1))) / 100, "tax_rate": TVA_RATE_DEC, "quantity": nombreMachine * nombreJours * (nombreTirages - 1), "description": t('axonaut.desc.sig_multi', lang, { n: nombreTirages }) });
+        const extraQtyPerPhoto = nombreTirages - 1;
+
+        productsArray.push({
+            "product_code": "P-PRINT-SUP",
+            "name": t('axonaut.opt.print_sup', lang),
+            "price": Math.round(100 * supplementImpression / (nombreMachine * nombreJours * extraQtyPerPhoto)) / 100,
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": nombreMachine * nombreJours * extraQtyPerPhoto,
+            "description": t('axonaut.desc.sig_multi', lang, { extra: extraQtyPerPhoto , total: nombreTirages })
+        });
     }
 
     if (supplementAnimation > 0) {
