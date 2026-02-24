@@ -239,6 +239,8 @@ export const locales = {
     "step4.payment.btn_full": { fr: "Régler la commande", en: "Pay the order" },
     "step4.payment.btn_deposit": { fr: "Payer l'acompte", en: "Pay the deposit" },
     "step4.error.payment_link": { fr: "Erreur lors de la récupération du lien de paiement.", en: "Error retrieving the payment link." },
+    "step4.with_discount": { fr: "Avec remise", en: "With discount" },
+    "step4.total_discount": { fr: "Économie totale", en: "Total savings" },
     "form.error.payment_redirect": { fr: "Erreur de redirection vers le paiement.", en: "Payment redirection error." },
     "form.success.email_sent": { fr: "Email envoyé avec succès !", en: "Email successfully sent!" },
     "form.error.email_send": { fr: "Erreur lors de l'envoi.", en: "Error during sending." },

@@ -104,9 +104,9 @@ const t = (key, lang, vars = {}) => {
 export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     const TVA_RATE_DEC = 20.0;
     const {
-        nomBorne, prixMateriel, prixTemplate, prixLivraison, nombreMachine,
-        supplementKilometrique, supplementLivraisonDifficile, supplementImpression,
-        supplementAnimation, commercial, dateEvenement,
+        nomBorne, prixMateriel, prixMaterielBrut, remiseMateriel, prixTemplate, prixLivraison, nombreMachine,
+        supplementKilometrique, supplementLivraisonDifficile, supplementImpression, supplementImpressionBrut,
+        remiseImpression, supplementAnimation, commercial, dateEvenement,
         adresseLivraisonComplete, nombreJours, templateInclus, livraisonIncluse,
         acomptePct, nombreTirages, heuresAnimations, distanceKm, optionFondIA, optionRGPD, optionSpeaker,
         company_address_id
@@ -206,14 +206,26 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
             <strong>${t('axonaut.label.location', lang)}</strong> : ${adresseLivraisonComplete}
         </p>`;
 
-    productsArray.push({
+
+    const quantiteBase = nombreMachine * nombreJours;
+    const unitPriceBase = Math.round(100 * prixMaterielBrut / quantiteBase) / 100;
+    const totalDiscountBase = Math.round(100 * remiseMateriel) / 100;
+
+    const baseProduct = {
         "product_code": "P-BASE",
         "name": `${lang === 'fr' ? 'Prestation' : 'Service'} ${nomBorne}`,
-        "price": Math.round(100 * prixMateriel / (nombreMachine * nombreJours)) / 100,
+        "price": unitPriceBase, // On envoie le prix BRUT unitaire
         "tax_rate": TVA_RATE_DEC,
-        "quantity": nombreMachine * nombreJours,
+        "quantity": quantiteBase,
         "description": descriptionPrestation
-    });
+    };
+
+    // Si une remise existe, on injecte le paramètre discount_flat
+    if (totalDiscountBase > 0) {
+        baseProduct.discount_flat = totalDiscountBase;
+    }
+
+    productsArray.push(baseProduct);
 
     // --- 2. LOGISTIQUE ---
     const totalSupplementLivraison = supplementKilometrique + supplementLivraisonDifficile;
@@ -249,15 +261,27 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     if (supplementImpression > 0) {
         const extraQtyPerPhoto = nombreTirages - 1;
+        const quantitePrint = nombreMachine * nombreJours * extraQtyPerPhoto;
 
-        productsArray.push({
+        // On calcule le prix unitaire brut et la remise unitaire
+        const unitPricePrint = Math.round(100 * supplementImpressionBrut / quantitePrint) / 100;
+        const totalDiscountPrint = Math.round(100 * remiseImpression) / 100;
+
+        const printProduct = {
             "product_code": "P-PRINT-SUP",
             "name": t('axonaut.opt.print_sup', lang),
-            "price": Math.round(100 * supplementImpression / (nombreMachine * nombreJours * extraQtyPerPhoto)) / 100,
+            "price": unitPricePrint, // On envoie le prix BRUT unitaire
             "tax_rate": TVA_RATE_DEC,
-            "quantity": nombreMachine * nombreJours * extraQtyPerPhoto,
-            "description": t('axonaut.desc.sig_multi', lang, { extra: extraQtyPerPhoto , total: nombreTirages })
-        });
+            "quantity": quantitePrint,
+            "description": t('axonaut.desc.sig_multi', lang, { extra: extraQtyPerPhoto, total: nombreTirages })
+        };
+
+        // Si une remise existe, on injecte le paramètre discount_flat
+        if (totalDiscountPrint > 0) {
+            printProduct.discount_flat = totalDiscountPrint;
+        }
+
+        productsArray.push(printProduct);
     }
 
     if (supplementAnimation > 0) {

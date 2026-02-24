@@ -259,16 +259,24 @@ export const useQuoteLogic = () => {
         const NbJours = formData.eventDuration;
         const modelData = PRICING_STRATEGY[formData.model];
         const nomBorne = modelData.name;
+
+        let base_price_prestation = modelData.priceHT * NbJours;
         let price_prestation = (modelData.priceHT - modelData.floorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + modelData.floorPriceHT * NbJours;
+        let discount_prestation = base_price_prestation - price_prestation;
+
         let price_livraison = modelData.delivery;
         price_template = formData.isPro ? price_template : 0;
 
         let price_optionImpression = 0;
-        // price_optionImpression = OPTION_IMPRESSION_BASE_HT * (formData.proImpressions - 1) * NbJours;
+        let base_price_optionImpression = 0;
+        let discount_optionImpression = 0;
+
         if (formData.proImpressions > 1) {
+            base_price_optionImpression = OPTION_IMPRESSION_BASE_HT * (formData.proImpressions - 1) * NbJours;
             price_optionImpression =
                 (OPTION_IMPRESSION_BASE_HT - OPTION_IMPRESSION_PLANCHER_HT) * 10 * (1 - Math.pow(0.9, NbJours))
                 + OPTION_IMPRESSION_PLANCHER_HT * (formData.proImpressions - 1) * NbJours;
+            discount_optionImpression = base_price_optionImpression - price_optionImpression;
         }
 
         let price_optionIA = formData.proFondIA ? OPTION_FONDIA_HT : 0;
@@ -284,9 +292,12 @@ export const useQuoteLogic = () => {
                 label: t('price.detail.base', { name: nomBorne }),
                 priceHT: price_prestation,
                 daily: true,
+                originalDisplayPrice: discount_prestation > 0.01 ? `${priceTransformer(base_price_prestation).toFixed(0)}${suffix}` : null,
                 displayPrice: `${priceTransformer(price_prestation).toFixed(0)}${suffix}`
             });
             totalHT += price_prestation;
+
+
 
             // TEMPLATETOOL
             if (formData.templateTool) {
@@ -346,6 +357,7 @@ export const useQuoteLogic = () => {
                     label: t('price.detail.prints', { qty: NbJours * (formData.proImpressions - 1) }),
                     priceHT: price_optionImpression,
                     daily: true,
+                    originalDisplayPrice: discount_optionImpression > 0.01 ? `+${priceTransformer(base_price_optionImpression).toFixed(0)}${suffix}` : null,
                     displayPrice: `+${priceTransformer(price_optionImpression).toFixed(0)}${suffix}`
                 });
                 totalHT += price_optionImpression;
@@ -406,6 +418,8 @@ export const useQuoteLogic = () => {
             nombreMachine: 1,
             nombreJours: NbJours,
             prixMateriel: Math.round(price_prestation * 100) / 100,
+            prixMaterielBrut: Math.round(base_price_prestation * 100) / 100,
+            remiseMateriel: Math.round(discount_prestation * 100) / 100,
 
             // livraison
             livraisonIncluse: formData.delivery,
@@ -421,6 +435,8 @@ export const useQuoteLogic = () => {
             // impression supp
             nombreTirages: formData.proImpressions,
             supplementImpression: Math.round(price_optionImpression * 100) / 100,
+            supplementImpressionBrut: Math.round(base_price_optionImpression * 100) / 100,
+            remiseImpression: Math.round(discount_optionImpression * 100) / 100,
 
             // autres options
             heuresAnimations: heuresAnimPayantes,

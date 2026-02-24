@@ -16,7 +16,7 @@ const getAddressSummary = (fullAddressString) => {
     return fullAddressString;
 };
 
-export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook}) => {
+export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook }) => {
 
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
@@ -34,7 +34,7 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
     const handlePaymentClick = async (source) => {
         triggerWebhook(4, pricingData, null, false);
-        
+
         setActiveSource(source);
         setLoadingPayment(true);
         const result = await getStripePaymentUrl(formData.quotationUrl);
@@ -84,11 +84,16 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
         );
     }
 
-    const { details, totalHT, displayTTC, priceSuffix } = pricingData;
+    const { details, totalHT, displayTTC, priceSuffix, axonautData } = pricingData;
     const TVA_RATE = 1.20;
     const activeAcomptePct = formData.acomptePct !== undefined ? formData.acomptePct : 0.1;
     const finalTotalTTC = totalHT * TVA_RATE;
     const tvaAmount = finalTotalTTC - totalHT;
+
+    // --- NOUVEAU : Calcul de l'économie totale ---
+    const totalDiscountHT = (axonautData?.remiseMateriel || 0) + (axonautData?.remiseImpression || 0);
+    const totalDiscountTTC = totalDiscountHT * TVA_RATE;
+    // ---------------------------------------------
 
     // Calcul de l'acompte exact
     const depositAmount = finalTotalTTC * activeAcomptePct;
@@ -144,19 +149,50 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
                         <div className='space-y-4 mb-6'>
                             {details.map((item, index) => (
-                                <div key={index} className='flex justify-between items-center text-sm border-b border-gray-50 pb-3 last:border-0'>
-                                    <span className='text-gray-700 font-medium'>{item.label}</span>
-                                    <span className='text-gray-900 font-bold whitespace-nowrap'>{item.displayPrice}</span>
+                                <div key={index} className='border-b border-gray-50 pb-3 last:border-0'>
+                                    {/* Ligne principale (Prix normal ou Prix barré) */}
+                                    <div className='flex justify-between items-center text-sm'>
+                                        <span className='text-gray-700 font-medium'>{item.label}</span>
+                                        {item.originalDisplayPrice ? (
+                                            <span className='line-through text-gray-400 font-medium whitespace-nowrap text-xs'>
+                                                {item.originalDisplayPrice}
+                                            </span>
+                                        ) : (
+                                            <span className='text-gray-900 font-bold whitespace-nowrap'>
+                                                {item.displayPrice}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Sous-ligne "Avec remise" (s'affiche uniquement s'il y a un prix barré) */}
+                                    {item.originalDisplayPrice && (
+                                        <div className='flex justify-between items-center text-sm mt-1'>
+                                            <span className='text-green-600 font-semibold text-xs flex items-center gap-1'>
+                                                ↳ {t('step4.with_discount')}
+                                            </span>
+                                            <span className='text-gray-900 font-bold whitespace-nowrap'>
+                                                {item.displayPrice}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
 
                         {/* Zone Total & Acompte */}
                         <div className='bg-gray-50 -mx-8 -mb-8 p-8 rounded-b-2xl border-t border-gray-100'>
-                            <div className='flex justify-between items-center text-xl font-extrabold text-gray-900 mb-4'>
+                            <div className={`flex justify-between items-center text-xl font-extrabold text-gray-900 ${totalDiscountTTC > 0 ? 'mb-1' : 'mb-4'}`}>
                                 <span>{t('step4.total_ttc')}</span>
                                 <span>{formatCurrency(finalTotalTTC)}</span>
                             </div>
+
+                            {/* Ligne d'économie totale */}
+                            {totalDiscountTTC > 0 && (
+                                <div className='flex justify-between items-center text-sm font-bold text-green-600 mb-4 bg-green-50/50 px-3 py-1.5 rounded-lg -mx-3'>
+                                    <span>{t('step4.total_discount')}</span>
+                                    <span>-{formatCurrency(totalDiscountTTC)}</span>
+                                </div>
+                            )}
 
                             {/* --- AJOUT : NOTIFICATION RÈGLEMENT TOTAL --- */}
                             {isFullPayment && (
