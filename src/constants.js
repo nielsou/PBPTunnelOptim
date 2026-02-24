@@ -70,7 +70,7 @@ export const OPTION_RGPD_HT = 80;
 
 // Options Impressions
 export const OPTION_IMPRESSION_BASE_HT = 100;
-export const OPTION_IMPRESSION_PLANCHER_HT = 100;
+export const OPTION_IMPRESSION_PLANCHER_HT = 60;
 
 // Option Template (coût Pro)
 export const TEMPLATE_TOOL_PRO_PRICE_HT = 25;

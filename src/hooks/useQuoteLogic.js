@@ -12,6 +12,7 @@ import {
     AXONAUT_FIXED_DEFAULTS,
     PRICING_STRATEGY, COMPANY_SPECIFIC_PRICING,
     OPTION_IMPRESSION_BASE_HT,
+    OPTION_IMPRESSION_PLANCHER_HT,
     OPTION_FONDIA_HT,
     OPTION_RGPD_HT,
     TEMPLATE_TOOL_PRO_PRICE_HT,
@@ -261,7 +262,15 @@ export const useQuoteLogic = () => {
         let price_prestation = (modelData.priceHT - modelData.floorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + modelData.floorPriceHT * NbJours;
         let price_livraison = modelData.delivery;
         price_template = formData.isPro ? price_template : 0;
-        let price_optionImpression = OPTION_IMPRESSION_BASE_HT * (formData.proImpressions - 1) * NbJours;
+
+        let price_optionImpression = 0;
+        // price_optionImpression = OPTION_IMPRESSION_BASE_HT * (formData.proImpressions - 1) * NbJours;
+        if (formData.proImpressions > 1) {
+            price_optionImpression =
+                (OPTION_IMPRESSION_BASE_HT - OPTION_IMPRESSION_PLANCHER_HT) * 10 * (1 - Math.pow(0.9, NbJours))
+                + OPTION_IMPRESSION_PLANCHER_HT * (formData.proImpressions - 1) * NbJours;
+        }
+
         let price_optionIA = formData.proFondIA ? OPTION_FONDIA_HT : 0;
         let price_optionRGPD = formData.proRGPD ? OPTION_RGPD_HT : 0;
         let price_optionSpeaker = (is360 && formData.optionSpeaker) ? modelData.speaker : 0;
