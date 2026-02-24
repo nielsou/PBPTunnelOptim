@@ -316,7 +316,7 @@ export const sendAxonautQuotation = async (quotationBody) => {
     }
 }
 
-export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink, lang = 'fr', acomptePct = 0.1) => {
+export const createAxonautEvent = async (quotationId, companyId, customerEmail, formFillerEmail, publicLink, lang = 'fr', acomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct) => {
     const PROXY_EVENT_URL = '/api/create-event';
 
     // 1. Logique d'acompte inspirée de l'Étape 4

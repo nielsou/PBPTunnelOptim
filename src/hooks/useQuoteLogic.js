@@ -720,14 +720,14 @@ export const useQuoteLogic = () => {
             const diffTime = eventDateObj - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            let finalAcomptePct = 0.1; // Par défaut : 10%
+            let finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct; // Par défaut : 15%
 
             if (diffDays < 7) {
                 finalAcomptePct = 1; // URGENCE (< 7 jours) : 100%
             } else if (isVipPartner && formData.isPartnerMode) { // On utilise formData
                 finalAcomptePct = 0; // PARTENAIRE VIP : 0%
             } else {
-                finalAcomptePct = 0.1; // STANDARD : 10%
+                finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct; // STANDARD : 15%
             }
 
             // On sauvegarde ce pourcentage dans formData pour l'utiliser à l'étape 4

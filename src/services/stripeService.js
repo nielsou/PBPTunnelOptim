@@ -11,7 +11,7 @@ export const redirectToStripeCheckout = async (pricingData, formData, quoteNumbe
 
     // Calcul de l'acompte (10% du Total TTC)
     const totalTTC = pricingData.totalHT * 1.20;
-    const depositAmount = Math.round((totalTTC * 0.10) * 100); // Stripe attend des centimes
+    const depositAmount = Math.round((totalTTC * AXONAUT_FIXED_DEFAULTS.acomptePct) * 100); // Stripe attend des centimes
 
     try {
         const response = await fetch(STRIPE_PROXY_URL, {
