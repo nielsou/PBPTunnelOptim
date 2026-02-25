@@ -5,11 +5,14 @@ import { customColor } from './constants';
 import { redirectToStripeCheckout } from './services/stripeService';
 
 // Import des Steps
+import { Step0Auth } from './components/steps/Step0Auth';
+import { Step1AxonautDetails } from './components/steps/Step1AxonautDetails';
 import { Step1Event } from './components/steps/Step1Event';
 import { Step2Config } from './components/steps/Step2Config';
 import { Step3Contact } from './components/steps/Step3Contact';
 import { Step4Recap } from './components/steps/Step4Recap';
 import { Step5Payment as Step5Success } from './components/steps/Step5Success';
+import { Step5SalesTeam } from './components/steps/Step5SalesTeam';
 
 // Fonction utilitaire pour l'alerte UI
 const showMessage = (message) => {
@@ -36,7 +39,7 @@ export default function PhotoboothQuoteForm() {
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
         handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
-        triggerWebhook
+        triggerWebhook, handleSubmit
     } = useQuoteLogic();
 
     const [isPartnerMode, setIsPartnerMode] = useState(false);
@@ -59,18 +62,19 @@ export default function PhotoboothQuoteForm() {
     const handleNavigationNext = async () => {
         if (!isStepValid()) return;
 
-        // Si on quitte l'étape 2 (Calcul Stock) ou l'étape 3 (Calcul Prix/API)
-        if (currentStep === 2 || currentStep === 3) {
-            setProcessingType(currentStep === 2 ? 'stock' : 'price');
+        // Détecter ce qu'on est en train de faire selon le mode
+        const isGeneratingQuote = currentStep === 3 || (isCalculatorMode && currentStep === 2);
+        const isCheckingStock = (!isCalculatorMode && !isPartnerMode && currentStep === 2) || ((isCalculatorMode || isPartnerMode) && currentStep === 1);
+
+        if (isCheckingStock || isGeneratingQuote) {
+            setProcessingType(isCheckingStock ? 'stock' : 'price');
             setIsProcessingStep(true);
 
             try {
-                // handleNext gère la logique (API Axonaut si étape 3)
                 await handleNext(isCalculatorMode, showMessage);
             } catch (e) {
                 console.error("Blocage navigation", e);
             } finally {
-                // Petit délai visuel pour éviter le clignotement
                 setTimeout(() => setIsProcessingStep(false), 800);
             }
         } else {
@@ -124,46 +128,58 @@ export default function PhotoboothQuoteForm() {
                 <div className='bg-white rounded-[2.5rem] shadow-2xl p-4 sm:p-10 border border-gray-100'>
 
                     {/* --- BARRE DE PROGRESSION (Steps 1, 2, 3) --- */}
-                    {currentStep <= 3 && (
+                    {currentStep > 0 && currentStep <= 3 && (
                         <div className="mb-10 px-4 md:px-12 pt-2">
                             <div className="relative flex items-center justify-between">
-                                {/* Ligne arrière-plan */}
                                 <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 rounded-full z-0" />
 
-                                {/* Ligne de progression colorée */}
-                                <div
-                                    className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-[#BE2A55] rounded-full z-0 transition-all duration-500 ease-out"
-                                    style={{ width: `${((currentStep - 1) / 2) * 100}%` }}
-                                />
-
-                                {[1, 2, 3].map((step) => {
-                                    const isActive = currentStep === step;
-                                    const isCompleted = currentStep > step;
-
+                                {/* Calcul dynamique de la largeur de la barre colorée */}
+                                {(() => {
+                                    const stepsArray = (isPartnerMode || isCalculatorMode) ? [1, 2] : [1, 2, 3];
+                                    const width = ((currentStep - 1) / (stepsArray.length - 1)) * 100;
                                     return (
-                                        <div key={step} className="relative z-10 flex flex-col items-center group cursor-default">
+                                        <>
                                             <div
-                                                className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-4 transition-all duration-300 ${isActive
-                                                    ? 'bg-[#BE2A55] text-white border-[#BE2A55] scale-110 shadow-lg'
-                                                    : isCompleted
-                                                        ? 'bg-[#BE2A55] text-white border-[#BE2A55]'
-                                                        : 'bg-white text-gray-300 border-gray-100'
-                                                    }`}
-                                            >
-                                                {isCompleted ? <Check className="w-5 h-5" /> : step}
-                                            </div>
-                                            <div className={`absolute -bottom-6 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-[#BE2A55]' : 'text-gray-300'}`}>
-                                                {t(`nav.step${step}`)}
-                                            </div>
-                                        </div>
+                                                className="absolute left-0 top-1/2 transform -translate-y-1/2 h-1 bg-[#BE2A55] rounded-full z-0 transition-all duration-500 ease-out"
+                                                style={{ width: `${width}%` }}
+                                            />
+                                            {stepsArray.map((step) => {
+                                                const isActive = currentStep === step;
+                                                const isCompleted = currentStep > step;
+                                                const stepTitle = (isPartnerMode || isCalculatorMode)
+                                                    ? (step === 1 ? 'Infos' : 'Configuration')
+                                                    : t(`nav.step${step}`);
+
+                                                return (
+                                                    <div key={step} className="relative z-10 flex flex-col items-center group cursor-default">
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-4 transition-all duration-300 ${isActive ? 'bg-[#BE2A55] text-white border-[#BE2A55] scale-110 shadow-lg' : isCompleted ? 'bg-[#BE2A55] text-white border-[#BE2A55]' : 'bg-white text-gray-300 border-gray-100'}`}>
+                                                            {isCompleted ? <Check className="w-5 h-5" /> : step}
+                                                        </div>
+                                                        <div className={`absolute -bottom-6 whitespace-nowrap text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-[#BE2A55]' : 'text-gray-300'}`}>
+                                                            {stepTitle}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
                                     );
-                                })}
+                                })()}
                             </div>
                         </div>
                     )}
 
-                    {currentStep === 1 && <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} />}
-                    {currentStep === 2 && <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} t={t} />}
+                    {currentStep === 0 && <Step0Auth formData={formData} setFormData={setFormData} isCalculatorMode={isCalculatorMode} t={t} />}
+
+                    {currentStep === 1 && (
+                        (isPartnerMode || isCalculatorMode) ?
+                            <Step1AxonautDetails formData={formData} setFormData={setFormData} customColor={customColor} t={t} /> :
+                            <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} />
+                    )}
+
+                    {currentStep === 2 && (
+                        <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} />
+                    )}
+
                     {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} />}
 
                     {/* STEP 4 : MAINTENANT C'EST LA FINALE */}
@@ -178,21 +194,25 @@ export default function PhotoboothQuoteForm() {
                             isSubmitting={isSubmitting}
                             t={t}
                             triggerWebhook={triggerWebhook}
+                            isPartnerMode={isPartnerMode}
+                            handleSubmit={handleSubmit}
+                            showMessage={showMessage}
                         />
                     )}
 
                     {/* STEP 5 : SUCCÈS FINAL */}
                     {currentStep === 5 && (
-                        <Step5Success // Utilise le nom d'import corrigé
-                            t={t}
-                            formData={formData}
-                        />
+                        isCalculatorMode ? (
+                            <Step5SalesTeam formData={formData} />
+                        ) : (
+                            <Step5Success t={t} formData={formData} />
+                        )
                     )}
 
                     {/* Navigation classique pour 1, 2, 3 */}
                     {currentStep < 4 && (
                         <div className='flex justify-between mt-12 pt-8 border-t border-gray-100'>
-                            {currentStep > 1 ? (
+                            {((isCalculatorMode || isPartnerMode) ? currentStep > 0 : currentStep > 1) ? (
                                 <button onClick={handlePrev} className='px-6 py-3 border-2 border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2'>
                                     <ChevronLeft className='w-5 h-5' /> {t('nav.prev')}
                                 </button>
@@ -207,7 +227,12 @@ export default function PhotoboothQuoteForm() {
                                     <><Loader2 className="w-5 h-5 animate-spin" /> {t('nav.submitting')}</>
                                 ) : (
                                     <>
-                                        <span>{currentStep === 3 ? t('nav.receiving') : t('nav.next')}</span>
+                                        <span>
+                                            {currentStep === 3
+                                                ? t('nav.receiving')
+                                                : (isCalculatorMode && currentStep === 2 ? "Générer le devis" : t('nav.next'))
+                                            }
+                                        </span>
                                         <ChevronRight className='w-6 h-6' />
                                     </>
                                 )}

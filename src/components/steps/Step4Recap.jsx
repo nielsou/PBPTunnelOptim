@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Loader2, CreditCard, Info } from 'lucide-react';
+import { ChevronLeft, Loader2, CreditCard, Info, Check } from 'lucide-react';
 import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
 
 // Fonction utilitaire pour formater les devises
@@ -16,7 +16,7 @@ const getAddressSummary = (fullAddressString) => {
     return fullAddressString;
 };
 
-export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook }) => {
+export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, handleSubmit, showMessage }) => {
 
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
@@ -207,33 +207,40 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                             )}
 
                             {/* --- BOUTON DE PAIEMENT --- */}
-                            <button
-                                onClick={() => handlePaymentClick('block')} // <--- Source 'block'
-                                disabled={isSubmitting || loadingPayment || isCheckingPayment}
-                                className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                            >
-                                <div className="text-center">
-                                    {/* Affichage conditionnel du SCANNING */}
-                                    {(activeSource === 'block' && (loadingPayment || isCheckingPayment)) ? (
-                                        <div className="flex flex-col items-center py-2 animate-pulse">
-                                            <Loader2 className="w-8 h-8 animate-spin text-[#BE2A55] mb-2" />
-                                            <p className="text-[#BE2A55] font-black text-sm uppercase tracking-wide">
-                                                {t('step4.checking_payment')}
-                                            </p>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <p className="text-[#BE2A55] font-bold text-sm uppercase tracking-wide mb-1 flex items-center justify-center gap-2">
-                                                {isFullPayment ? t('step4.payment.full_title') : t('step4.payment.deposit_title', { pct: activeAcomptePct * 100 })}
-                                            </p>
-                                            <p className="text-3xl font-black text-[#BE2A55]">{formatCurrency(depositAmount)}</p>
-                                            <p className="text-xs text-pink-700 mt-1 italic group-hover:underline">
-                                                {isFullPayment ? t('step4.payment.full_click') : t('step4.payment.deposit_click')}
-                                            </p>
-                                        </>
-                                    )}
+                            {!isPartnerMode ? (
+                                <button
+                                    onClick={() => handlePaymentClick('block')} // <--- Source 'block'
+                                    disabled={isSubmitting || loadingPayment || isCheckingPayment}
+                                    className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    <div className="text-center">
+                                        {/* Affichage conditionnel du SCANNING */}
+                                        {(activeSource === 'block' && (loadingPayment || isCheckingPayment)) ? (
+                                            <div className="flex flex-col items-center py-2 animate-pulse">
+                                                <Loader2 className="w-8 h-8 animate-spin text-[#BE2A55] mb-2" />
+                                                <p className="text-[#BE2A55] font-black text-sm uppercase tracking-wide">
+                                                    {t('step4.checking_payment')}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <p className="text-[#BE2A55] font-bold text-sm uppercase tracking-wide mb-1 flex items-center justify-center gap-2">
+                                                    {isFullPayment ? t('step4.payment.full_title') : t('step4.payment.deposit_title', { pct: activeAcomptePct * 100 })}
+                                                </p>
+                                                <p className="text-3xl font-black text-[#BE2A55]">{formatCurrency(depositAmount)}</p>
+                                                <p className="text-xs text-pink-700 mt-1 italic group-hover:underline">
+                                                    {isFullPayment ? t('step4.payment.full_click') : t('step4.payment.deposit_click')}
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </button>
+                            ) : (
+                                <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl text-center">
+                                    <p className="text-blue-800 font-bold uppercase tracking-wide text-sm mb-1">Paiement Partenaire</p>
+                                    <p className="text-blue-600 text-xs">Le règlement s'effectuera à 30 jours sur facture selon vos conditions.</p>
                                 </div>
-                            </button>
+                            )}
 
                             {!isFullPayment && (
                                 <p className="text-xs text-gray-400 text-center mt-3">
@@ -282,19 +289,27 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 </button>
 
                 <button
-                    onClick={() => handlePaymentClick('main')} // <--- Source 'main'
+                    // Si partenaire, on génère le devis PUIS on valide. Sinon, on va sur Stripe.
+                    onClick={async () => {
+                        if (isPartnerMode) {
+                            await handleSubmit(showMessage, false); // Génère le devis + email
+                            onValidate(); // Passe à l'étape 5
+                        } else {
+                            handlePaymentClick('main');
+                        }
+                    }}
                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
                     className="w-full md:w-auto px-10 py-4 bg-[#BE2A55] text-white rounded-xl font-black flex items-center justify-center gap-3 shadow-lg hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {(activeSource === 'main' && (loadingPayment || isCheckingPayment)) ? (
+                    {isSubmitting || (activeSource === 'main' && (loadingPayment || isCheckingPayment)) ? (
                         <>
                             <Loader2 className='w-6 h-6 animate-spin' />
-                            <span>{t('step4.checking_payment')}</span>
+                            <span>{isPartnerMode ? t('nav.submitting') : t('step4.checking_payment')}</span>
                         </>
                     ) : (
                         <>
-                            <CreditCard className='w-6 h-6' />
-                            <span>{isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit')}</span>
+                            <Check className='w-6 h-6' />
+                            <span>{isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>
                         </>
                     )}
                 </button>

@@ -3,8 +3,6 @@ import React, { useEffect, useRef } from 'react';
 import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer, Package } from 'lucide-react';
 import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
 
-const HIDE_PRICE = true
-
 /**
  * Composant générique pour une carte de modèle de borne
  */
@@ -22,7 +20,7 @@ const ModelCard = ({
     isUnlimited = false,
     priceContent,
     extraInfo,
-    hidePrice = false,
+    priceDisplayType = "None",
     t
 }) => {
     const borderClasses = {
@@ -67,8 +65,8 @@ const ModelCard = ({
                 {hoverColor === 'yellow' && <p className='text-[10px] text-yellow-600 font-black uppercase tracking-widest mt-1 mb-2'>{t('step2.model.digital.tagline')}</p>}
                 <p className='text-xs text-gray-500 mb-6 flex-1 mt-2'>{desc}</p>
 
-                {/* Condition sur le flag hidePrice pour afficher ou non l'estimation budgétaire */}
-                {!hidePrice && (
+                {/* Condition sur le flag priceDisplayType pour afficher ou non l'estimation budgétaire */}
+                {priceDisplayType !== "None" && (
                     <div className='flex flex-col border-t border-gray-50 pt-4'>
                         {priceContent}
                         {extraInfo}
@@ -79,7 +77,7 @@ const ModelCard = ({
     );
 };
 
-export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, t }) => {
+export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, priceDisplayType, t }) => {
     const configSectionRef = useRef(null);
 
     useEffect(() => {
@@ -99,7 +97,28 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
         const modelData = PRICING_STRATEGY[modelId];
         if (!modelData) return null;
         const isPrestige = modelId === 'Signature' || modelId === '360';
-        const totalBase = priceTransformer(modelData.priceHT + (isPrestige ? (modelData.delivery || 0) : 0));
+
+        const unitPrice = unitaryPrices[modelId] || modelData.priceHT;
+        const unitDelivery = unitaryPrices[`deliv_${modelId}`] || modelData.delivery || 0;
+
+        const totalBase = priceTransformer(unitPrice + (isPrestige ? unitDelivery : 0));
+
+        // NOUVEAU : Affichage PRIX RÉEL
+        if (priceDisplayType === 'RealPrice') {
+            return (
+                <div className='flex flex-col'>
+                    <span className='text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2'>
+                        Tarif par jour {isPrestige && t('step2.delivery.incl')}
+                    </span>
+                    <div className='flex items-baseline text-gray-900'>
+                        <span className='text-3xl font-black'>{totalBase.toFixed(0)}€</span>
+                        <span className='ml-2 text-xl font-bold'>{priceSuffix}</span>
+                    </div>
+                </div>
+            );
+        }
+
+        // Affichage FOURCHETTE (Range)
         const min = Math.floor((totalBase * 0.9) / 5) * 5;
         const max = Math.ceil((totalBase * 1.125) / 5) * 5;
 
@@ -182,7 +201,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     badge={t('step2.badge.digital')} tagline={t('step2.badge.pro')} icon={Star}
                                     onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="numerique" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                    hidePrice={HIDE_PRICE}
+                                    priceDisplayType={priceDisplayType}
                                 />
                                 <ModelCard
                                     t={t}
@@ -191,7 +210,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     badge={t('step2.badge.150prints')} onSelect={handleModelSelect}
                                     priceContent={<PriceDisplay modelId="150" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                    hidePrice={HIDE_PRICE}
+                                    priceDisplayType={priceDisplayType}
                                 />
                             </div>
                         </section>
@@ -208,7 +227,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 tagline={t('step2.badge.pro')} icon={Star} onSelect={handleModelSelect}
                                 priceContent={<PriceDisplay modelId="illimite" />}
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                hidePrice={HIDE_PRICE}
+                                priceDisplayType={priceDisplayType}
                             />
                             <ModelCard
                                 t={t}
@@ -217,7 +236,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 tagline={t('step2.model.signature.badge')} icon={Star} onSelect={handleModelSelect}
                                 priceContent={<PriceDisplay modelId="Signature" />}
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                hidePrice={HIDE_PRICE}
+                                priceDisplayType={priceDisplayType}
                             />
                         </div>
                     </section>
@@ -235,7 +254,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 tagline={t('step2.badge.immersion')} icon={Video} onSelect={handleModelSelect}
                                 priceContent={<PriceDisplay modelId="360" />}
                                 extraInfo={<><span className='text-[10px] font-bold text-gray-500 italic mt-1'>{t('step2.model.360.setup_anim_incl')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                hidePrice={HIDE_PRICE}
+                                priceDisplayType={priceDisplayType}
                             />
                         )}
                     </section>

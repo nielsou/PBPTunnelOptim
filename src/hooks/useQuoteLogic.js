@@ -137,10 +137,17 @@ export const useQuoteLogic = () => {
 
     // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
     // A. Étape (Persistance Session)
+
     const [currentStep, setCurrentStep] = useState(() => {
         if (typeof window !== 'undefined') {
             const savedStep = sessionStorage.getItem('pbp_session_step');
-            return savedStep ? parseInt(savedStep, 10) : 1;
+            if (savedStep) return parseInt(savedStep, 10);
+
+            // Si pas de session, on vérifie l'URL pour démarrer à l'étape 0 si besoin
+            const path = window.location.pathname;
+            if (path.includes('/partenaires') || path.includes('/calculette')) {
+                return 0;
+            }
         }
         return 1;
     });
@@ -482,22 +489,23 @@ export const useQuoteLogic = () => {
 
     const isStepValid = () => {
         switch (currentStep) {
-            case 1: // ÉVÉNEMENT
+            case 0: // AUTHENTIFICATION (Modes Spéciaux)
+                return !!formData.companyId; // Valide si on a trouvé un client
+            case 1: // ÉVÉNEMENT (Normal ou Spécial)
                 return (
-                    formData.eventType !== '' &&
                     formData.eventDate !== '' &&
                     formData.eventDate > new Date().toISOString().split('T')[0] &&
                     formData.newDeliveryAddressName !== '' &&
                     formData.deliveryFullAddress !== '' &&
-                    formData.deliveryLat !== null
+                    formData.deliveryLat !== null &&
+                    (!formData.isPartnerMode && !formData.isCalculatorMode ? formData.eventType !== '' : true)
                 );
             case 2: // MODÈLE
                 return formData.model !== '';
-            case 3: // CONTACT
+            case 3: // CONTACT (Mode Normal uniquement)
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 const basicInfo = formData.fullName && emailRegex.test(formData.email) && formData.phone.length >= 9;
                 if (formData.isPro) {
-                    // Valide si les infos de base sont là ET (soit l'adresse est identique, soit une adresse de facturation est saisie)
                     return basicInfo && formData.companyName && (formData.billingSameAsEvent || formData.billingFullAddress);
                 }
                 return basicInfo;
@@ -603,27 +611,37 @@ export const useQuoteLogic = () => {
             triggerWebhook(2, calculatePrice, null, isCalculatorMode);
         }
 
-        // --- STEP 3 vers 4 (Création API) ---
-        if (currentStep === 3) {
-            // Cette fonction crée le devis Axonaut (spinner). Si erreur, elle stoppe tout.
-            await handleSubmit(showMessage, isCalculatorMode);
+        // --- LOGIQUE MODES SPÉCIAUX (Depuis l'étape 2 : Choix Borne) ---
+        if ((isCalculatorMode || formData.isPartnerMode) && currentStep === 2) {
+            if (isCalculatorMode) {
+                // Calculette : On génère le devis direct et on va au succès (Step 5)
+                await handleSubmit(showMessage, true);
+                setCurrentStep(5);
+            } else {
+                // Partenaire : On va au récap (Step 4)
+                setCurrentStep(4);
+            }
+            return;
+        }
 
-            // Si succès, on passe au RÉCAP
+        // --- LOGIQUE NORMALE (Contact -> Récap) ---
+        if (currentStep === 3) {
+            await handleSubmit(showMessage, false);
             setCurrentStep(4);
         }
-        // --- STEP 4 vers 5 (Validation finale) ---
+        // --- RÉCAP -> SUCCÈS ---
         else if (currentStep === 4) {
-            // Le client valide le récap, on affiche le PAIEMENT
             setCurrentStep(5);
         }
-        // --- AUTRES ÉTAPES ---
+        // --- NAVIGATION STANDARD ---
         else {
             setCurrentStep(prev => prev + 1);
         }
     };
 
     const handlePrev = () => {
-        if (currentStep > 1) {
+        const minStep = (formData.isPartnerMode || formData.isCalculatorMode) ? 0 : 1;
+        if (currentStep > minStep) {
             setCurrentStep(currentStep - 1);
         }
     };
