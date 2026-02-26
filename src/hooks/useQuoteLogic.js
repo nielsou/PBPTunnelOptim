@@ -627,6 +627,21 @@ export const useQuoteLogic = () => {
         // --- LOGIQUE NORMALE (Contact -> Récap) ---
         if (currentStep === 3) {
             await handleSubmit(showMessage, false);
+
+            // AJOUT DU TRACKING GTM À L'ÉTAPE 3
+            if (formData.utm_medium === 'cpc') {
+                pushToDataLayer({
+                    'step': 3,
+                    'event': 'contact_captured',
+                    'email': formData.email, // Capturé à l'étape 3
+                    'utm_source': formData.utm_source,
+                    'utm_medium': formData.utm_medium,
+                    'utm_campaign': formData.utm_campaign,
+                    'amount': calculatePrice.totalHT,
+                    'model': formData.model
+                });
+            }
+
             setCurrentStep(4);
         }
         // --- RÉCAP -> SUCCÈS ---
@@ -804,13 +819,7 @@ export const useQuoteLogic = () => {
 
             setFormData(prev => ({ ...prev, axonautQuoteNumber: quoteResponse.number }));
 
-            pushToDataLayer({
-                'event': 'quote_validation',
-                'quote_id': quoteId,
-                'axonaut_quote_id': quoteResponse.id,
-                'amount': pricing.totalHT,
-                'model': formData.model
-            });
+            // I USED TO SEND THE PUSH TO DATALAYER BEFORE AT STEP4 ALSO
 
             if (ENABLE_WEBHOOK_STEP_3) {
                 triggerWebhook(3, pricing, quoteResponse, isCalculatorMode);
