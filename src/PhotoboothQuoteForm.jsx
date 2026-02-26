@@ -168,8 +168,16 @@ export default function PhotoboothQuoteForm() {
                         </div>
                     )}
 
-                    {currentStep === 0 && <Step0Auth formData={formData} setFormData={setFormData} isCalculatorMode={isCalculatorMode} t={t} />}
-
+                    {currentStep === 0 && (
+                        <Step0Auth
+                            formData={formData}
+                            setFormData={setFormData}
+                            isCalculatorMode={isCalculatorMode}
+                            t={t}
+                            lang={lang}
+                            setLang={setLang} 
+                        />
+                    )}
                     {currentStep === 1 && (
                         (isPartnerMode || isCalculatorMode) ?
                             <Step1AxonautDetails formData={formData} setFormData={setFormData} customColor={customColor} t={t} /> :

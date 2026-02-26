@@ -19,6 +19,20 @@ export const locales = {
     "common.between": { fr: "Entre", en: "Between" },
     "common.and": { fr: "et", en: "and" },
 
+    // --- STEP 0: NUMERO CLIENT ---
+    "step0.login.client_number": {
+        fr: "Entrez le numéro de votre client",
+        en: "Enter your client number"
+    },
+    "step0.login.partner_number": {
+        fr: "Entrez le numéro de votre partenaire",
+        en: "Enter your partner number"
+    },
+    "step0.placeholder.client_id": {
+        fr: "Numéro client",
+        en: "Client ID"
+    },
+
     // --- STEP 1: ÉVÉNEMENT ---
     "step1.main_title": {
         fr: "Votre devis en 3 min chrono",
