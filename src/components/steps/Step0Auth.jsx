@@ -34,7 +34,8 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
                     deliveryFullAddress: data.defaultDeliveryAddress,
                     newDeliveryAddressName: data.deliveryAddresses[0]?.label || '',
                     saveNewBillingAddress: false,
-                    saveNewDeliveryAddress: false
+                    saveNewDeliveryAddress: false,
+                    billingSameAsEvent: false
                 }));
             }
         } catch (err) {

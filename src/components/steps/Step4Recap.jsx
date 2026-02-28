@@ -16,8 +16,7 @@ const getAddressSummary = (fullAddressString) => {
     return fullAddressString;
 };
 
-export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, handleSubmit, showMessage }) => {
-
+export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage }) => {
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
     const [activeSource, setActiveSource] = useState(null);
@@ -207,14 +206,13 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                             )}
 
                             {/* --- BOUTON DE PAIEMENT --- */}
-                            {!isPartnerMode ? (
+                            {!(isPartnerMode || isCalculatorMode) ? (
                                 <button
                                     onClick={() => handlePaymentClick('block')} // <--- Source 'block'
                                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
                                     className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     <div className="text-center">
-                                        {/* Affichage conditionnel du SCANNING */}
                                         {(activeSource === 'block' && (loadingPayment || isCheckingPayment)) ? (
                                             <div className="flex flex-col items-center py-2 animate-pulse">
                                                 <Loader2 className="w-8 h-8 animate-spin text-[#BE2A55] mb-2" />
@@ -236,10 +234,37 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                                     </div>
                                 </button>
                             ) : (
-                                <div className="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl text-center">
-                                    <p className="text-blue-800 font-bold uppercase tracking-wide text-sm mb-1">Paiement Partenaire</p>
-                                    <p className="text-blue-600 text-xs">Le règlement s'effectuera à 30 jours sur facture selon vos conditions.</p>
-                                </div>
+                                <button
+                                    onClick={async () => {
+                                        if (isCalculatorMode) {
+                                            await handleSubmit(showMessage, true);
+                                            onValidate();
+                                        } else if (isPartnerMode) {
+                                            await handleSubmit(showMessage, false);
+                                            onValidate();
+                                        }
+                                    }}
+                                    disabled={isSubmitting}
+                                    className="w-full mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl text-center hover:bg-blue-100 hover:border-blue-300 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+                                >
+                                    {isSubmitting ? (
+                                        <div className="flex flex-col items-center py-2 animate-pulse">
+                                            <Loader2 className="w-8 h-8 animate-spin text-blue-800 mb-2" />
+                                            <p className="text-blue-800 font-black text-sm uppercase tracking-wide">
+                                                {t('nav.submitting')}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p className="text-blue-800 font-bold uppercase tracking-wide text-sm mb-1">
+                                                {isCalculatorMode ? "Validation Interne" : "Paiement Partenaire"}
+                                            </p>
+                                            <p className="text-blue-600 text-xs mt-1 italic group-hover:underline">
+                                                {isCalculatorMode ? "Cliquez ici pour générer le devis dans Axonaut (sans email)" : "Cliquez ici pour valider (règlement à 30 jours)"}
+                                            </p>
+                                        </>
+                                    )}
+                                </button>
                             )}
 
                             {!isFullPayment && (
@@ -289,13 +314,15 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 </button>
 
                 <button
-                    // Si partenaire, on génère le devis PUIS on valide. Sinon, on va sur Stripe.
                     onClick={async () => {
-                        if (isPartnerMode) {
-                            await handleSubmit(showMessage, false); // Génère le devis + email
-                            onValidate(); // Passe à l'étape 5
+                        if (isCalculatorMode) {
+                            await handleSubmit(showMessage, true); // true = Mode calculette (pas d'email)
+                            onValidate();
+                        } else if (isPartnerMode) {
+                            await handleSubmit(showMessage, false); // Mode Partenaire (Génère devis + email)
+                            onValidate();
                         } else {
-                            handlePaymentClick('main');
+                            handlePaymentClick('main'); // Mode client normal (Stripe)
                         }
                     }}
                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
@@ -304,13 +331,12 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                     {isSubmitting || (activeSource === 'main' && (loadingPayment || isCheckingPayment)) ? (
                         <>
                             <Loader2 className='w-6 h-6 animate-spin' />
-                            <span>{isPartnerMode ? t('nav.submitting') : t('step4.checking_payment')}</span>
+                            <span>{(isPartnerMode || isCalculatorMode) ? t('nav.submitting') : t('step4.checking_payment')}</span>
                         </>
                     ) : (
                         <>
                             <Check className='w-6 h-6' />
-                            <span>{isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>
-                        </>
+                            <span>{isCalculatorMode ? "Générer le devis" : isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>                        </>
                     )}
                 </button>
             </div>

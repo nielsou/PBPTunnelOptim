@@ -39,7 +39,7 @@ export default function PhotoboothQuoteForm() {
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
         handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
-        triggerWebhook, handleSubmit
+        triggerWebhook, handleSubmit, resetForm
     } = useQuoteLogic();
 
     const [isPartnerMode, setIsPartnerMode] = useState(false);
@@ -63,7 +63,7 @@ export default function PhotoboothQuoteForm() {
         if (!isStepValid()) return;
 
         // Détecter ce qu'on est en train de faire selon le mode
-        const isGeneratingQuote = currentStep === 3 || (isCalculatorMode && currentStep === 2);
+        const isGeneratingQuote = currentStep === 3;
         const isCheckingStock = (!isCalculatorMode && !isPartnerMode && currentStep === 2) || ((isCalculatorMode || isPartnerMode) && currentStep === 1);
 
         if (isCheckingStock || isGeneratingQuote) {
@@ -175,7 +175,7 @@ export default function PhotoboothQuoteForm() {
                             isCalculatorMode={isCalculatorMode}
                             t={t}
                             lang={lang}
-                            setLang={setLang} 
+                            setLang={setLang}
                         />
                     )}
                     {currentStep === 1 && (
@@ -196,13 +196,13 @@ export default function PhotoboothQuoteForm() {
                             formData={formData}
                             pricingData={pricingData}
                             customColor={customColor}
-                            // Quand le polling détecte "Payé", il appelle onValidate
                             onValidate={() => setCurrentStep(5)}
                             handleEditRequest={handlePrev}
                             isSubmitting={isSubmitting}
                             t={t}
                             triggerWebhook={triggerWebhook}
                             isPartnerMode={isPartnerMode}
+                            isCalculatorMode={isCalculatorMode}
                             handleSubmit={handleSubmit}
                             showMessage={showMessage}
                         />
@@ -211,9 +211,9 @@ export default function PhotoboothQuoteForm() {
                     {/* STEP 5 : SUCCÈS FINAL */}
                     {currentStep === 5 && (
                         isCalculatorMode ? (
-                            <Step5SalesTeam formData={formData} />
+                            <Step5SalesTeam formData={formData} onReset={resetForm} onBack={() => setCurrentStep(4)} />
                         ) : (
-                            <Step5Success t={t} formData={formData} />
+                            <Step5Success t={t} formData={formData} onReset={resetForm} onBack={() => setCurrentStep(4)} />
                         )
                     )}
 
@@ -238,7 +238,7 @@ export default function PhotoboothQuoteForm() {
                                         <span>
                                             {currentStep === 3
                                                 ? t('nav.receiving')
-                                                : (isCalculatorMode && currentStep === 2 ? "Générer le devis" : t('nav.next'))
+                                                : ((isCalculatorMode || isPartnerMode) && currentStep === 2 ? "Voir le récapitulatif" : t('nav.next'))
                                             }
                                         </span>
                                         <ChevronRight className='w-6 h-6' />

@@ -613,14 +613,7 @@ export const useQuoteLogic = () => {
 
         // --- LOGIQUE MODES SPÉCIAUX (Depuis l'étape 2 : Choix Borne) ---
         if ((isCalculatorMode || formData.isPartnerMode) && currentStep === 2) {
-            if (isCalculatorMode) {
-                // Calculette : On génère le devis direct et on va au succès (Step 5)
-                await handleSubmit(showMessage, true);
-                setCurrentStep(5);
-            } else {
-                // Partenaire : On va au récap (Step 4)
-                setCurrentStep(4);
-            }
+            setCurrentStep(4);
             return;
         }
 
@@ -662,13 +655,24 @@ export const useQuoteLogic = () => {
     };
 
     const resetForm = () => {
-        // On nettoie le localStorage
+        // On nettoie la session ET le local storage
         if (typeof window !== 'undefined') {
+            sessionStorage.removeItem('pbp_session_step');
+            sessionStorage.removeItem('pbp_session_form_data');
             localStorage.removeItem('pbp_step');
             localStorage.removeItem('pbp_form_data');
         }
-        setFormData(initialFormState);
-        setCurrentStep(1);
+
+        // On réinitialise les données tout en gardant le mode actif (Calculette/Partenaire)
+        setFormData({
+            ...initialFormState,
+            isPartnerMode: formData.isPartnerMode,
+            isCalculatorMode: formData.isCalculatorMode
+        });
+
+        // Si on est en mode calculette ou partenaire, on retourne à l'étape 0 (Login)
+        setCurrentStep((formData.isPartnerMode || formData.isCalculatorMode) ? 0 : 1);
+
         setIsSubmitting(false);
         setQuoteId(nanoid(10));
         setAxonautProspectLink(null);
