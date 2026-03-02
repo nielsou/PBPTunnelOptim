@@ -718,7 +718,6 @@ export const useQuoteLogic = () => {
     const handleSubmit = async (showMessage, isCalculatorMode = false) => {
         // Garde cette sécurité
         if (isSubmitting) return;
-
         setIsSubmitting(true);
         const pricing = calculatePrice;
 
