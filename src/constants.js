@@ -60,7 +60,7 @@ export const PRICING_STRATEGY = {
         priceHT: 715,
         floorPriceHT: 129.75,
         delivery: 0,
-        animation_hour: 90,
+        animation_hour: 60,
         speaker: 50
     },
 };
