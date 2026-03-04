@@ -11,17 +11,26 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
 
   useEffect(() => {
     const initService = async () => {
-      if (!window.google?.maps?.places) {
-        await window.google.maps.importLibrary("places");
+      try {
+        // Tenter la méthode moderne
+        if (window.google?.maps?.importLibrary) {
+          await window.google.maps.importLibrary("places");
+        }
+
+        // Si la librairie est déjà là ou chargée via importLibrary
+        if (window.google?.maps?.places) {
+          serviceRef.current = new window.google.maps.places.AutocompleteService();
+          sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+        }
+      } catch (e) {
+        console.error("Erreur chargement Places Library", e);
       }
-      serviceRef.current = new window.google.maps.places.AutocompleteService();
-      sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
     };
     initService();
   }, []);
 
   const fetchPredictions = (input) => {
-    if (!input || input.length < 3) {
+    if (!input || input.length < 3 || !serviceRef.current) {
       setSuggestions([]);
       return;
     }
