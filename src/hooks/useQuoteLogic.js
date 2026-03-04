@@ -589,7 +589,7 @@ export const useQuoteLogic = () => {
             // AJOUT DU TRACKING GTM À L'ÉTAPE 3
             if (formData.utm_medium === 'cpc') {
                 pushToDataLayer({
-                    'step': 3,
+                    'event': 'client_request_price',
                     'email': formData.email,
                     'utm_source': formData.utm_source,
                     'utm_medium': formData.utm_medium,
@@ -600,7 +600,7 @@ export const useQuoteLogic = () => {
             } else {
 
                 pushToDataLayer({
-                    'step': 3,
+                    'event': 'client_request_price',
                     'email': formData.email,
                     'utm_source': formData.utm_source,
                     'utm_medium': formData.utm_medium,
