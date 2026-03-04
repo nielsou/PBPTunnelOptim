@@ -590,14 +590,25 @@ export const useQuoteLogic = () => {
             if (formData.utm_medium === 'cpc') {
                 pushToDataLayer({
                     'step': 3,
-                    'event': 'contact_captured',
-                    'email': formData.email, // Capturé à l'étape 3
+                    'email': formData.email,
                     'utm_source': formData.utm_source,
                     'utm_medium': formData.utm_medium,
                     'utm_campaign': formData.utm_campaign,
                     'amount': calculatePrice.totalHT,
                     'model': formData.model
                 });
+            } else {
+
+                pushToDataLayer({
+                    'step': 3,
+                    'email': formData.email,
+                    'utm_source': formData.utm_source,
+                    'utm_medium': formData.utm_medium,
+                    'utm_campaign': formData.utm_campaign,
+                    'amount': calculatePrice.totalHT,
+                    'model': formData.model
+                });
+
             }
 
             setCurrentStep(4);
