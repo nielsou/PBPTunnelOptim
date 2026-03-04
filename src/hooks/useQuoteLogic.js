@@ -597,19 +597,7 @@ export const useQuoteLogic = () => {
                     'amount': calculatePrice.totalHT,
                     'model': formData.model
                 });
-            } else {
-
-                pushToDataLayer({
-                    'event': 'client_request_price',
-                    'email': formData.email,
-                    'utm_source': formData.utm_source,
-                    'utm_medium': formData.utm_medium,
-                    'utm_campaign': formData.utm_campaign,
-                    'amount': calculatePrice.totalHT,
-                    'model': formData.model
-                });
-
-            }
+            } 
 
             setCurrentStep(4);
         }
