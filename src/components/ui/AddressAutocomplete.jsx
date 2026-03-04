@@ -5,31 +5,53 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
+  // État visuel pour bloquer l'input tant que Google n'est pas prêt
+  const [isGoogleReady, setIsGoogleReady] = useState(false);
+
   const serviceRef = useRef(null);
   const sessionTokenRef = useRef(null);
   const debounceTimerRef = useRef(null);
 
   useEffect(() => {
-    const initService = async () => {
-      try {
-        // Tenter la méthode moderne
-        if (window.google?.maps?.importLibrary) {
-          await window.google.maps.importLibrary("places");
-        }
+    let attempts = 0; // Petit compteur pour le debug
 
-        // Si la librairie est déjà là ou chargée via importLibrary
-        if (window.google?.maps?.places) {
-          serviceRef.current = new window.google.maps.places.AutocompleteService();
-          sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
-        }
-      } catch (e) {
-        console.error("Erreur chargement Places Library", e);
+    // 1. La fonction qui tente d'accrocher le wagon Google Maps
+    const tryInitGoogle = () => {
+      attempts++;
+
+      // On vérifie si l'objet global injecté par WordPress est enfin là
+      if (window.google && window.google.maps && window.google.maps.places) {
+        console.log(`✅ [Autocomplete] API Google Maps trouvée après ${attempts} tentative(s) !`);
+
+        serviceRef.current = new window.google.maps.places.AutocompleteService();
+        sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+        setIsGoogleReady(true);
+        return true; // C'est bon, on a réussi !
       }
+
+      // Log affiché tant que ça rate
+      console.log(`⏳ [Autocomplete] En attente du script Google du parent... (tentative ${attempts})`);
+      return false;
     };
-    initService();
+
+    console.log("🚀 [Autocomplete] Démarrage de l'initialisation...");
+
+    // 2. On essaie une première fois au montage
+    if (tryInitGoogle()) return;
+
+    // 3. Si ça rate (WordPress est lent), on harcèle toutes les 200ms
+    const intervalId = setInterval(() => {
+      if (tryInitGoogle()) {
+        clearInterval(intervalId); // On arrête de chercher dès qu'on le trouve
+      }
+    }, 200);
+
+    // Sécurité : on nettoie l'intervalle si on quitte la page
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchPredictions = (input) => {
+    // Sécurité absolue : si le service n'est pas là, on coupe tout.
     if (!input || input.length < 3 || !serviceRef.current) {
       setSuggestions([]);
       return;
@@ -50,46 +72,36 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
     const value = e.target.value;
     setInputValue(value);
 
-    // --- LOGIQUE DE DEBOUNCE ---
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
       fetchPredictions(value);
-    }, 200); // Attendre 300ms après la dernière frappe
+    }, 200);
   };
 
-  // src/components/ui/AddressAutocomplete.jsx
-
-  const handleSelectPlace = async (prediction) => {
+  const handleSelectPlace = (prediction) => {
     setInputValue(prediction.description);
     setShowDropdown(false);
 
-    const { Place } = await window.google.maps.importLibrary("places");
-    const placeDetails = new Place({ id: prediction.place_id });
+    // Utilisation du Geocoder classique (plus robuste avec les vieilles versions de WP)
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        const addr = results[0];
+        const getComp = (type) => addr.address_components.find(c => c.types.includes(type))?.long_name || "";
 
-    await placeDetails.fetchFields({
-      fields: ["addressComponents", "formattedAddress", "location"]
+        const result = {
+          fullAddress: addr.formatted_address,
+          street: `${getComp('street_number')} ${getComp('route')}`.trim(),
+          city: getComp('locality'),
+          postal: getComp('postal_code'),
+          lat: addr.geometry.location.lat(),
+          lng: addr.geometry.location.lng()
+        };
+
+        sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
+        onAddressSelect(result);
+      }
     });
-
-    const components = placeDetails.addressComponents;
-
-    const getComp = (type) => {
-      const found = components.find(c => c.types.includes(type));
-      return found?.longText || "";
-    };
-
-    const result = {
-      fullAddress: placeDetails.formattedAddress,
-      street: `${getComp('street_number')} ${getComp('route')}`.trim(),
-      city: getComp('locality'),
-      postal: getComp('postal_code'),
-      lat: placeDetails.location.lat(),
-      lng: placeDetails.location.lng()
-    };
-
-    console.log("✅ Objet final (Test extraction):", result);
-
-    sessionTokenRef.current = new window.google.maps.places.AutocompleteSessionToken();
-    onAddressSelect(result);
   };
 
   return (
@@ -102,13 +114,16 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
         value={inputValue}
         onChange={handleInputChange}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-        placeholder={placeholder}
-        className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-gray-900"
+        // Indication visuelle si ça mouline
+        placeholder={isGoogleReady ? placeholder : "Connexion à Google Maps en cours..."}
+        className={`w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-gray-900 ${!isGoogleReady ? 'bg-gray-100 cursor-wait opacity-70' : ''}`}
         required={required}
+        disabled={!isGoogleReady} // On empêche de taper dans le vide
       />
 
+      {/* Le z-[100] force l'affichage par dessus les autres éléments de ton interface */}
       {showDropdown && suggestions.length > 0 && (
-        <ul className="absolute z-50 w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl max-h-60 overflow-auto">
+        <ul className="absolute z-[100] w-full bg-white border border-gray-200 mt-1 rounded-lg shadow-xl max-h-60 overflow-auto">
           {suggestions.map((s) => (
             <li
               key={s.place_id}
