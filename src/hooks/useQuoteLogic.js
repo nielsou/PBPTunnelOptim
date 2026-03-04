@@ -136,21 +136,8 @@ export const useQuoteLogic = () => {
     };
 
     // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
-    // A. Étape (Persistance Session)
 
-    const [currentStep, setCurrentStep] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const savedStep = sessionStorage.getItem('pbp_session_step');
-            if (savedStep) return parseInt(savedStep, 10);
-
-            // Si pas de session, on vérifie l'URL pour démarrer à l'étape 0 si besoin
-            const path = window.location.pathname;
-            if (path.includes('/partenaires') || path.includes('/calculette')) {
-                return 0;
-            }
-        }
-        return 1;
-    });
+    const [currentStep, setCurrentStep] = useState(1);
 
     // 1. Définir une fonction pour extraire les UTM instantanément
     const getUrlParams = () => {
@@ -166,29 +153,7 @@ export const useQuoteLogic = () => {
     const urlParams = getUrlParams(); // Lecture immédiate
 
     // B. Données (Persistance Session)
-    const [formData, setFormData] = useState(() => {
-        if (typeof window !== 'undefined') {
-            const savedData = sessionStorage.getItem('pbp_session_form_data');
-            if (savedData) {
-                try {
-                    const parsed = JSON.parse(savedData);
-                    return { ...initialFormState, ...JSON.parse(savedData) };
-                } catch (e) {
-                    console.error("Erreur lecture sauvegarde session", e);
-                }
-            }
-        }
-        return { ...initialFormState, ...urlParams };
-    });
-
-    // --- 2. SAUVEGARDE AUTOMATIQUE (SESSION) ---
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            sessionStorage.setItem('pbp_session_step', currentStep.toString());
-            sessionStorage.setItem('pbp_session_form_data', JSON.stringify(formData));
-        }
-    }, [currentStep, formData]);
-
+    const [formData, setFormData] = useState({ ...initialFormState, ...urlParams });
 
     // --- LOGIQUE MÉTIER (Reste inchangé) ---
     const isPartnerClient = useMemo(() => {
