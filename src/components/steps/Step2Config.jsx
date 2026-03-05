@@ -150,18 +150,22 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
             proRGPD: false
         }));
 
+        // 2. ÉTAPE CRUCIALE : On demande d'abord au parent de réduire l'iFrame 
+        // Cela force le navigateur à recalculer la hauteur réelle du contenu restant.
+        window.parent.postMessage({ type: 'setHeight', height: 100 }, '*');
+
         setTimeout(() => {
-        if (typeof window !== 'undefined') {
-            // On récupère la hauteur de la div principale de l'app plutôt que du document entier
-            const mainContainer = document.querySelector('.min-h-screen') || document.body;
-            
-            // Force le navigateur à ignorer la hauteur précédente pour le calcul
-            const newHeight = mainContainer.getBoundingClientRect().height;
-            
-            console.log("📤 Step2Config -> Hauteur Rectifiée :", newHeight);
-            window.parent.postMessage({ type: 'setHeight', height: Math.ceil(newHeight) }, '*');
-        }
-    }, 200); // Augmenté à 200ms pour laisser les animations CSS se terminer
+            if (typeof window !== 'undefined') {
+                // On cible le conteneur principal de l'application
+                const mainApp = document.querySelector('.max-w-4xl');
+                if (mainApp) {
+                    // On utilise offsetHeight pour avoir la hauteur réelle du contenu
+                    const newHeight = mainApp.offsetHeight + 100; // +100 pour la marge de sécurité
+                    console.log("📤 Step2Config -> Nouvelle Hauteur rectifiée :", newHeight);
+                    window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
+                }
+            }
+        }, 150); // Petit délai pour laisser React mettre à jour le DOM
     };
 
 
