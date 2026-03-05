@@ -151,6 +151,14 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
         }));
     };
 
+    setTimeout(() => {
+        if (typeof window !== 'undefined') {
+            const height = document.documentElement.scrollHeight;
+            console.log("📤 Step2Config -> Update hauteur après sélection modèle :", height);
+            window.parent.postMessage({ type: 'setHeight', height: height }, '*');
+        }
+    }, 100);
+
     const isFreeTemplate = !formData.isPro || (formData.isPro && unitaryPrices.template === 0);
     const isStarbooth = formData.model === 'illimite';
     const isSignature = formData.model === 'Signature';
