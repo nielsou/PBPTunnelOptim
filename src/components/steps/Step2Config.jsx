@@ -163,6 +163,9 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                     // On envoie la VRAIE hauteur
                     window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
 
+                    // AJOUT : On demande au parent de remonter tout en haut de l'iFrame
+                    window.parent.postMessage({ type: 'scrollToTop' }, '*');
+
                     // 3. On redonne la main à l'Observer après un délai de sécurité
                     setTimeout(() => {
                         window.postMessage({ type: 'endManualResize' }, '*');
