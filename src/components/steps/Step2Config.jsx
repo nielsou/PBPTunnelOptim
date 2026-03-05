@@ -151,16 +151,17 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
         }));
 
         setTimeout(() => {
-            if (typeof window !== 'undefined') {
-                // On réinitialise temporairement la hauteur pour forcer le calcul du contenu réel
-                document.documentElement.style.height = 'auto';
-                document.body.style.height = 'auto';
-
-                const newHeight = document.documentElement.scrollHeight;
-                console.log("📤 Step2Config -> Nouvelle hauteur réelle calculée :", newHeight);
-                window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
-            }
-        }, 150); // Un délai légèrement plus long (150ms) aide React à finir le rendu
+        if (typeof window !== 'undefined') {
+            // On récupère la hauteur de la div principale de l'app plutôt que du document entier
+            const mainContainer = document.querySelector('.min-h-screen') || document.body;
+            
+            // Force le navigateur à ignorer la hauteur précédente pour le calcul
+            const newHeight = mainContainer.getBoundingClientRect().height;
+            
+            console.log("📤 Step2Config -> Hauteur Rectifiée :", newHeight);
+            window.parent.postMessage({ type: 'setHeight', height: Math.ceil(newHeight) }, '*');
+        }
+    }, 200); // Augmenté à 200ms pour laisser les animations CSS se terminer
     };
 
 
