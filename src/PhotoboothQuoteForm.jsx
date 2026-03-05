@@ -38,25 +38,57 @@ export default function PhotoboothQuoteForm() {
         triggerWebhook, handleSubmit, resetForm
     } = useQuoteLogic();
 
+    // À placer à l'intérieur de votre composant PhotoboothQuoteForm
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
+        // État interne pour bloquer l'envoi automatique lors d'un calcul manuel
+        let isManualResizing = false;
+
         const sendHeight = () => {
-            // Force le body à s'adapter au contenu pour éviter de rester bloqué à 2953px
+            // Si un redimensionnement manuel est en cours, on ne laisse pas l'Observer envoyer de données
+            if (isManualResizing) {
+                console.log("⏳ App React -> Envoi bloqué (redimensionnement manuel en cours)");
+                return;
+            }
+
+            // On s'assure que le body ne bloque pas la réduction de taille
             document.body.style.height = 'auto';
             const height = document.documentElement.scrollHeight;
+
             console.log("📤 App React -> Envoi hauteur au Parent :", height);
             window.parent.postMessage({ type: 'setHeight', height: height }, '*');
         };
 
-        sendHeight();
-        window.addEventListener('resize', sendHeight);
+        // Écouteur pour synchroniser l'Observer avec les actions manuelles des sous-composants
+        const handleManualResize = (event) => {
+            if (event.data.type === 'startManualResize') {
+                isManualResizing = true;
+            } else if (event.data.type === 'endManualResize') {
+                isManualResizing = false;
+                // On relance une vérification une fois le mode manuel terminé
+                setTimeout(sendHeight, 100);
+            }
+        };
 
+        // Initialisation
+        sendHeight();
+
+        // Événements de redimensionnement fenêtre
+        window.addEventListener('resize', sendHeight);
+        window.addEventListener('message', handleManualResize);
+
+        // Surveillance des changements de contenu (DOM)
         const observer = new MutationObserver(sendHeight);
-        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+        observer.observe(document.body, {
+            attributes: true,
+            childList: true,
+            subtree: true
+        });
 
         return () => {
             window.removeEventListener('resize', sendHeight);
+            window.removeEventListener('message', handleManualResize);
             observer.disconnect();
         };
     }, []);

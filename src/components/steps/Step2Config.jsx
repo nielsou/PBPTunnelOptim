@@ -150,22 +150,26 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
             proRGPD: false
         }));
 
-        // 2. ÉTAPE CRUCIALE : On demande d'abord au parent de réduire l'iFrame 
-        // Cela force le navigateur à recalculer la hauteur réelle du contenu restant.
+        // 2. Réduire l'iFrame immédiatement côté WordPress pour forcer le "tassage" du contenu
         window.parent.postMessage({ type: 'setHeight', height: 100 }, '*');
 
         setTimeout(() => {
             if (typeof window !== 'undefined') {
-                // On cible le conteneur principal de l'application
                 const mainApp = document.querySelector('.max-w-4xl');
                 if (mainApp) {
-                    // On utilise offsetHeight pour avoir la hauteur réelle du contenu
-                    const newHeight = mainApp.offsetHeight + 100; // +100 pour la marge de sécurité
+                    const newHeight = mainApp.offsetHeight + 60; // Marge propre
                     console.log("📤 Step2Config -> Nouvelle Hauteur rectifiée :", newHeight);
+
+                    // Envoyer la bonne hauteur
                     window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
+
+                    // Redonner la main à l'Observer après un petit délai
+                    setTimeout(() => {
+                        window.postMessage({ type: 'endManualResize' }, '*');
+                    }, 500);
                 }
             }
-        }, 150); // Petit délai pour laisser React mettre à jour le DOM
+        }, 200);
     };
 
 
