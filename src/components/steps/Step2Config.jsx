@@ -152,11 +152,15 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
 
         setTimeout(() => {
             if (typeof window !== 'undefined') {
-                const height = document.documentElement.scrollHeight;
-                console.log("📤 Step2Config -> Update hauteur après sélection modèle :", height);
-                window.parent.postMessage({ type: 'setHeight', height: height }, '*');
+                // On réinitialise temporairement la hauteur pour forcer le calcul du contenu réel
+                document.documentElement.style.height = 'auto';
+                document.body.style.height = 'auto';
+
+                const newHeight = document.documentElement.scrollHeight;
+                console.log("📤 Step2Config -> Nouvelle hauteur réelle calculée :", newHeight);
+                window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
             }
-        }, 100);
+        }, 150); // Un délai légèrement plus long (150ms) aide React à finir le rendu
     };
 
 
