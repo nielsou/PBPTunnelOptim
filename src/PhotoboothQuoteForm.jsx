@@ -42,8 +42,9 @@ export default function PhotoboothQuoteForm() {
         if (typeof window === 'undefined') return;
 
         const sendHeight = () => {
+            // Force le body à s'adapter au contenu pour éviter de rester bloqué à 2953px
+            document.body.style.height = 'auto';
             const height = document.documentElement.scrollHeight;
-            // LOG DE DÉBOGAGE
             console.log("📤 App React -> Envoi hauteur au Parent :", height);
             window.parent.postMessage({ type: 'setHeight', height: height }, '*');
         };
