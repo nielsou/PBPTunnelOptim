@@ -32,6 +32,12 @@ export default function PhotoboothQuoteForm() {
     const [processingType, setProcessingType] = useState('stock');
     const [isClient, setIsClient] = useState(false);
 
+    const {
+        formData, setFormData, currentStep, setCurrentStep, calculatePrice,
+        handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
+        triggerWebhook, handleSubmit, resetForm
+    } = useQuoteLogic();
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -67,11 +73,7 @@ export default function PhotoboothQuoteForm() {
         setIsClient(true);
     }, []);
 
-    const {
-        formData, setFormData, currentStep, setCurrentStep, calculatePrice,
-        handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
-        triggerWebhook, handleSubmit, resetForm
-    } = useQuoteLogic();
+
 
     const [isPartnerMode, setIsPartnerMode] = useState(false);
     const [isCalculatorMode, setIsCalculatorMode] = useState(false);
