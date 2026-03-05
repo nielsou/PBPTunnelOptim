@@ -486,6 +486,15 @@ export const useQuoteLogic = () => {
         const formattedDate = new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' }).replace(',', '');
         const toExcelBool = (val) => val ? "TRUE" : "FALSE";
 
+        // 1. Ajout de la fonction de détection de l'appareil
+        const getDeviceType = () => {
+            if (typeof window === 'undefined') return 'desktop';
+            const width = window.innerWidth;
+            if (width < 768) return 'mobile';
+            if (width < 1024) return 'tablet';
+            return 'desktop';
+        };
+
         // --- PAYLOAD DE BASE ---
         const payload = {
             quote_id: quoteId,
@@ -499,7 +508,8 @@ export const useQuoteLogic = () => {
             duration: formData.eventDuration,
             utm_source: formData.utm_source,
             utm_medium: formData.utm_medium,
-            utm_campaign: formData.utm_campaign
+            utm_campaign: formData.utm_campaign,
+            device_type: getDeviceType()
         };
 
         // Données de configuration (Étape 2)
@@ -597,7 +607,7 @@ export const useQuoteLogic = () => {
                     'amount': calculatePrice.totalHT,
                     'model': formData.model
                 });
-            } 
+            }
 
             setCurrentStep(4);
         }
