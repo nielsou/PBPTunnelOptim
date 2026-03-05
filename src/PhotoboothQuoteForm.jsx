@@ -32,22 +32,19 @@ export default function PhotoboothQuoteForm() {
     const [processingType, setProcessingType] = useState('stock');
     const [isClient, setIsClient] = useState(false);
 
-    // --- GESTION DE LA COMMUNICATION IFRAME ---
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
-        // Fonction pour envoyer la hauteur au parent
         const sendHeight = () => {
             const height = document.documentElement.scrollHeight;
-            console.log("Child: Sending height to parent:", height); // Log de contrôle
+            // LOG DE DÉBOGAGE
+            console.log("📤 App React -> Envoi hauteur au Parent :", height);
             window.parent.postMessage({ type: 'setHeight', height: height }, '*');
         };
 
-        // On envoie la hauteur au chargement et à chaque redimensionnement
         sendHeight();
         window.addEventListener('resize', sendHeight);
 
-        // Observer pour détecter les changements de contenu (DOM) sans rechargement
         const observer = new MutationObserver(sendHeight);
         observer.observe(document.body, { attributes: true, childList: true, subtree: true });
 
@@ -57,12 +54,12 @@ export default function PhotoboothQuoteForm() {
         };
     }, []);
 
-    // Déclencher le scroll vers le haut lors du changement d'étape
     useEffect(() => {
         if (currentStep > 0) {
+            // LOG DE DÉBOGAGE
+            console.log("⬆️ App React -> Demande de Scroll au Parent (Step: " + currentStep + ")");
             window.parent.postMessage({ type: 'scrollToTop' }, '*');
         }
-        // Votre logique de scroll interne existante peut rester
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [currentStep]);
 
