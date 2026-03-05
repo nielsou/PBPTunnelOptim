@@ -37,34 +37,30 @@ function calculateHaversineDistance(lat2, lon2) {
 
 export const useQuoteLogic = () => {
 
+    // À ajouter dans un useEffect au démarrage
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        // 1. On prévient le parent qu'on est prêt
+        window.parent.postMessage('PBP_READY', 'https://www.photobooth-paris.fr');
 
-            const params = new URLSearchParams(window.location.search);
+        // 2. On écoute la réponse du parent avec les UTM
+        const handleMessage = (event) => {
+            if (event.origin !== 'https://www.photobooth-paris.fr') return;
 
-            // Lecture des informations de tracking
-            const utm_source = params.get('utm_source') || '';
-            const utm_medium = params.get('utm_medium') || '';
-            const utm_campaign = params.get('utm_campaign') || '';
+            if (event.data.type === 'PBP_UTM_TRANSFER') {
+                const { source, medium, campaign } = event.data;
 
-            const path = window.location.pathname;
-            const isPartner = path.includes('/partenaires') || path.includes('/calculette');
-            const isCalc = path.includes('/calculette');
-
-            setFormData(prev => {
-                if (prev.isPartnerMode === isPartner && prev.isCalculatorMode === isCalc) {
-                    return prev;
-                }
-                return {
+                // On met à jour le state de ton formulaire avec les UTM reçus
+                setFormData(prev => ({
                     ...prev,
-                    utm_source,
-                    utm_medium,
-                    utm_campaign,
-                    isPartnerMode: isPartner,
-                    isCalculatorMode: isCalc
-                };
-            });
-        }
+                    utm_source: source || prev.utm_source,
+                    utm_medium: medium || prev.utm_medium,
+                    utm_campaign: campaign || prev.utm_campaign
+                }));
+            }
+        };
+
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
     }, []);
 
     // --- GESTION LANGUE ---
