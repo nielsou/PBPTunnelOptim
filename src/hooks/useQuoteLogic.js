@@ -37,24 +37,26 @@ function calculateHaversineDistance(lat2, lon2) {
 
 export const useQuoteLogic = () => {
 
-    // À ajouter dans un useEffect au démarrage
     useEffect(() => {
         // 1. On prévient le parent qu'on est prêt
-        window.parent.postMessage('PBP_READY', 'https://www.photobooth-paris.fr');
+        console.log("📤 [React] Signal PBP_READY envoyé au parent");
+        window.parent.postMessage('PBP_READY', '*');
 
         // 2. On écoute la réponse du parent avec les UTM
         const handleMessage = (event) => {
-            if (event.origin !== 'https://www.photobooth-paris.fr') return;
+            // Sécurité : On vérifie que le message vient bien de ton domaine
+            if (!event.origin.includes('photobooth-paris.fr')) return;
 
             if (event.data.type === 'PBP_UTM_TRANSFER') {
                 const { source, medium, campaign } = event.data;
 
-                // On met à jour le state de ton formulaire avec les UTM reçus
+                console.log("📥 [React] UTM reçus du parent :", { source, medium, campaign });
+
                 setFormData(prev => ({
                     ...prev,
-                    utm_source: source || prev.utm_source,
-                    utm_medium: medium || prev.utm_medium,
-                    utm_campaign: campaign || prev.utm_campaign
+                    utm_source: source || prev.utm_source || '',
+                    utm_medium: medium || prev.utm_medium || '',
+                    utm_campaign: campaign || prev.utm_campaign || ''
                 }));
             }
         };
