@@ -150,26 +150,26 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
             proRGPD: false
         }));
 
-        // 2. Réduire l'iFrame immédiatement côté WordPress pour forcer le "tassage" du contenu
+        // 2. On force la réduction côté WordPress
         window.parent.postMessage({ type: 'setHeight', height: 100 }, '*');
 
         setTimeout(() => {
             if (typeof window !== 'undefined') {
                 const mainApp = document.querySelector('.max-w-4xl');
                 if (mainApp) {
-                    const newHeight = mainApp.offsetHeight + 60; // Marge propre
+                    const newHeight = mainApp.offsetHeight + 60;
                     console.log("📤 Step2Config -> Nouvelle Hauteur rectifiée :", newHeight);
 
-                    // Envoyer la bonne hauteur
+                    // On envoie la VRAIE hauteur
                     window.parent.postMessage({ type: 'setHeight', height: newHeight }, '*');
 
-                    // Redonner la main à l'Observer après un petit délai
+                    // 3. On redonne la main à l'Observer après un délai de sécurité
                     setTimeout(() => {
                         window.postMessage({ type: 'endManualResize' }, '*');
                     }, 500);
                 }
             }
-        }, 200);
+        }, 250);
     };
 
 
