@@ -33,20 +33,33 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
     const handlePaymentClick = async (source) => {
         triggerWebhook(4, pricingData, null, false);
-
         setActiveSource(source);
         setLoadingPayment(true);
+
+        // 1. ASTUCE ANTI-BLOCAGE : Ouvrir un onglet vierge de manière strictement synchrone
+        const paymentWindow = window.open('', '_blank');
+
+        // Sécurité si un bloqueur très agressif empêche même l'ouverture synchrone
+        if (!paymentWindow) {
+            setLoadingPayment(false);
+            alert("Votre navigateur a bloqué la page de paiement. Veuillez autoriser les pop-ups pour ce site.");
+            return;
+        }
+
+        // Optionnel : Mettre un petit message d'attente dans le nouvel onglet
+        paymentWindow.document.write("<div style='font-family: sans-serif; text-align: center; margin-top: 20%; color: #BE2A55;'>Redirection vers le paiement sécurisé en cours...</div>");
+
+        // 2. Appel Asynchrone (qui prenait trop de temps pour Safari/Chrome)
         const result = await getStripePaymentUrl(formData.quotationUrl);
 
         if (result.success) {
-            // 1. Ouvrir Stripe dans un nouvel onglet
-            window.open(result.url, '_blank');
+            // 3. On redirige l'onglet qu'on avait pré-ouvert vers Stripe
+            paymentWindow.location.href = result.url;
             setLoadingPayment(false);
 
-            // 2. Activer l'overlay de vérification
+            // 4. Activer l'overlay de vérification et le polling
             setIsCheckingPayment(true);
 
-            // 3. Lancer la boucle de polling
             pollingInterval.current = setInterval(async () => {
                 console.log("🔍 Vérification du paiement...");
                 const status = await checkPaymentStatus(formData.quotationUrl);
@@ -54,13 +67,12 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                 if (status.paid) {
                     console.log("✅ Paiement confirmé !");
                     clearInterval(pollingInterval.current);
-                    clearTimeout(pollingTimeout.current); // <--- AJOUT : On coupe le minuteur de 15s
+                    clearTimeout(pollingTimeout.current);
                     setIsCheckingPayment(false);
                     onValidate(); // Déclenche le passage à la Step 5
                 }
             }, 5000); // 5 secondes
 
-            // 4. AJOUT : Arrêt forcé après 10 secondes 
             pollingTimeout.current = setTimeout(() => {
                 console.log("⏱️ Fin de la vérification auto. Retour à la normale.");
                 if (pollingInterval.current) clearInterval(pollingInterval.current);
@@ -69,6 +81,8 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
             }, 10000);
 
         } else {
+            // En cas d'erreur de génération de lien, on ferme l'onglet inutile
+            paymentWindow.close();
             setLoadingPayment(false);
             alert(t('step4.error.payment_link'));
         }
