@@ -91,17 +91,21 @@ export default function PhotoboothQuoteForm() {
 
 
 
-    const [isPartnerMode, setIsPartnerMode] = useState(false);
-    const [isCalculatorMode, setIsCalculatorMode] = useState(false);
-    const pricingData = calculatePrice;
-
-    useEffect(() => {
-        const path = window.location.pathname;
-        if (path.includes('/partenaires') || path.includes('/calculette')) {
-            setIsPartnerMode(true);
-            setIsCalculatorMode(path.includes('/calculette'));
+    const [isPartnerMode, setIsPartnerMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const path = window.location.pathname;
+            return path.includes('/partenaires') || path.includes('/calculette');
         }
-    }, []);
+        return false;
+    });
+    const [isCalculatorMode, setIsCalculatorMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.location.pathname.includes('/calculette');
+        }
+        return false;
+    });
+
+    const pricingData = calculatePrice;
 
     useEffect(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -225,6 +229,7 @@ export default function PhotoboothQuoteForm() {
                             t={t}
                             lang={lang}
                             setLang={setLang}
+                            onNext={() => setCurrentStep(1)}
                         />
                     )}
                     {currentStep === 1 && (
@@ -243,6 +248,7 @@ export default function PhotoboothQuoteForm() {
                     {currentStep === 4 && (
                         <Step4Recap
                             formData={formData}
+                            setFormData={setFormData}
                             pricingData={pricingData}
                             customColor={customColor}
                             onValidate={() => setCurrentStep(5)}
@@ -267,7 +273,7 @@ export default function PhotoboothQuoteForm() {
                     )}
 
                     {/* Navigation classique pour 1, 2, 3 */}
-                    {currentStep < 4 && (
+                    {currentStep > 0 && currentStep < 4 && (
                         <div className='flex justify-between mt-12 pt-8 border-t border-gray-100'>
                             {((isCalculatorMode || isPartnerMode) ? currentStep > 0 : currentStep > 1) ? (
                                 <button onClick={handlePrev} className='px-6 py-3 border-2 border-gray-200 rounded-2xl font-bold text-gray-600 hover:bg-gray-50 flex items-center gap-2'>

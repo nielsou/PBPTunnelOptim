@@ -1,6 +1,8 @@
+// src/components/steps/Step4Recap.jsx
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Loader2, CreditCard, Info, Check } from 'lucide-react';
+import { ChevronLeft, Loader2, CreditCard, Info, Check, Calculator, Percent } from 'lucide-react';
 import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
+import { COMPANY_SPECIFIC_PRICING } from '../../constants';
 
 // Fonction utilitaire pour formater les devises
 const formatCurrency = (amount) => {
@@ -11,17 +13,77 @@ const formatCurrency = (amount) => {
     }).format(amount);
 };
 
-const getAddressSummary = (fullAddressString) => {
-    if (!fullAddressString || typeof fullAddressString !== 'string') return t('step4.address_not_specified');
-    return fullAddressString;
-};
+export const Step4Recap = ({ formData, setFormData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage }) => {
+    
+    // 1. CORRECTION : On déplace cette fonction DANS le composant pour qu'elle ait accès à "t"
+    const getAddressSummary = (fullAddressString) => {
+        if (!fullAddressString || typeof fullAddressString !== 'string') return t('step4.address_not_specified');
+        return fullAddressString;
+    };
 
-export const Step4Recap = ({ formData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage }) => {
     const [loadingPayment, setLoadingPayment] = useState(false);
     const [isCheckingPayment, setIsCheckingPayment] = useState(false);
     const [activeSource, setActiveSource] = useState(null);
     const pollingInterval = useRef(null);
     const pollingTimeout = useRef(null);
+
+    // --- DÉBUT LOGIQUE CALCULETTE ---
+    const TVA_RATE = 1.20;
+    const baseTotalTTC = pricingData?.totalHT ? pricingData.totalHT * TVA_RATE : 0;
+
+    const [discountPercent, setDiscountPercent] = useState(0);
+    const [finalPriceTTC, setFinalPriceTTC] = useState(baseTotalTTC);
+
+    const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(formData.companyId?.toString());
+    const diffDays = Math.ceil((new Date(formData.eventDate) - new Date()) / (1000 * 60 * 60 * 24));
+    const isUrgent = diffDays < 7;
+
+    useEffect(() => {
+        if (isCalculatorMode && setFormData) {
+            if (isVipPartner) {
+                setFormData(prev => ({ ...prev, acomptePct: 0 })); // Force VIP à 30j
+            } else if (formData.acomptePct === undefined) {
+                setFormData(prev => ({ ...prev, acomptePct: isUrgent ? 1 : 0.15 }));
+            } else if (isUrgent && formData.acomptePct === 0.15) {
+                setFormData(prev => ({ ...prev, acomptePct: 1 })); // Plus de 15% dispo si urgent
+            }
+        }
+    }, [isCalculatorMode, isVipPartner, isUrgent]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleDiscountChange = (val) => {
+        let percent = parseFloat(val) || 0;
+        
+        // CORRECTION VISUELLE : Empêche d'aller hors de [0, 30] via les flèches ou la saisie
+        percent = Math.max(0, Math.min(30, percent));
+        
+        setDiscountPercent(percent);
+        setFinalPriceTTC(baseTotalTTC * (1 - percent / 100));
+    };
+
+    const handleFinalPriceChange = (val) => {
+        const price = parseFloat(val) || 0;
+        setFinalPriceTTC(price);
+        if (baseTotalTTC > 0) {
+            let newDiscount = ((baseTotalTTC - price) / baseTotalTTC) * 100;
+
+            // CORRECTION VISUELLE : Force le discount dans [0, 30] quand on modifie le prix final
+            newDiscount = Math.max(0, Math.min(30, newDiscount));
+            
+            // Arrondi à deux décimales
+            newDiscount = Math.round(newDiscount * 100) / 100;
+            
+            // Met à jour les états
+            setDiscountPercent(newDiscount);
+            
+            // Recalcule le prix final basé sur la remise clampée pour garder la synchro
+            setFinalPriceTTC(baseTotalTTC * (1 - newDiscount / 100));
+        }
+    };
+
+    const handlePaymentTypeChange = (e) => {
+        if (setFormData) setFormData(prev => ({ ...prev, acomptePct: parseFloat(e.target.value) }));
+    };
+    // --- FIN LOGIQUE CALCULETTE ---
 
     // Nettoyage de sécurité si l'utilisateur quitte la page
     useEffect(() => {
@@ -36,52 +98,40 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
         setActiveSource(source);
         setLoadingPayment(true);
 
-        // 1. ASTUCE ANTI-BLOCAGE : Ouvrir un onglet vierge de manière strictement synchrone
         const paymentWindow = window.open('', '_blank');
 
-        // Sécurité si un bloqueur très agressif empêche même l'ouverture synchrone
         if (!paymentWindow) {
             setLoadingPayment(false);
             alert("Votre navigateur a bloqué la page de paiement. Veuillez autoriser les pop-ups pour ce site.");
             return;
         }
 
-        // Optionnel : Mettre un petit message d'attente dans le nouvel onglet
         paymentWindow.document.write("<div style='font-family: sans-serif; text-align: center; margin-top: 20%; color: #BE2A55;'>Redirection vers le paiement sécurisé en cours...</div>");
 
-        // 2. Appel Asynchrone (qui prenait trop de temps pour Safari/Chrome)
         const result = await getStripePaymentUrl(formData.quotationUrl);
 
         if (result.success) {
-            // 3. On redirige l'onglet qu'on avait pré-ouvert vers Stripe
             paymentWindow.location.href = result.url;
             setLoadingPayment(false);
-
-            // 4. Activer l'overlay de vérification et le polling
             setIsCheckingPayment(true);
 
             pollingInterval.current = setInterval(async () => {
-                console.log("🔍 Vérification du paiement...");
                 const status = await checkPaymentStatus(formData.quotationUrl);
-
                 if (status.paid) {
-                    console.log("✅ Paiement confirmé !");
                     clearInterval(pollingInterval.current);
                     clearTimeout(pollingTimeout.current);
                     setIsCheckingPayment(false);
-                    onValidate(); // Déclenche le passage à la Step 5
+                    onValidate();
                 }
-            }, 5000); // 5 secondes
+            }, 5000);
 
             pollingTimeout.current = setTimeout(() => {
-                console.log("⏱️ Fin de la vérification auto. Retour à la normale.");
                 if (pollingInterval.current) clearInterval(pollingInterval.current);
                 setIsCheckingPayment(false);
                 setActiveSource(null);
             }, 10000);
 
         } else {
-            // En cas d'erreur de génération de lien, on ferme l'onglet inutile
             paymentWindow.close();
             setLoadingPayment(false);
             alert(t('step4.error.payment_link'));
@@ -97,18 +147,14 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
         );
     }
 
-    const { details, totalHT, displayTTC, priceSuffix, axonautData } = pricingData;
-    const TVA_RATE = 1.20;
-    const activeAcomptePct = formData.acomptePct !== undefined ? formData.acomptePct : 0.1;
+    const { details, totalHT, priceSuffix, axonautData } = pricingData;
+    // 2. CORRECTION : Fallback de sécurité à 0.15 (15%)
+    const activeAcomptePct = formData.acomptePct !== undefined ? formData.acomptePct : 0.15;
     const finalTotalTTC = totalHT * TVA_RATE;
-    const tvaAmount = finalTotalTTC - totalHT;
 
-    // --- NOUVEAU : Calcul de l'économie totale ---
     const totalDiscountHT = (axonautData?.remiseMateriel || 0) + (axonautData?.remiseImpression || 0);
     const totalDiscountTTC = totalDiscountHT * TVA_RATE;
-    // ---------------------------------------------
 
-    // Calcul de l'acompte exact
     const depositAmount = finalTotalTTC * activeAcomptePct;
     const isFullPayment = activeAcomptePct === 1;
 
@@ -163,7 +209,6 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                         <div className='space-y-4 mb-6'>
                             {details.map((item, index) => (
                                 <div key={index} className='border-b border-gray-50 pb-3 last:border-0'>
-                                    {/* Ligne principale (Prix normal ou Prix barré) */}
                                     <div className='flex justify-between items-center text-sm'>
                                         <span className='text-gray-700 font-medium'>{item.label}</span>
                                         {item.originalDisplayPrice ? (
@@ -177,7 +222,6 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                                         )}
                                     </div>
 
-                                    {/* Sous-ligne "Avec remise" (s'affiche uniquement s'il y a un prix barré) */}
                                     {item.originalDisplayPrice && (
                                         <div className='flex justify-between items-center text-sm mt-1'>
                                             <span className='text-green-600 font-semibold text-xs flex items-center gap-1'>
@@ -192,14 +236,12 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                             ))}
                         </div>
 
-                        {/* Zone Total & Acompte */}
                         <div className='bg-gray-50 -mx-8 -mb-8 p-8 rounded-b-2xl border-t border-gray-100'>
                             <div className={`flex justify-between items-center text-xl font-extrabold text-gray-900 ${totalDiscountTTC > 0 ? 'mb-1' : 'mb-4'}`}>
                                 <span>{t('step4.total_ttc')}</span>
                                 <span>{formatCurrency(finalTotalTTC)}</span>
                             </div>
 
-                            {/* Ligne d'économie totale */}
                             {totalDiscountTTC > 0 && (
                                 <div className='flex justify-between items-center text-sm font-bold text-green-600 mb-4 bg-green-50/50 px-3 py-1.5 rounded-lg -mx-3'>
                                     <span>{t('step4.total_discount')}</span>
@@ -207,7 +249,6 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                                 </div>
                             )}
 
-                            {/* --- AJOUT : NOTIFICATION RÈGLEMENT TOTAL --- */}
                             {isFullPayment && (
                                 <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                                     <div className="bg-amber-100 p-1.5 rounded-lg mt-0.5">
@@ -219,10 +260,9 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                                 </div>
                             )}
 
-                            {/* --- BOUTON DE PAIEMENT --- */}
                             {!(isPartnerMode || isCalculatorMode) ? (
                                 <button
-                                    onClick={() => handlePaymentClick('block')} // <--- Source 'block'
+                                    onClick={() => handlePaymentClick('block')}
                                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
                                     className="w-full text-left group relative bg-pink-50 border-2 border-[#BE2A55] rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-pink-100 hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
@@ -250,12 +290,17 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                             ) : (
                                 <button
                                     onClick={async () => {
-                                        if (isCalculatorMode) {
-                                            await handleSubmit(showMessage, true);
-                                            onValidate();
-                                        } else if (isPartnerMode) {
-                                            await handleSubmit(showMessage, false);
-                                            onValidate();
+                                        // 3. CORRECTION : Encapsulation avec try...catch pour éviter l'erreur non gérée (Unhandled promise)
+                                        try {
+                                            if (isCalculatorMode) {
+                                                await handleSubmit(showMessage, true);
+                                                onValidate();
+                                            } else if (isPartnerMode) {
+                                                await handleSubmit(showMessage, false);
+                                                onValidate();
+                                            }
+                                        } catch (error) {
+                                            // L'erreur est déjà traitée et affichée par handleSubmit, on évite juste le crash console
                                         }
                                     }}
                                     disabled={isSubmitting}
@@ -290,6 +335,60 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                     </div>
                 </div>
             </div>
+
+            {/* --- NOUVEL ENCART : OPTIONS COMMERCIAUX --- */}
+            {isCalculatorMode && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 mt-8 shadow-sm">
+                    <h3 className="font-black text-blue-900 text-xl mb-6 flex items-center gap-2">
+                        <Calculator className="w-6 h-6 text-blue-600" /> Options Commerciaux
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-blue-900">Remise (%)</label>
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    min="0" // CORRECTION VISUELLE : Empêche le négatif
+                                    max="30" // CORRECTION VISUELLE : Empêche > 30%
+                                    step="0.5" // CORRECTION VISUELLE : Pas de 0.5% avec les flèches
+                                    value={discountPercent}
+                                    onChange={(e) => handleDiscountChange(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none"
+                                />
+                                <Percent className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-blue-900">Total après remise (TTC)</label>
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    value={finalPriceTTC.toFixed(2)}
+                                    onChange={(e) => handleFinalPriceChange(e.target.value)}
+                                    className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none"
+                                />
+                                <span className="absolute right-4 top-3.5 font-bold text-gray-400">€</span>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-blue-900">Conditions de règlement</label>
+                            <select
+                                value={formData.acomptePct !== undefined ? formData.acomptePct : (isUrgent ? 1 : 0.15)}
+                                onChange={handlePaymentTypeChange}
+                                disabled={isVipPartner}
+                                className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <option value={1}>Paiement 100% à la commande</option>
+                                <option value={0}>Paiement à 30 jours (0%)</option>
+                                {!isUrgent && <option value={0.15}>Acompte 15% (Standard)</option>}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* BLOC 3 : ET APRÈS ? */}
             <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mt-8">
@@ -329,14 +428,18 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
 
                 <button
                     onClick={async () => {
-                        if (isCalculatorMode) {
-                            await handleSubmit(showMessage, true); // true = Mode calculette (pas d'email)
-                            onValidate();
-                        } else if (isPartnerMode) {
-                            await handleSubmit(showMessage, false); // Mode Partenaire (Génère devis + email)
-                            onValidate();
-                        } else {
-                            handlePaymentClick('main'); // Mode client normal (Stripe)
+                        try {
+                            if (isCalculatorMode) {
+                                await handleSubmit(showMessage, true);
+                                onValidate();
+                            } else if (isPartnerMode) {
+                                await handleSubmit(showMessage, false);
+                                onValidate();
+                            } else {
+                                handlePaymentClick('main');
+                            }
+                        } catch (error) {
+                            // Erreur gérée dans handleSubmit
                         }
                     }}
                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
@@ -350,7 +453,8 @@ export const Step4Recap = ({ formData, customColor, pricingData, handleEditReque
                     ) : (
                         <>
                             <Check className='w-6 h-6' />
-                            <span>{isCalculatorMode ? "Générer le devis" : isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>                        </>
+                            <span>{isCalculatorMode ? "Générer le devis" : isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>                        
+                        </>
                     )}
                 </button>
             </div>

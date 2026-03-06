@@ -1,10 +1,9 @@
-// Dans src/components/steps/Step0Auth.jsx
-
+// src/components/steps/Step0Auth.jsx
 import React, { useState } from 'react';
-import { Search, Loader2, Check } from 'lucide-react';
+import { Loader2, ChevronRight } from 'lucide-react';
 import { getAxonautCompanyDetails } from '../../services/axonautService';
 
-export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, setLang }) => {
+export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, setLang, onNext }) => {
     const [clientNumber, setClientNumber] = useState(formData.companyId || '');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -37,18 +36,24 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
                     saveNewDeliveryAddress: false,
                     billingSameAsEvent: false
                 }));
+
+                if (onNext) onNext();
+            } else {
+                // CORRECTION : Le numéro n'est pas trouvé par l'API
+                setError("Numéro client introuvable");
             }
         } catch (err) {
-            setError("Numéro introuvable ou erreur de connexion.");
+            // CORRECTION : S'il y a un autre problème inattendu
+            setError("Numéro client introuvable");
         } finally {
             setIsLoading(false);
         }
     };
-
+    
     return (
         <div className="flex flex-col items-center justify-center py-10 animate-in fade-in zoom-in duration-500">
 
-            {/* --- SÉLECTEUR DE LANGUE (Conservé) --- */}
+            {/* --- SÉLECTEUR DE LANGUE --- */}
             <div className="flex justify-center gap-3 mb-8">
                 <button
                     onClick={() => setLang('fr')}
@@ -72,11 +77,8 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
                 </button>
             </div>
 
-            {/* --- LE TITRE H1 QUI ÉTAIT ICI A ÉTÉ SUPPRIMÉ --- */}
-
             <div className="w-full max-w-2xl bg-white border border-gray-100 shadow-xl rounded-3xl p-8">
                 <h2 className="text-2xl font-black text-[#BE2A55] mb-6">
-                    {/* Texte localisé pour le titre du cadre */}
                     {isCalculatorMode
                         ? t('step0.login.client_number')
                         : t('step0.login.partner_number')}
@@ -94,18 +96,20 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
                         <button
                             type="submit"
                             disabled={isLoading || !clientNumber}
-                            className="px-8 py-4 bg-[#2563eb] hover:bg-blue-700 transition-colors text-white rounded-xl font-bold flex items-center justify-center"
+                            className="px-8 py-4 bg-[#BE2A55] hover:bg-pink-700 transition-colors text-white rounded-xl font-bold flex items-center justify-center gap-2"
                         >
-                            {isLoading ? <Loader2 className="animate-spin w-5 h-5" /> : <Search className="w-5 h-5" />}
+                            {isLoading ? (
+                                <Loader2 className="animate-spin w-5 h-5" />
+                            ) : (
+                                <>
+                                    <span>{t('nav.next')}</span>
+                                    <ChevronRight className="w-5 h-5" />
+                                </>
+                            )}
                         </button>
                     </form>
                 </div>
                 {error && <p className='mt-4 text-red-500 font-bold text-center'>⚠️ {error}</p>}
-                {formData.savedClientData && !error && (
-                    <p className='mt-4 text-green-600 font-bold text-center flex items-center justify-center gap-2'>
-                        <Check className="w-5 h-5" /> Client trouvé : {formData.savedClientData.name}
-                    </p>
-                )}
             </div>
         </div>
     );

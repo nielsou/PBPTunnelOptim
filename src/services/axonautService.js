@@ -409,7 +409,11 @@ export const getAxonautCompanyDetails = async (companyId) => {
     try {
         const companyRes = await fetch(`/api/get-company?id=${companyId}`);
         const companyData = await companyRes.json();
-        if (!companyRes.ok) throw new Error(companyData.error || "Société introuvable");
+        
+        // CORRECTION : On ne "throw" plus d'erreur, on retourne un statut found: false
+        if (!companyRes.ok) {
+            return { found: false, error: companyData.error || "Société introuvable" };
+        }
 
         const addressesRes = await fetch(`/api/get-addresses?companyId=${companyId}`);
         const addressesData = await addressesRes.json();
@@ -425,15 +429,6 @@ export const getAxonautCompanyDetails = async (companyId) => {
         const mainAddressFull = formatAddr(companyData.address_street, companyData.address_zip_code, companyData.address_city);
         let billingAddresses = [];
         let deliveryAddresses = [];
-
-        /*
-        if (mainAddressFull) {
-            const mainAddressObj = {
-                label: companyData.name || "Facturation", 
-                address: mainAddressFull
-            }; billingAddresses.push(mainAddressObj);
-        }
-            */
 
         rawAddresses.forEach(addr => {
             const formatted = formatAddr(addr.address_street, addr.address_zip_code, addr.address_city);
@@ -503,7 +498,8 @@ export const getAxonautCompanyDetails = async (companyId) => {
 
     } catch (error) {
         console.error("SERVICE: Erreur récupération partenaire", error);
-        throw error;
+        // CORRECTION : Même en cas de crash réseau, on ne throw pas pour ne pas casser l'UI
+        return { found: false, error: error.message };
     }
 };
 

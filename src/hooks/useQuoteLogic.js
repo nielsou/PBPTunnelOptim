@@ -137,7 +137,15 @@ export const useQuoteLogic = () => {
 
     // --- 1. ÉTATS INTELLIGENTS (AVEC LOCALSTORAGE) ---
 
-    const [currentStep, setCurrentStep] = useState(1);
+    const [currentStep, setCurrentStep] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const path = window.location.pathname;
+            if (path.includes('/partenaires') || path.includes('/calculette')) {
+                return 0; // On démarre sur l'écran d'authentification (Step 0)
+            }
+        }
+        return 1; // Tunnel classique
+    });
 
     // 1. Définir une fonction pour extraire les UTM instantanément
     const getUrlParams = () => {
@@ -755,14 +763,20 @@ export const useQuoteLogic = () => {
             const diffTime = eventDateObj - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            let finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct; // Par défaut : 15%
+            let finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct;
 
-            if (diffDays < 7) {
-                finalAcomptePct = 1; // URGENCE (< 7 jours) : 100%
-            } else if (isVipPartner && formData.isPartnerMode) { // On utilise formData
-                finalAcomptePct = 0; // PARTENAIRE VIP : 0%
+            if (isCalculatorMode && formData.acomptePct !== undefined) {
+                // Si le commercial a fait son choix via la calculette, on respecte son choix.
+                finalAcomptePct = formData.acomptePct;
             } else {
-                finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct; // STANDARD : 15%
+                // Logique standard pour les clients 
+                if (diffDays < 7) {
+                    finalAcomptePct = 1;
+                } else if (isVipPartner && formData.isPartnerMode) {
+                    finalAcomptePct = 0;
+                } else {
+                    finalAcomptePct = AXONAUT_FIXED_DEFAULTS.acomptePct;
+                }
             }
 
             // On sauvegarde ce pourcentage dans formData pour l'utiliser à l'étape 4
