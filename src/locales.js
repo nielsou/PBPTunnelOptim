@@ -35,8 +35,8 @@ export const locales = {
 
     // --- STEP 1: ÉVÉNEMENT ---
     "step1.main_title": {
-        fr: "Votre devis en 3 min chrono",
-        en: "Get your quote in 3 min chrono"
+        fr: "Votre photobooth en 3 min chrono",
+        en: "Your photobooth in 3 min chrono"
     },
     "step1.title": { fr: "Quel type d'événement organisez-vous ?", en: "What type of event are you organizing?" },
     "step1.type.placeholder": { fr: "Sélectionnez le type d'événement...", en: "Select event type..." },
