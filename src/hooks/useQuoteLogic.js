@@ -796,7 +796,10 @@ export const useQuoteLogic = () => {
                 livraisonIncluse: formData.delivery !== false,
 
                 // On utilise la variable calculée
-                acomptePct: finalAcomptePct
+                acomptePct: finalAcomptePct,
+                discountPercent: isCalculatorMode ? (formData.discountPercent || 0) : 0,
+                discountComment: isCalculatorMode ? (formData.discountComment || '') : ''
+
             };
 
             if (billingAddressId) {

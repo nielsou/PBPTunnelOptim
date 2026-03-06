@@ -109,7 +109,7 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
         remiseImpression, supplementAnimation, commercial, dateEvenement,
         adresseLivraisonComplete, nombreJours, templateInclus, livraisonIncluse,
         acomptePct, nombreTirages, heuresAnimations, distanceKm, optionFondIA, optionRGPD, optionSpeaker,
-        company_address_id
+        company_address_id, discountPercent, discountComment
     } = inputs;
 
     const formatDate = (dateValue) => {
@@ -304,7 +304,7 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     const expiryDate = new Date(now);
     expiryDate.setDate(now.getDate() + 14);
 
-    return {
+    const payload = {
         "company_id": companyId,
         "company_address_id": company_address_id,
         "theme_id": AXONAUT_THEMES_MAPPING[acomptePct],
@@ -314,6 +314,16 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
         "expiry_date": toRfc3339(expiryDate),
         "products": productsArray
     };
+
+    // AJOUT : Injection de la remise globale sur le devis Axonaut
+    if (discountPercent > 0) {
+        payload.global_discount_percent = discountPercent;
+        if (discountComment && discountComment.trim() !== '') {
+            payload.global_discount_comments = discountComment.trim();
+        }
+    }
+
+    return payload;
 }
 
 export const sendAxonautQuotation = async (quotationBody) => {
@@ -409,7 +419,7 @@ export const getAxonautCompanyDetails = async (companyId) => {
     try {
         const companyRes = await fetch(`/api/get-company?id=${companyId}`);
         const companyData = await companyRes.json();
-        
+
         // CORRECTION : On ne "throw" plus d'erreur, on retourne un statut found: false
         if (!companyRes.ok) {
             return { found: false, error: companyData.error || "Société introuvable" };
