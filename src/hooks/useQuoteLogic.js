@@ -605,27 +605,17 @@ export const useQuoteLogic = () => {
             await handleSubmit(showMessage, false);
 
             // AJOUT DU TRACKING GTM À L'ÉTAPE 3
-            if (formData.utm_medium === 'cpc') {
-                pushToDataLayer({
-                    'event': 'client_request_price',
-                    'email': formData.email,
-                    'utm_source': formData.utm_source,
-                    'utm_medium': formData.utm_medium,
-                    'utm_campaign': formData.utm_campaign,
-                    'amount': calculatePrice.totalHT,
-                    'model': formData.model
-                });
-            } else {
-                pushToDataLayer({
-                    'event': 'client_request_price_autre',
-                    'email': formData.email,
-                    'utm_source': formData.utm_source,
-                    'utm_medium': formData.utm_medium,
-                    'utm_campaign': formData.utm_campaign,
-                    'amount': calculatePrice.totalHT,
-                    'model': formData.model
-                });
-            }
+            // if (formData.utm_medium === 'cpc') {
+            pushToDataLayer({
+                'event': 'client_request_price',
+                'email': formData.email,
+                'utm_source': formData.utm_source,
+                'utm_medium': formData.utm_medium,
+                'utm_campaign': formData.utm_campaign,
+                'amount': calculatePrice.totalHT,
+                'model': formData.model
+            });
+
 
             setCurrentStep(4);
         }
