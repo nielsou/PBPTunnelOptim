@@ -52,12 +52,13 @@ export const locales = {
     "step1.address.label": { fr: "Adresse complète du lieu", en: "Full delivery address" },
     "step1.address.placeholder": { fr: "Entrez une adresse...", en: "Enter an address..." },
     "step1.venue.placeholder": { fr: "Ex: Pavillon Royal", en: "Ex: The Ritz" },
-
     // --- STEP 1 ERREURS ---
     "step1.error.past_date": { fr: "La date ne peut pas être dans le passé", en: "Date cannot be in the past" },
     "step1.error.select_address": { fr: "Veuillez sélectionner une adresse dans la liste suggérée", en: "Please select an address from the suggested list" },
     "step1.today.title": { fr: "C'est pour aujourd'hui ?", en: "Is it for today?" },
     "step1.today.subtitle": { fr: "Pour une réservation le jour-même, contactez-nous directement par téléphone pour vérifier la disponibilité immédiate.", en: "For same-day bookings, please contact us directly by phone to check immediate availability." },
+    "step1.today.calc_title": { fr: "Réservation le jour-même", en: "Same-day booking" },
+    "step1.today.calc_subtitle": { fr: "⚠️ Assurez-vous d'avoir validé la disponibilité d'un livreur avant de confirmer la commande.", en: "⚠️ Make sure you have confirmed a driver's availability before confirming the order." },
     "step1.lastminute.title": { fr: "Réservation de dernière minute", en: "Last-minute booking" },
     "step1.lastminute.desc": { fr: "Votre événement approche à grands pas ! Nous ferons notre maximum pour garantir la disponibilité du matériel choisi.", en: "Your event is fast approaching! We will do our best to ensure the availability of the chosen equipment." },
 

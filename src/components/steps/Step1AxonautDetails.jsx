@@ -148,21 +148,30 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
             </div>
 
             {/* ALERTE JOUR MÊME */}
+            {/* ALERTE JOUR MÊME */}
             {isToday && (
                 <div className='animate-in fade-in slide-in-from-top-2 p-6 bg-red-50 border-2 border-red-200 rounded-2xl'>
                     <div className='flex items-start space-x-3 text-red-900'>
                         <Clock className='w-6 h-6 mt-1' />
                         <div>
-                            <h3 className='font-bold text-lg'>{t('step1.today.title')}</h3>
-                            <p className='mb-4'>{t('step1.today.subtitle')}</p>
-                            <div className='flex flex-col sm:flex-row gap-4'>
-                                <a href="tel:0142865424" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
-                                    <Phone className='w-4 h-4 mr-2' /> 01 42 86 54 24
-                                </a>
-                                <a href="mailto:contact@photobooth-paris.fr" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
-                                    <Mail className='w-4 h-4 mr-2' /> contact@photobooth-paris.fr
-                                </a>
-                            </div>
+                            <h3 className='font-bold text-lg'>
+                                {formData.isCalculatorMode ? t('step1.today.calc_title') : t('step1.today.title')}
+                            </h3>
+                            <p className={formData.isCalculatorMode ? 'mb-0 text-sm font-medium' : 'mb-4'}>
+                                {formData.isCalculatorMode ? t('step1.today.calc_subtitle') : t('step1.today.subtitle')}
+                            </p>
+
+                            {/* Les boutons ne s'affichent QUE si on n'est PAS en mode calculette */}
+                            {!formData.isCalculatorMode && (
+                                <div className='flex flex-col sm:flex-row gap-4'>
+                                    <a href="tel:0142865424" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
+                                        <Phone className='w-4 h-4 mr-2' /> 01 42 86 54 24
+                                    </a>
+                                    <a href="mailto:contact@photobooth-paris.fr" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
+                                        <Mail className='w-4 h-4 mr-2' /> contact@photobooth-paris.fr
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -186,7 +195,42 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                 </div>
             </div>
 
-            {/* BLOC 3 : LIVRAISON */}
+            {/* BLOC 3 : FACTURATION */}
+            <div className='bg-indigo-50 p-6 rounded-2xl border border-indigo-100'>
+                <label className='block text-lg font-bold text-gray-900 mb-3'>Adresse de Facturation</label>
+                {!isNewBillingAddress ? (
+                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'billing')}>
+                        {clientData.billingAddresses.map((addr, i) => (
+                            <option key={`bill-${i}`} value={addr.address}>
+                                📄 {addr.label} | {addr.address}
+                            </option>
+                        ))}
+                        <option value="new">📍 + Ajouter une nouvelle adresse</option>
+                    </select>
+                ) : (
+                    <div className='space-y-3 bg-white p-4 rounded-lg border border-indigo-100 shadow-inner mt-2'>
+                        <InputField
+                            label="Nom de cette adresse"
+                            placeholder="ex: Bureau, Siège..."
+                            value={formData.newBillingAddressName || ''}
+                            onChange={e => setFormData(p => ({ ...p, newBillingAddressName: e.target.value }))}
+                        />
+                        <AddressAutocomplete
+                            label="Adresse complète"
+                            required
+                            onAddressSelect={addr => setFormData(p => ({
+                                ...p,
+                                billingFullAddress: addr.fullAddress,
+                                billingZipCode: addr.postal,
+                                billingCity: addr.city
+                            }))}
+                        />
+                        <button onClick={() => setIsNewBillingAddress(false)} className='text-sm text-blue-600 underline font-medium'>Annuler l'ajout</button>
+                    </div>
+                )}
+            </div>
+
+            {/* BLOC 4 : LIVRAISON */}
             <div className='bg-gray-50 p-6 rounded-2xl border border-gray-200'>
                 <label className='block text-lg font-bold text-gray-900 mb-3'>Lieu de livraison (Événement)</label>
                 {!isNewDeliveryAddress ? (
@@ -222,40 +266,7 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                 )}
             </div>
 
-            {/* BLOC 4 : FACTURATION */}
-            <div className='bg-indigo-50 p-6 rounded-2xl border border-indigo-100'>
-                <label className='block text-lg font-bold text-gray-900 mb-3'>Adresse de Facturation</label>
-                {!isNewBillingAddress ? (
-                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'billing')}>
-                        {clientData.billingAddresses.map((addr, i) => (
-                            <option key={`bill-${i}`} value={addr.address}>
-                                📄 {addr.label} | {addr.address}
-                            </option>
-                        ))}
-                        <option value="new">📍 + Ajouter une nouvelle adresse</option>
-                    </select>
-                ) : (
-                    <div className='space-y-3 bg-white p-4 rounded-lg border border-indigo-100 shadow-inner mt-2'>
-                        <InputField
-                            label="Nom de cette adresse"
-                            placeholder="ex: Bureau, Siège..."
-                            value={formData.newBillingAddressName || ''}
-                            onChange={e => setFormData(p => ({ ...p, newBillingAddressName: e.target.value }))}
-                        />
-                        <AddressAutocomplete
-                            label="Adresse complète"
-                            required
-                            onAddressSelect={addr => setFormData(p => ({
-                                ...p,
-                                billingFullAddress: addr.fullAddress,
-                                billingZipCode: addr.postal,
-                                billingCity: addr.city
-                            }))}
-                        />
-                        <button onClick={() => setIsNewBillingAddress(false)} className='text-sm text-blue-600 underline font-medium'>Annuler l'ajout</button>
-                    </div>
-                )}
-            </div>
+
         </div>
     );
 };

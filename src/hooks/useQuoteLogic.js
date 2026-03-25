@@ -464,10 +464,14 @@ export const useQuoteLogic = () => {
         switch (currentStep) {
             case 0: // AUTHENTIFICATION (Modes Spéciaux)
                 return !!formData.companyId; // Valide si on a trouvé un client
+
             case 1: // ÉVÉNEMENT (Normal ou Spécial)
                 return (
                     formData.eventDate !== '' &&
-                    formData.eventDate > new Date().toISOString().split('T')[0] &&
+                    // Condition ajoutée ici : >= si calculette, sinon > pour bloquer clients et partenaires
+                    (formData.isCalculatorMode
+                        ? formData.eventDate >= new Date().toISOString().split('T')[0]
+                        : formData.eventDate > new Date().toISOString().split('T')[0]) &&
                     formData.newDeliveryAddressName !== '' &&
                     formData.deliveryFullAddress !== '' &&
                     formData.deliveryLat !== null &&
