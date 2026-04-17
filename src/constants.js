@@ -29,7 +29,7 @@ export const PRICING_STRATEGY = {
     },
     '150': {
         name: 'CineBooth 150',
-        priceHT: 280.83,
+        priceHT: 290.83,
         floorPriceHT: 39.00,
         delivery: 50,
         animation_hour: 45
