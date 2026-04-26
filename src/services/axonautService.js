@@ -253,6 +253,18 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     }
 
     // --- 3. OPTIONS (TEMPLATE, IMPRESSION, ANIM, IA, RGPD, SPEAKER) ---
+    if (nomBorne !== name360) {
+        productsArray.push({
+            "product_code": "P-PROPS-DIGITAL",
+            "name": t('axonaut.opt.digital_props', lang),
+            "price": 20, // Prix affiché
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": 1,
+            "discount_flat": 20, // Remise totale pour rendre l'option offerte
+            "description": t('axonaut.desc.digital_props', lang)
+        });
+    }
+
     if (templateInclus && nomBorne !== name360) {
         const tName = prixTemplate > 0 ? t('axonaut.opt.template', lang) : `${t('axonaut.opt.template', lang)} ${t('axonaut.opt.template_free', lang)}`;
         const tDesc = `<ul><li><p>${t('axonaut.opt.template_desc1', lang)}</p></li><li><p>${t('axonaut.opt.template_desc2', lang)}</p></li><li><p>${t('axonaut.opt.template_desc3', lang)}</p></li></ul><p><em>${t('axonaut.opt.template_warn', lang)}</em></p>`;

@@ -1,6 +1,6 @@
 // src/components/steps/Step4Recap.jsx
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Loader2, CreditCard, Info, Check, Calculator, Percent } from 'lucide-react';
+import { ChevronLeft, Loader2, Info, Check, Calculator, Percent } from 'lucide-react';
 import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
 import { COMPANY_SPECIFIC_PRICING } from '../../constants';
 
@@ -25,8 +25,6 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
     const pollingInterval = useRef(null);
     const pollingTimeout = useRef(null);
 
-
-
     // --- DÉBUT LOGIQUE CALCULETTE ---
     const TVA_RATE = 1.20;
     const baseTotalTTC = pricingData?.totalHT ? pricingData.totalHT * TVA_RATE : 0;
@@ -35,10 +33,9 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
     const [discountPercent, setDiscountPercent] = useState(initialDiscount);
     const [finalPriceTTC, setFinalPriceTTC] = useState(baseTotalTTC * (1 - initialDiscount / 100));
 
-    // Nouveaux états brouillons pour taper librement avant d'appliquer
     const [draftDiscount, setDraftDiscount] = useState(initialDiscount.toString());
     const [draftPrice, setDraftPrice] = useState((baseTotalTTC * (1 - initialDiscount / 100)).toFixed(2));
-    const [inputMode, setInputMode] = useState('percent'); // Savoir quel champ a été modifié en dernier
+    const [inputMode, setInputMode] = useState('percent');
 
     const isVipPartner = Object.keys(COMPANY_SPECIFIC_PRICING).includes(formData.companyId?.toString());
     const diffDays = Math.ceil((new Date(formData.eventDate) - new Date()) / (1000 * 60 * 60 * 24));
@@ -54,9 +51,8 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                 setFormData(prev => ({ ...prev, acomptePct: 1 }));
             }
         }
-    }, [isCalculatorMode, isVipPartner, isUrgent]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [isCalculatorMode, isVipPartner, isUrgent, setFormData, formData.acomptePct]);
 
-    // Fonction déclenchée par le bouton "Appliquer"
     const handleApplyDiscount = () => {
         let newDiscount = 0;
         let newPrice = baseTotalTTC;
@@ -64,14 +60,14 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
         if (inputMode === 'percent') {
             let percent = parseFloat(draftDiscount);
             if (isNaN(percent)) percent = 0;
-            percent = Math.max(0, Math.min(30, percent)); // Limite à 30%
+            percent = Math.max(0, Math.min(30, percent));
             newDiscount = percent;
             newPrice = baseTotalTTC * (1 - percent / 100);
         } else {
             let price = parseFloat(draftPrice);
             if (isNaN(price)) price = baseTotalTTC;
             let percent = ((baseTotalTTC - price) / baseTotalTTC) * 100;
-            percent = Math.max(0, Math.min(30, percent)); // Limite à 30%
+            percent = Math.max(0, Math.min(30, percent));
             percent = Math.round(percent * 100) / 100;
             newDiscount = percent;
             newPrice = baseTotalTTC * (1 - percent / 100);
@@ -154,12 +150,8 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
     const { details, priceSuffix, axonautData } = pricingData;
     const activeAcomptePct = formData.acomptePct !== undefined ? formData.acomptePct : 0.15;
 
-    // --- CALCUL DE L'ÉCONOMIE TOTALE (Lignes + Globale) ---
     const lineDiscountsHT = (axonautData?.remiseMateriel || 0) + (axonautData?.remiseImpression || 0);
     const lineDiscountsTTC = lineDiscountsHT * TVA_RATE;
-    // ------------------------------------------------------
-
-    // L'acompte se calcule sur le vrai prix final remisé
     const depositAmount = finalPriceTTC * activeAcomptePct;
     const isFullPayment = activeAcomptePct === 1;
 
@@ -169,43 +161,57 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                 {t('step4.title')}
             </h2>
 
-            <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+            {/* BLOC 1 : INFO CLIENT (DÉTAILS) - AU DESSUS DE TOUT */}
+            <div className='bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm'>
+                <h3 className='text-xl font-bold mb-6 text-gray-900'>{t('step4.client_details')}</h3>
 
-                {/* BLOC 1 : INFO CLIENT */}
-                <div className='bg-gray-50 p-8 rounded-2xl border border-gray-200 shadow-sm'>
-                    <h3 className='text-xl font-bold mb-6 text-gray-900'>{t('step4.client_details')}</h3>
-                    <div className='space-y-4 text-gray-700 text-sm'>
+                {/* Structure en 2 colonnes harmonisée */}
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-gray-700 text-sm'>
+                    {/* Colonne Gauche */}
+                    <div className='space-y-4'>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
                             <span className='font-semibold'>{t('step4.label.contact')}</span>
-                            <span>{formData.fullName}</span>
+                            <span className='text-right'>{formData.fullName}</span>
                         </div>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
                             <span className='font-semibold'>Email</span>
-                            <span>{formData.email}</span>
+                            <span className='text-right'>{formData.email}</span>
                         </div>
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
                             <span className='font-semibold'>{t('step3.phone')}</span>
-                            <span>{formData.phone}</span>
+                            <span className='text-right'>{formData.phone}</span>
                         </div>
                         {formData.isPro && (
                             <div className='flex justify-between border-b border-gray-200 pb-2'>
                                 <span className='font-semibold'>{t('step4.label.company')}</span>
-                                <span>{formData.companyName}</span>
+                                <span className='text-right'>{formData.companyName}</span>
                             </div>
                         )}
-                        <div className='pt-2'>
-                            <p className='font-semibold mb-1'>{t('step4.label.venue')}</p>
-                            <p className='text-right text-gray-600'>{getAddressSummary(formData.deliveryFullAddress)}</p>
+                    </div>
+
+                    {/* Colonne Droite */}
+                    <div className='space-y-4'>
+                        <div className='flex justify-between border-b border-gray-200 pb-2'>
+                            <span className='font-semibold'>{t('step4.label.venue')}</span>
+                            <span className='text-right text-gray-600 truncate max-w-[60%]' title={getAddressSummary(formData.deliveryFullAddress)}>
+                                {getAddressSummary(formData.deliveryFullAddress)}
+                            </span>
                         </div>
-                        <div className='flex justify-between pt-2'>
+                        <div className='flex justify-between border-b border-gray-200 pb-2'>
                             <span className='font-semibold'>{t('step4.label.date')}</span>
-                            <span>{new Date(formData.eventDate).toLocaleDateString('fr-FR')} ({formData.eventDuration} jours)</span>
+                            <span className='text-right text-gray-600'>
+                                {new Date(formData.eventDate).toLocaleDateString('fr-FR')} ({formData.eventDuration} jours)
+                            </span>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* BLOC 2 : PRIX ET ACOMPTE */}
-                <div className='flex flex-col gap-6'>
+            {/* BLOC 2 : LE RECAP & ET APRÈS (CÔTE À CÔTE) */}
+            <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 lg:items-start'>
+
+                {/* COLONNE GAUCHE : LE RÉCAP (VOTRE COMMANDE) */}
+                <div className='flex flex-col gap-8'>
                     <div className='bg-white p-8 rounded-2xl shadow-xl border border-gray-100'>
                         <h3 className='text-xl font-bold mb-6 text-gray-900'>
                             {t('step4.order_title')} <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
@@ -242,8 +248,6 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                         </div>
 
                         <div className='bg-gray-50 -mx-8 -mb-8 p-8 rounded-b-2xl border-t border-gray-100'>
-
-                            {/* ON AFFICHE LE PRIX DE BASE ICI */}
                             <div className={`flex justify-between items-center text-xl font-extrabold text-gray-900 ${lineDiscountsTTC > 0 ? 'mb-1' : 'mb-4'}`}>
                                 <span>{t('step4.total_ttc')}</span>
                                 <span>{formatCurrency(baseTotalTTC)}</span>
@@ -352,132 +356,127 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                             )}
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* --- ENCART : OPTIONS COMMERCIAUX --- */}
-            {isCalculatorMode && (
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 mt-8 shadow-sm">
-                    <h3 className="font-black text-blue-900 text-xl mb-6 flex items-center gap-2">
-                        <Calculator className="w-6 h-6 text-blue-600" /> Options Commerciaux
+                    {/* ENCART OPTIONS COMMERCIAUX (Mode Calculette) */}
+                    {isCalculatorMode && (
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-8 shadow-sm">
+                            <h3 className="font-black text-blue-900 text-xl mb-6 flex items-center gap-2">
+                                <Calculator className="w-6 h-6 text-blue-600" /> Options Commerciaux
+                            </h3>
+
+                            <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-blue-900">Remise (%)</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                value={draftDiscount}
+                                                onChange={(e) => {
+                                                    setDraftDiscount(e.target.value);
+                                                    setInputMode('percent');
+                                                }}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
+                                                className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                            <Percent className="absolute right-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-blue-900">Total après remise (TTC)</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                value={draftPrice}
+                                                onChange={(e) => {
+                                                    setDraftPrice(e.target.value);
+                                                    setInputMode('price');
+                                                }}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
+                                                className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                            />
+                                            <span className="absolute right-4 top-3.5 font-bold text-gray-400 pointer-events-none">€</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleApplyDiscount}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <Check className="w-5 h-5" /> Appliquer la remise
+                                </button>
+
+                                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                                    <Info className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-[12px] leading-relaxed text-red-800 font-bold">
+                                        ⚠️ Un ticket de support est en attente chez Axonaut : la remise globale n'est pas encore prise en compte sur le devis final généré.
+                                    </p>
+                                </div>
+
+                                {discountPercent > 0 && (
+                                    <div className="space-y-2 mt-4 pt-4 border-t border-gray-100 animate-in fade-in">
+                                        <label className="text-sm font-bold text-blue-900">Commentaire de la remise (affiché sur le devis)</label>
+                                        <textarea
+                                            value={formData.discountComment || ''}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, discountComment: e.target.value }))}
+                                            placeholder="Ex: Remise fidélité suite à nos échanges téléphoniques..."
+                                            className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-medium text-gray-900 outline-none resize-none"
+                                            rows="2"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-blue-900">Conditions de règlement</label>
+                                    <p className="text-xs text-gray-500 mb-2">Totalement indépendant du calcul de la remise ci-dessus.</p>
+                                    <select
+                                        value={formData.acomptePct !== undefined ? formData.acomptePct : (isUrgent ? 1 : 0.15)}
+                                        onChange={handlePaymentTypeChange}
+                                        disabled={isVipPartner}
+                                        className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        <option value={1}>Paiement 100% à la commande</option>
+                                        <option value={0}>Paiement à 30 jours (0%)</option>
+                                        {!isUrgent && <option value={0.15}>Acompte 15% (Standard)</option>}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* COLONNE DROITE : ET APRÈS ? (STICKY) */}
+                <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm lg:sticky lg:top-6">
+                    <h3 className="font-black text-gray-900 text-xl mb-6 text-center">
+                        {t('success.step2.title')}
                     </h3>
-
-                    {/* SOUS-BLOC 1 : REMISE ET APPLICATION */}
-                    <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-blue-900">Remise (%)</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={draftDiscount}
-                                        onChange={(e) => {
-                                            setDraftDiscount(e.target.value);
-                                            setInputMode('percent');
-                                        }}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
-                                        className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                    <Percent className="absolute right-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <div className="flex flex-col gap-4">
+                        {[1, 2, 3].map((num) => {
+                            const emojis = { 1: '🚚', 2: '🎨', 3: '💳' };
+                            return (
+                                <div key={num} className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start text-left gap-4">
+                                    <div className="text-3xl mt-1">{emojis[num]}</div>
+                                    <div>
+                                        <span className="font-black text-gray-900 text-base block mb-2">
+                                            {t(`success.step2.item${num}.title`)}
+                                        </span>
+                                        <p className="text-gray-600 leading-relaxed font-medium text-sm">
+                                            {t(`success.step2.item${num}.text`)}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-blue-900">Total après remise (TTC)</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        value={draftPrice}
-                                        onChange={(e) => {
-                                            setDraftPrice(e.target.value);
-                                            setInputMode('price');
-                                        }}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
-                                        className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    />
-                                    <span className="absolute right-4 top-3.5 font-bold text-gray-400 pointer-events-none">€</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={handleApplyDiscount}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
-                        >
-                            <Check className="w-5 h-5" /> Appliquer la remise
-                        </button>
-
-                        {/* WARNING TICKET AXONAUT */}
-                        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                            <Info className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-[12px] leading-relaxed text-red-800 font-bold">
-                                ⚠️ Un ticket de support est en attente chez Axonaut : la remise globale n'est pas encore prise en compte sur le devis final généré.
-                            </p>
-                        </div>
-
-                        {/* CHAMP COMMENTAIRE DYNAMIQUE */}
-                        {discountPercent > 0 && (
-                            <div className="space-y-2 mt-4 pt-4 border-t border-gray-100 animate-in fade-in">
-                                <label className="text-sm font-bold text-blue-900">Commentaire de la remise (affiché sur le devis)</label>
-                                <textarea
-                                    value={formData.discountComment || ''}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, discountComment: e.target.value }))}
-                                    placeholder="Ex: Remise fidélité suite à nos échanges téléphoniques..."
-                                    className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-medium text-gray-900 outline-none resize-none"
-                                    rows="2"
-                                />
-                            </div>
-                        )}
+                            );
+                        })}
                     </div>
-
-                    {/* SOUS-BLOC 2 : CONDITIONS DE RÈGLEMENT */}
-                    <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-blue-900">Conditions de règlement</label>
-                            <p className="text-xs text-gray-500 mb-2">Totalement indépendant du calcul de la remise ci-dessus.</p>
-                            <select
-                                value={formData.acomptePct !== undefined ? formData.acomptePct : (isUrgent ? 1 : 0.15)}
-                                onChange={handlePaymentTypeChange}
-                                disabled={isVipPartner}
-                                className="w-full px-4 py-3 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none bg-white disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <option value={1}>Paiement 100% à la commande</option>
-                                <option value={0}>Paiement à 30 jours (0%)</option>
-                                {!isUrgent && <option value={0.15}>Acompte 15% (Standard)</option>}
-                            </select>
-                        </div>
-                    </div>
-
-                </div>
-            )}
-
-            {/* BLOC 3 : ET APRÈS ? */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm mt-8">
-                <h3 className="font-black text-gray-900 text-xl mb-6 text-center">
-                    {t('success.step2.title')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {[1, 2, 3].map((num) => {
-                        const emojis = { 1: '🚚', 2: '🎨', 3: '💳' };
-                        return (
-                            <div key={num} className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex flex-col items-center text-center">
-                                <div className="text-3xl mb-3">{emojis[num]}</div>
-                                <div className="mb-2">
-                                    <span className="font-black text-gray-900 text-base leading-tight">
-                                        {t(`success.step2.item${num}.title`)}
-                                    </span>
-                                </div>
-                                <p className="text-gray-600 leading-snug font-medium text-sm">
-                                    {t(`success.step2.item${num}.text`)}
-                                </p>
-                            </div>
-                        );
-                    })}
                 </div>
             </div>
 
             {/* BOUTONS D'ACTION */}
-            <div className='flex flex-col md:flex-row justify-between items-center gap-4 pt-4'>
+            <div className='flex flex-col md:flex-row justify-between items-center gap-4 pt-4 mt-8'>
                 <button
                     onClick={handleEditRequest}
                     disabled={isSubmitting}
@@ -519,11 +518,6 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                     )}
                 </button>
             </div>
-            {!isFullPayment && (
-                <p className="text-xs text-gray-400 text-center mt-3">
-                    {t('step4.balance_notice')}
-                </p>
-            )}
         </div>
     );
 };

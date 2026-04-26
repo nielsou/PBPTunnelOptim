@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, Check } from 'lucide-react';
 import { useQuoteLogic } from './hooks/useQuoteLogic';
 import { customColor } from './constants';
-import { redirectToStripeCheckout } from './services/stripeService';
 
 // Import des Steps
 import { Step0Auth } from './components/steps/Step0Auth';
@@ -132,15 +131,6 @@ export default function PhotoboothQuoteForm() {
             }
         } else {
             handleNext(isCalculatorMode, showMessage);
-        }
-    };
-
-    const handleStripePayment = async () => {
-        try {
-            await redirectToStripeCheckout(pricingData, formData, formData.axonautQuoteNumber);
-        } catch (error) {
-            console.error("Erreur paiement:", error);
-            showMessage(t('form.error.payment_redirect'));
         }
     };
 

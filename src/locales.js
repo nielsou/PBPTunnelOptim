@@ -14,10 +14,14 @@ export const locales = {
 
     // --- COMMUN ---
     "common.loading": { fr: "Chargement...", en: "Loading..." },
-    "common.free": { fr: "Gratuit", en: "Free" },
-    "common.included": { fr: "Inclus", en: "Included" },
+    "common.free": { fr: "Sans frais de livraison", en: "Without charge" },
+    "common.included": { fr: "Offert", en: "Free" },
     "common.between": { fr: "Entre", en: "Between" },
     "common.and": { fr: "et", en: "and" },
+    "step2.logistics.delivery_variable": {
+        fr: "Variable selon localisation",
+        en: "Varies by location"
+    },
 
     // --- STEP 0: NUMERO CLIENT ---
     "step0.login.client_number": {
@@ -77,7 +81,7 @@ export const locales = {
         en: "It's choosing exclusive technology and unparalleled results. Designed in France, each of our booths integrates high-end optics and a professional printer. Our innovation? A proprietary intelligent LED lighting system that only activates during the shot. Result: perfect studio photos while preserving your ambiance. Quality above all."
     },
 
-    "step2.collection.essential": { fr: "Collection Prêt-à-fêter !", en: "Ready-to-party Collection!" },
+    "step2.collection.essential": { fr: "Collection CineBooth !", en: "CineBooth Collection!" },
     "step2.collection.prestige": { fr: "Collection Prestige", en: "Prestige Collection" },
     "step2.collection.immersive": { fr: "Expérience Immersive", en: "Immersive Experience" },
     "step2.logistics.distance_notice": { fr: "Tarif ajusté selon l'adresse de votre événement", en: "Rate adjusted based on your event location" },
@@ -92,23 +96,25 @@ export const locales = {
     "step2.badge.150prints": { fr: "150 impressions", en: "150 prints" },
     "step2.badge.unlimited": { fr: "Illimitées", en: "Unlimited" },
     "step2.badge.immersion": { fr: "Immersion", en: "Immersion" },
-    "step2.model.digital.tagline": { fr: "L'essentiel 100% Digital", en: "100% Digital Essentials" },
 
-    "step2.model.digital.name": { fr: "CineBooth Digital", en: "Digital CineBooth" },
+    "step2.model.digital.name": { fr: "Pack Digital", en: "Digital Pack" },
     "step2.model.digital.tagline": { fr: "L'essentiel 100% Digital", en: "100% Digital Essentials" },
     "step2.model.digital.desc": {
-        fr: "Partage illimité par email et SMS. La technologie Ultra HD pour un souvenir moderne, sans aucun tirage papier. Idéal pour communiquer sur les réseaux sociaux.",
+        fr: "Partage illimité par email et SMS. La technologie Ultra HD pour un souvenir moderne, sans tirage papier. La borne idéale pour communiquer sur les réseaux sociaux.",
         en: "Unlimited sharing via email and SMS. Ultra HD technology for a modern souvenir, without any paper prints. Ideal for communicating on social networks."
     },
 
-    "step2.model.150.name": { fr: "CineBooth 150", en: "CineBooth 150" },
+    "step2.model.150.name": { fr: "Pack 150 Tirages", en: "150 Prints Pack" },
     "step2.model.150.tagline": { fr: "Le choix des particuliers", en: "The private choice" },
     "step2.model.150.desc": {
         fr: "Le pack idéal pour les évènements de moins de 60 personnes. 150 tirages inclus pour que chaque invité reparte avec 2 ou 3 photos !",
         en: "The ideal pack for events with fewer than 60 people. 150 prints included so that each guest leaves with 2 or 3 photos!"
     },
+    "step2.model.illimite.tagline": { fr: "Imprimez sans compter", en: "Unlimited printing" },
+    "step2.model.signature.tagline": { fr: "L'élégance haut de gamme", en: "High-end elegance" },
+    "step2.model.360.tagline": { fr: "Des souvenirs à 360 degrés", en: "360-degree memories" },
 
-    "step2.model.starbooth.name": { fr: "Starbooth Pro", en: "Starbooth Pro" },
+    "step2.model.starbooth.name": { fr: "Pack Illimité", en: "Unlimited Pack" },
     "step2.model.starbooth.badge": { fr: "Pro", en: "Pro" },
     "step2.model.starbooth.desc": {
         fr: "La performance professionnelle, miniaturisée ! Cette borne est dotée d'un capteur Sony 4K f/1.2, d'un flash LED adaptatif et d'une imprimante thermique poids lourd pour des impressions éclair en illimité.",
@@ -118,23 +124,23 @@ export const locales = {
     "step2.model.signature.name": { fr: "Signature", en: "Signature" },
     "step2.model.signature.badge": { fr: "Salon, gala & mariage", en: "Fair, Gala & Wedding" },
     "step2.model.signature.desc": {
-        fr: "L'élégance ultime pour vos grands moments. La présence magnétique de cette borne créé l'effervescence autour d'une marque et sublime un lieu de réception. Offrez à vos invités les plaisirs d'une séance photo professionnelle.",
-        en: "Ultimate elegance for your grand moments. The magnetic presence of this booth creates excitement around a brand and sublimates a reception venue. Offer your guests the pleasures of a professional photo shoot."
+        fr: "L'élégance absolue pour vos événements les plus prestigieux. La présence magnétique de cette borne au design luxueux crée l'effervescence et sublime votre lieu de réception. Offrez à vos invités l'expérience d'un véritable studio photo professionnel.",
+        en: "Absolute elegance for your most prestigious events. The magnetic presence of this luxuriously designed booth creates excitement and enhances your venue. Offer your guests the experience of a true professional photo studio."
     },
 
     "step2.model.360.name": { fr: "Vidéobooth 360°", en: "360° Videobooth" },
     "step2.model.360.desc": {
-        fr: "Vidéos slow-motion immersives pour 5 personnes. Effet waouh garanti.",
-        en: "Immersive slow-motion videos for 5 people. Wow effect guaranteed."
+        fr: "Plongez vos invités au cœur de l'action avec des vidéos 360° spectaculaires. L'expérience inclut 3h d'animation par notre équipe et une personnalisation totale de l'ambiance (musiques, effets visuels et template sur-mesure). Le clou du spectacle !",
+        en: "Immerse your guests in the action with spectacular 360° videos. The experience includes 3 hours of on-site assistance and total customization of the vibe (music, visual effects, and custom template). The highlight of the show!"
     },
-    "step2.model.360.setup_anim_incl": { fr: "livraison et 3h d'animation inclus", en: "delivery and 3h assistance included" },
+    "step2.model.360.setup_anim_incl": { fr: "Livraison et 3h d'animation inclus", en: "Delivery and 3h assistance included" },
 
     // Logistique & Options
     "step2.logistics.title": { fr: "Logistique & Mise en service", en: "Logistics & Setup" },
     "step2.logistics.pro_setup": { fr: "Livraison & Installation par technicien", en: "Delivery & Installation by technician" },
     "step2.logistics.pro_badge": { fr: "Inclus dans votre pack prestige", en: "Included in your prestige pack" },
-    "step2.logistics.pickup": { fr: "Retrait à Arcueil (94)", en: "Pick-up in Arcueil (94)" },
-    "step2.logistics.delivery": { fr: "Livraison & Installation", en: "Delivery & Installation" },
+    "step2.logistics.pickup": { fr: "Retrait au dépot à Arcueil (94)", en: "Pick-up in Arcueil (94)" },
+    "step2.logistics.delivery": { fr: "Borne livrée & mise en service", en: "Photobooth delivered & set up" },
 
     "step2.option.template.name": { fr: "Cadre Photo", en: "Photo Frame" },
     "step2.option.template.desc": {
@@ -189,7 +195,21 @@ export const locales = {
     "price.detail.ai_bg": { fr: "Fond IA (personnalisé)", en: "AI Background (custom)" },
     "price.detail.rgpd": { fr: "Conformité RGPD", en: "GDPR Compliance" },
     "price.detail.speaker": { fr: "Enceinte & Musique d'ambiance", en: "Speaker & Ambient Music" },
-
+    // À ajouter dans src/locales.js sous la section "axonaut.desc" ou "axonaut.opt"
+    "axonaut.opt.digital_props": {
+        fr: "[Offert] Accessoires numériques",
+        en: "[Free] Digital props"
+    },
+    // Sous "axonaut.desc"
+    "axonaut.desc.digital_props": {
+        fr: "Sélection d'accessoires virtuels (lunettes, chapeaux, moustaches) via réalité augmentée",
+        en: "Selection of virtual props (glasses, hats, mustaches) via augmented reality"
+    },
+    // Sous "price.detail"
+    "price.detail.digital_props": {
+        fr: "Accessoires numériques (Props)",
+        en: "Digital Props"
+    },
     // --- STEP 3: CONTACT ---
     "step3.name": { fr: "Prénom & Nom", en: "First & Last Name" },
     "step3.email": { fr: "Adresse email", en: "Email Address" },
@@ -303,8 +323,8 @@ export const locales = {
         en: "300 instant prints on Premium Digital glossy 10×15 cm photo paper"
     },
     "axonaut.desc.star_base": {
-        fr: "Mise à disposition de notre borne photo <strong>Starbooth Pro</strong> avec capteur haute performance 4K et flash intelligent",
-        en: "Provision of our <strong>Starbooth Pro</strong> photobooth with high-performance 4K sensor and intelligent flash"
+        fr: "Mise à disposition de notre borne photo <strong>CineBooth Illimité</strong> avec capteur haute performance 4K et flash intelligent",
+        en: "Provision of our <strong>CineBooth Illimité</strong> photobooth with high-performance 4K sensor and intelligent flash"
     },
     "axonaut.desc.unlimited": {
         fr: "Tirages instantanés et illimités sur papier photo Premium Digital brillant 10×15 cm",
@@ -520,13 +540,13 @@ export const locales = {
         en: "Pay deposit (Stripe)"
     },
     "success.step2.title": {
-        fr: "Et après ?",
-        en: "What's next?"
+        fr: "Foire aux questions",
+        en: "Usual questions?"
     },
     "success.step2.item1.title": { fr: "Installation Flexible", en: "Flexible Setup" },
     "success.step2.item1.text": {
-        fr: "Bloquez vos créneaux de livraison. Le petit plus : dépose la veille et reprise le lendemain possible pour plus de sérénité.",
-        en: "Schedule your delivery slots. Bonus: early drop-off and late pickup available for total peace of mind."
+        fr: "Installation flexbile : dépose la veille et reprise le lendemain possible pour plus de sérénité.",
+        en: "Flexible delivery: early drop-off and late pickup available for total peace of mind."
     },
 
     "success.step2.item2.title": { fr: "Studio Créatif", en: "Creative Studio" },

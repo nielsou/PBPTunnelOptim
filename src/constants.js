@@ -22,30 +22,30 @@ export const PARIS_LNG = 2.3570;
 export const PRICING_STRATEGY = {
     'numerique': {
         name: 'CineBooth Digital',
-        priceHT: 239.17,
+        priceHT: 249.17,
         floorPriceHT: 10.00,
-        delivery: 50,
+        delivery: 40,
         animation_hour: 45
     },
     '150': {
         name: 'CineBooth 150',
-        priceHT: 290.83,
+        priceHT: 300.83,
         floorPriceHT: 39.00,
-        delivery: 50,
+        delivery: 40,
         animation_hour: 45
     },
     '300': {
         name: 'CineBooth 300',
-        priceHT: 370.83,
+        priceHT: 380.83,
         floorPriceHT: 68.00,
-        delivery: 50,
+        delivery: 40,
         animation_hour: 45
     },
     'illimite': {
-        name: 'StarBooth Pro',
-        priceHT: 354.17,
+        name: 'CineBooth Illimité',
+        priceHT: 364.17,
         floorPriceHT: 57.00,
-        delivery: 70,
+        delivery: 60,
         animation_hour: 45
     },
     'Signature': {
@@ -57,7 +57,7 @@ export const PRICING_STRATEGY = {
     },
     '360': {
         name: 'Videobooth 360',
-        priceHT: 715,
+        priceHT: 707.5,
         floorPriceHT: 129.75,
         delivery: 0,
         animation_hour: 60,

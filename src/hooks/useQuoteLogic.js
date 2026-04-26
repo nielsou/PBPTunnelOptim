@@ -208,7 +208,7 @@ export const useQuoteLogic = () => {
             ? calculateHaversineDistance(formData.deliveryLat, formData.deliveryLng)
             : 0;
 
-        let supplementKm = distanceKm > 15 ? Math.round(distanceKm - 15) * 4 * 0.45 : 0;
+        let supplementKm = distanceKm > 15 ? Math.round(distanceKm - 20) * 4 * 0.45 : 0;
 
         // 🛡️ GROS TEST EN UNE LIGNE : Si pas de modèle, on renvoie l'objet par défaut pour ne pas planter l'UI
         if (!formData.model) return {
@@ -277,7 +277,16 @@ export const useQuoteLogic = () => {
             });
             totalHT += price_prestation;
 
-
+            if (formData.model !== '360') {
+                details.push({
+                    label: t('price.detail.digital_props'),
+                    priceHT: 0, // Impact nul sur le total
+                    daily: false,
+                    // On affiche "24€ TTC" (ou 20€ HT) barré
+                    originalDisplayPrice: `${priceTransformer(20).toFixed(0)}${suffix}`,
+                    displayPrice: t('common.included') // Affiche "Inclus" ou "Gratuit"
+                });
+            }
 
             // TEMPLATETOOL
             if (formData.templateTool) {
@@ -306,13 +315,12 @@ export const useQuoteLogic = () => {
                     label: t('price.detail.delivery'),
                     priceHT: price_livraison,
                     daily: false,
-                    displayPrice: `+${priceTransformer(price_livraison).toFixed(0)}${suffix}`
+                    displayPrice: `${priceTransformer(price_livraison).toFixed(0)}${suffix}`
                 });
                 totalHT += price_livraison;
 
                 // SUPPLEMENT KILOMETRIQUE
                 if (supplementKm > 0) {
-                    supplementKm;
                     details.push({
                         label: t('price.detail.km_extra', { km: Math.round(distanceKm) }),
                         priceHT: supplementKm,
@@ -413,7 +421,6 @@ export const useQuoteLogic = () => {
             prixTemplate: Math.round(price_template * 100) / 100,
 
             // impression supp
-            nombreTirages: formData.proImpressions,
             supplementImpression: Math.round(price_optionImpression * 100) / 100,
             supplementImpressionBrut: Math.round(base_price_optionImpression * 100) / 100,
             remiseImpression: Math.round(discount_optionImpression * 100) / 100,

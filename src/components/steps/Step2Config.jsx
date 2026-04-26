@@ -7,22 +7,18 @@ import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
  * Composant générique pour une carte de modèle de borne
  */
 const ModelCard = ({
-    id,
-    isSelected,
-    onSelect,
-    image,
-    name,
-    desc,
-    badge,
-    tagline,
-    hoverColor = "blue",
-    icon: Icon,
-    isUnlimited = false,
-    priceContent,
-    extraInfo,
-    priceDisplayType = "None",
-    t
+    id, isSelected, onSelect, image, name, desc, badge, tagline,
+    subtitle, hoverColor = "blue", icon: Icon, isUnlimited = false,
+    priceContent, extraInfo, priceDisplayType = "None", t
 }) => {
+
+    const subtitleColors = {
+        yellow: 'text-yellow-600',
+        blue: 'text-blue-600',
+        purple: 'text-purple-600',
+        pink: 'text-pink-600'
+    };
+
     const borderClasses = {
         yellow: 'hover:border-yellow-400',
         blue: 'hover:border-blue-500',
@@ -62,7 +58,13 @@ const ModelCard = ({
 
             <div className='p-6 flex-1 flex flex-col w-full'>
                 <h4 className='font-black text-gray-900 text-2xl'>{name}</h4>
-                {hoverColor === 'yellow' && <p className='text-[10px] text-yellow-600 font-black uppercase tracking-widest mt-1 mb-2'>{t('step2.model.digital.tagline')}</p>}
+
+                {subtitle && (
+                    <p className={`text-[10px] font-black uppercase tracking-widest mt-1 mb-2 ${subtitleColors[hoverColor] || 'text-gray-600'}`}>
+                        {subtitle}
+                    </p>
+                )}
+
                 <p className='text-xs text-gray-500 mb-6 flex-1 mt-2'>{desc}</p>
 
                 {/* Condition sur le flag priceDisplayType pour afficher ou non l'estimation budgétaire */}
@@ -215,26 +217,41 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
 
             {!formData.model && (
                 <div className='space-y-12'>
-                    {/* SECTION ESSENTIELLE */}
+
+                    {/* SECTION ESSENTIELLE (3 Colonnes) */}
                     {!isPartnerClient && (
                         <section>
-                            <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'><Zap className='text-yellow-600' /> {t('step2.collection.essential')}</h3>
-                            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                            <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'>
+                                <Zap className='text-yellow-600' /> {t('step2.collection.essential')}
+                            </h3>
+                            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+                                {/* CineBooth Digital */}
                                 <ModelCard
-                                    t={t}
-                                    id="numerique" image={machineImages.numerique} hoverColor="yellow"
+                                    t={t} id="numerique" image={machineImages.numerique} hoverColor="yellow"
                                     name={t('step2.model.digital.name')} desc={t('step2.model.digital.desc')}
                                     badge={t('step2.badge.digital')} tagline={t('step2.badge.pro')} icon={Star}
+                                    subtitle={t('step2.model.digital.tagline')} // Injection
                                     onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="numerique" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     priceDisplayType={priceDisplayType}
                                 />
+                                {/* CineBooth 150 */}
                                 <ModelCard
-                                    t={t}
-                                    id="150" image={machineImages['150']} hoverColor="yellow"
+                                    t={t} id="150" image={machineImages['150']} hoverColor="yellow"
                                     name={t('step2.model.150.name')} desc={t('step2.model.150.desc')}
-                                    badge={t('step2.badge.150prints')} onSelect={handleModelSelect}
-                                    priceContent={<PriceDisplay modelId="150" />}
+                                    badge={t('step2.badge.150prints')}
+                                    subtitle={t('step2.model.150.tagline')} // Injection
+                                    onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="150" />}
+                                    extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
+                                    priceDisplayType={priceDisplayType}
+                                />
+                                {/* CineBooth Illimité */}
+                                <ModelCard
+                                    t={t} id="illimite" image={machineImages.illimite} hoverColor="yellow" isUnlimited
+                                    name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
+                                    tagline={t('step2.badge.pro')} icon={Star}
+                                    subtitle={t('step2.model.illimite.tagline')} // Injection
+                                    onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="illimite" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     priceDisplayType={priceDisplayType}
                                 />
@@ -242,48 +259,44 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         </section>
                     )}
 
-                    {/* SECTION PRESTIGE */}
+                    {/* SECTION PRESTIGE (2 Colonnes avec Signature et 360) */}
                     <section>
-                        <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'><Gem className='text-blue-600' /> {t('step2.collection.prestige')}</h3>
+                        <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'>
+                            <Gem className='text-blue-600' /> {t('step2.collection.prestige')}
+                        </h3>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                            {/* Modèle Signature */}
                             <ModelCard
-                                t={t}
-                                id="illimite" image={machineImages.illimite} hoverColor="blue" isUnlimited
-                                name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
-                                tagline={t('step2.badge.pro')} icon={Star} onSelect={handleModelSelect}
-                                priceContent={<PriceDisplay modelId="illimite" />}
-                                extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                priceDisplayType={priceDisplayType}
-                            />
-                            <ModelCard
-                                t={t}
-                                id="Signature" image={machineImages.Signature} hoverColor="purple" isUnlimited
+                                t={t} id="Signature" image={machineImages.Signature} hoverColor="purple" isUnlimited
                                 name={t('step2.model.signature.name')} desc={t('step2.model.signature.desc')}
-                                tagline={t('step2.model.signature.badge')} icon={Star} onSelect={handleModelSelect}
-                                priceContent={<PriceDisplay modelId="Signature" />}
+                                tagline={t('step2.model.signature.badge')} icon={Star}
+                                subtitle={t('step2.model.signature.tagline')} // Injection
+                                onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="Signature" />}
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                 priceDisplayType={priceDisplayType}
                             />
+
+                            {/* Modèle 360 (Gère toujours le blocage multi-jours) */}
+                            {isMultiDay ? (
+                                <div className='p-6 border-2 border-gray-200 bg-gray-50 rounded-3xl flex items-center gap-4 opacity-70 grayscale'>
+                                    <Ban className='text-gray-400' />
+                                    <p className='text-sm font-bold text-gray-500'>{t('step2.error.360_multiday')}</p>
+                                </div>
+                            ) : (
+                                <ModelCard
+                                    t={t} id="360" image={machineImages['360']} hoverColor="pink"
+                                    name={t('step2.model.360.name')} desc={t('step2.model.360.desc')}
+                                    tagline={t('step2.badge.immersion')} icon={Video}
+                                    subtitle={t('step2.model.360.tagline')} // Injection
+                                    onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="360" />}
+                                    extraInfo={<><span className='text-[10px] font-bold text-gray-500 italic mt-1'>{t('step2.model.360.setup_anim_incl')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
+                                    priceDisplayType={priceDisplayType}
+                                />
+                            )}
                         </div>
                     </section>
 
-                    {/* SECTION IMMERSIVE */}
-                    <section>
-                        <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'><Video className='text-pink-600' /> {t('step2.collection.immersive')}</h3>
-                        {isMultiDay ? (
-                            <div className='p-6 border-2 border-gray-200 bg-gray-50 rounded-3xl flex items-center gap-4 opacity-70 grayscale'><Ban className='text-gray-400' /><p className='text-sm font-bold text-gray-500'>{t('step2.error.360_multiday')}</p></div>
-                        ) : (
-                            <ModelCard
-                                t={t}
-                                id="360" image={machineImages['360']} hoverColor="pink"
-                                name={t('step2.model.360.name')} desc={t('step2.model.360.desc')}
-                                tagline={t('step2.badge.immersion')} icon={Video} onSelect={handleModelSelect}
-                                priceContent={<PriceDisplay modelId="360" />}
-                                extraInfo={<><span className='text-[10px] font-bold text-gray-500 italic mt-1'>{t('step2.model.360.setup_anim_incl')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                priceDisplayType={priceDisplayType}
-                            />
-                        )}
-                    </section>
+                    {/* On retire totalement la section Immersive qui était en dessous */}
                 </div>
             )}
 
@@ -319,6 +332,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             </div>
                         ) : (
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                {/* BOUTON RETRAIT (GAUCHE) */}
                                 <button
                                     onClick={() => handleChange('delivery', false)}
                                     className={`p-6 border-2 rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${!formData.delivery ? 'border-green-600 bg-green-50 scale-[1.02] shadow-sm' : 'border-gray-50 bg-gray-50 hover:border-green-200'}`}
@@ -328,6 +342,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     <span className='block text-green-600 font-black mt-1'>{t('common.free')}</span>
                                 </button>
 
+                                {/* BOUTON LIVRAISON (DROITE) */}
                                 <button
                                     onClick={() => handleChange('delivery', true)}
                                     className={`p-6 border-2 rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${formData.delivery ? 'border-blue-600 bg-blue-50 scale-[1.02] shadow-sm' : 'border-gray-50 bg-gray-50 hover:border-blue-200'}`}
@@ -335,13 +350,8 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     <Truck className={`w-8 h-8 mb-2 ${formData.delivery ? 'text-blue-600' : 'text-gray-400'}`} />
                                     <span className='font-black text-gray-800 text-lg'>{t('step2.logistics.delivery')}</span>
                                     <span className='block text-blue-600 font-black mt-1'>
-                                        +{priceTransformer(unitaryPrices.livraison + (pricingData.axonautData?.supplementKilometrique || 0)).toFixed(0)}€
+                                        {t('step2.logistics.delivery_variable')}
                                     </span>
-                                    {(pricingData.axonautData?.supplementKilometrique > 0) && (
-                                        <span className='block mt-2 text-xs text-gray-500 font-medium italic'>
-                                            {t('step2.logistics.distance_notice')}
-                                        </span>
-                                    )}
                                 </button>
                             </div>
                         )}
