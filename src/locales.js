@@ -197,13 +197,13 @@ export const locales = {
     "price.detail.speaker": { fr: "Enceinte & Musique d'ambiance", en: "Speaker & Ambient Music" },
     // À ajouter dans src/locales.js sous la section "axonaut.desc" ou "axonaut.opt"
     "axonaut.opt.digital_props": {
-        fr: "[Offert] Accessoires numériques",
-        en: "[Free] Digital props"
+        fr: "[Offert] Accessoires et filtres numériques",
+        en: "[Free] Digital props and filters"
     },
     // Sous "axonaut.desc"
     "axonaut.desc.digital_props": {
-        fr: "Sélection d'accessoires virtuels (lunettes, chapeaux, moustaches) via réalité augmentée",
-        en: "Selection of virtual props (glasses, hats, mustaches) via augmented reality"
+        fr: "Ajoutez du fun avec vos photos ! Appliquez nos filtres tendance et personnalisez vos poses avec des stickers fun directement sur l'écran.",
+        en: "Add some fun to your photos! Apply our trending filters and personalize your poses with fun digital stickers directly on the screen."
     },
     // Sous "price.detail"
     "price.detail.digital_props": {
