@@ -180,7 +180,13 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
 
 
     const isFreeTemplate = !formData.isPro || (formData.isPro && unitaryPrices.template === 0);
-    const isStarbooth = formData.model === 'illimite';
+
+    useEffect(() => {
+        if (isFreeTemplate && formData.templateTool !== true) {
+            setFormData(prev => ({ ...prev, templateTool: true }));
+        }
+    }, [isFreeTemplate, formData.templateTool, setFormData]);
+
     const isSignature = formData.model === 'Signature';
     const is360 = formData.model === '360';
     const isMultiDay = formData.eventDuration > 1;
@@ -375,7 +381,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             </div>
                         </div>
 
-                        {(isStarbooth || isSignature) && (
+                        {formData.model !== '360' && (
                             <div className='p-6 rounded-[2rem] border-2 border-gray-100 bg-white shadow-sm flex flex-col justify-between'>
                                 <div className='flex gap-5'>
                                     <img src="/images/options/option_IA_avant_apres.webp" className='w-24 h-24 object-cover rounded-2xl' alt="IA" />
@@ -395,7 +401,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         )}
                     </div>
 
-                    {(isStarbooth || isSignature) && (
+                    {formData.model !== '360' && (
                         <div className='bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6'>
                             <div className='flex gap-4'>
                                 <div className='bg-white p-3 rounded-xl shadow-sm'><Printer className='text-indigo-600' /></div>
