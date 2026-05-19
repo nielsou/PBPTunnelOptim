@@ -235,7 +235,7 @@ export const locales = {
 
     "step3.billing.search": { fr: "Rechercher l'adresse", en: "Search address" },
     "step3.billing.undefined": { fr: "Adresse non définie", en: "Address not defined" },
-    "step3.placeholder.name": { fr: "Jean Dupont", en: "John Doe" },
+    "step3.placeholder.name": { fr: "Prénom NOM DE FAMILLE", en: "Name LAST NAME" },
     "step3.placeholder.company": { fr: "Ma Super Entreprise SAS", en: "My Great Company Ltd" },
     "step3.placeholder.email": { fr: "jean@exemple.com", en: "john@example.com" },
     "step3.placeholder.phone": { fr: "06 12 34 56 78", en: "+44 7911 123456" },
