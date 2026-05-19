@@ -35,6 +35,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
             billingStreet: addr.street,
             billingZipCode: addr.postal,
             billingCity: addr.city,
+            billingCountry: addr.country,
             saveNewBillingAddress: true
         }));
     };
@@ -47,7 +48,8 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
             newBillingAddressName: '',
             billingStreet: '',
             billingZipCode: '',
-            billingCity: ''
+            billingCity: '',
+            billingCountry: ''
         }));
     };
 
@@ -197,6 +199,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                                 required={true}
                                 defaultValue={formData.billingFullAddress}
                                 onAddressSelect={handleBillingAddressSelect}
+                                restrictToFrance={false}
                             />
                         </div>
                     )}

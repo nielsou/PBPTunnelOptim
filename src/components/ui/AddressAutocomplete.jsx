@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse..." }) => {
+export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse...", restrictToFrance = true }) => {
   const [inputValue, setInputValue] = useState(defaultValue || "");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -50,19 +50,25 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
     return () => clearInterval(intervalId);
   }, []);
 
+  // 2. Modifie la requête dans fetchPredictions
   const fetchPredictions = (input) => {
-    // Sécurité absolue : si le service n'est pas là, on coupe tout.
     if (!input || input.length < 3 || !serviceRef.current) {
       setSuggestions([]);
       return;
     }
 
-    serviceRef.current.getPredictions({
+    const request = {
       input,
       sessionToken: sessionTokenRef.current,
-      componentRestrictions: { country: "fr" },
       types: ["address"]
-    }, (predictions) => {
+    };
+
+    // La restriction s'applique uniquement si restrictToFrance est true
+    if (restrictToFrance) {
+      request.componentRestrictions = { country: "fr" };
+    }
+
+    serviceRef.current.getPredictions(request, (predictions) => {
       setSuggestions(predictions || []);
       setShowDropdown(true);
     });
@@ -94,6 +100,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
           street: `${getComp('street_number')} ${getComp('route')}`.trim(),
           city: getComp('locality'),
           postal: getComp('postal_code'),
+          country: getComp('country'), 
           lat: addr.geometry.location.lat(),
           lng: addr.geometry.location.lng()
         };

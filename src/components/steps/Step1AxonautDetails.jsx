@@ -79,10 +79,11 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
         const isNew = val === 'new';
         const selectedIndex = e.target.selectedIndex;
 
+
         if (type === 'billing') {
             setIsNewBillingAddress(isNew);
             if (isNew) {
-                setFormData(prev => ({ ...prev, billingFullAddress: '', billingAddressId: null, saveNewBillingAddress: true, newBillingAddressName: '' }));
+                setFormData(prev => ({ ...prev, billingFullAddress: '', billingAddressId: null, saveNewBillingAddress: true, newBillingAddressName: '', billingCountry: '' }));
             } else {
                 const selectedAddr = clientData.billingAddresses[selectedIndex];
                 setFormData(prev => ({ ...prev, billingFullAddress: selectedAddr.address, billingAddressId: selectedAddr.id, saveNewBillingAddress: false }));
@@ -222,8 +223,10 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                                 ...p,
                                 billingFullAddress: addr.fullAddress,
                                 billingZipCode: addr.postal,
-                                billingCity: addr.city
+                                billingCity: addr.city,
+                                billingCountry: addr.country
                             }))}
+                            restrictToFrance={false}
                         />
                         <button onClick={() => setIsNewBillingAddress(false)} className='text-sm text-blue-600 underline font-medium'>Annuler l'ajout</button>
                     </div>

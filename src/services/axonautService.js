@@ -535,7 +535,7 @@ export const createAxonautAddress = async (companyId, addressData, type = 'deliv
         address_street: addressData.street || "",
         address_zip_code: addressData.zip || "",
         address_city: addressData.city || "",
-        address_country: "France",
+        address_country: addressData.country || "France",
         is_for_invoice: type === 'billing',
         is_for_quotation: type === 'billing',
         is_for_delivery: type === 'delivery'

@@ -125,6 +125,8 @@ export const useQuoteLogic = () => {
         billingStreet: '',
         billingZipCode: '',
         billingCity: '',
+        billingCountry: '',
+        deliveryCountry: 'France',
         billingSameAsEvent: true,
         saveNewBillingAddress: false,
         saveNewDeliveryAddress: true,
@@ -722,6 +724,7 @@ export const useQuoteLogic = () => {
                 formData.billingStreet = formData.deliveryStreet;
                 formData.billingZipCode = formData.deliveryZipCode;
                 formData.billingCity = formData.deliveryCity;
+                formData.billingCountry = formData.deliveryCountry || "France";
                 formData.billingFullAddress = formData.deliveryFullAddress;
             }
 
@@ -749,7 +752,8 @@ export const useQuoteLogic = () => {
                     contactName: addressContactName,
                     street: formData.billingStreet,
                     zip: formData.billingZipCode,
-                    city: formData.billingCity
+                    city: formData.billingCity,
+                    country: formData.billingCountry
                 }, 'billing');
                 if (newBillAddr?.id) billingAddressId = newBillAddr.id;
             }
