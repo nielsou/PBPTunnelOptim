@@ -366,6 +366,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
 
                             <div className="bg-white p-6 rounded-2xl border border-blue-100 shadow-sm mb-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                    {/* Input Remise (%) */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-blue-900">Remise (%)</label>
                                         <div className="relative">
@@ -376,14 +377,15 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                                     setDraftDiscount(e.target.value);
                                                     setInputMode('percent');
                                                 }}
-                                                onBlur={handleApplyDiscount} // <--- AJOUTEZ CETTE LIGNE
+                                                onBlur={handleApplyDiscount}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
-                                                className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                className="..." // (gardez vos classes actuelles)
                                             />
                                             <Percent className="absolute right-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                                         </div>
                                     </div>
 
+                                    {/* Input Total TTC */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-bold text-blue-900">Total après remise (TTC)</label>
                                         <div className="relative">
@@ -394,9 +396,9 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                                     setDraftPrice(e.target.value);
                                                     setInputMode('price');
                                                 }}
-                                                onBlur={handleApplyDiscount} // <--- AJOUTEZ CETTE LIGNE
+                                                onBlur={handleApplyDiscount}
                                                 onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
-                                                className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                className="..." // (gardez vos classes actuelles)
                                             />
                                             <span className="absolute right-4 top-3.5 font-bold text-gray-400 pointer-events-none">€</span>
                                         </div>
