@@ -376,6 +376,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                                     setDraftDiscount(e.target.value);
                                                     setInputMode('percent');
                                                 }}
+                                                onBlur={handleApplyDiscount} // <--- AJOUTEZ CETTE LIGNE
                                                 onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
                                                 className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
@@ -393,6 +394,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                                     setDraftPrice(e.target.value);
                                                     setInputMode('price');
                                                 }}
+                                                onBlur={handleApplyDiscount} // <--- AJOUTEZ CETTE LIGNE
                                                 onKeyDown={(e) => e.key === 'Enter' && handleApplyDiscount()}
                                                 className="w-full px-4 py-3 pr-10 rounded-xl border border-blue-200 focus:ring-4 focus:ring-blue-100 font-bold text-gray-900 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                             />
@@ -407,13 +409,6 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                 >
                                     <Check className="w-5 h-5" /> Appliquer la remise
                                 </button>
-
-                                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                                    <Info className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                                    <p className="text-[12px] leading-relaxed text-red-800 font-bold">
-                                        ⚠️ Un ticket de support est en attente chez Axonaut : la remise globale n'est pas encore prise en compte sur le devis final généré.
-                                    </p>
-                                </div>
 
                                 {discountPercent > 0 && (
                                     <div className="space-y-2 mt-4 pt-4 border-t border-gray-100 animate-in fade-in">
