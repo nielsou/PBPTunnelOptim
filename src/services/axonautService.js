@@ -329,7 +329,9 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     // AJOUT : Injection de la remise globale sur le devis Axonaut
     if (discountPercent > 0) {
-        payload.global_discount_percent = discountPercent;
+        payload.global_discount_amount = discountPercent;
+        payload.global_discount_unit_is_percent = true; // Remise en pourcentage
+
         if (discountComment && discountComment.trim() !== '') {
             payload.global_discount_comments = discountComment.trim();
         }
