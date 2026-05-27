@@ -225,45 +225,51 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                 <div className='space-y-12'>
 
                     {/* SECTION ESSENTIELLE (3 Colonnes) */}
-                    {!isPartnerClient && (
-                        <section>
-                            <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'>
-                                <Zap className='text-yellow-600' /> {t('step2.collection.essential')}
-                            </h3>
-                            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                                {/* CineBooth Digital */}
+                    <section>
+                        <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'>
+                            <Zap className='text-yellow-600' /> {t('step2.collection.essential')}
+                        </h3>
+                        {/* Petite astuce : on adapte les colonnes s'il n'y a qu'une seule carte pour les partenaires */}
+                        <div className={`grid grid-cols-1 ${!isPartnerClient ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6`}>
+
+                            {/* CineBooth Digital : UNIQUEMENT POUR LES CLIENTS CLASSIQUES */}
+                            {!isPartnerClient && (
                                 <ModelCard
                                     t={t} id="numerique" image={machineImages.numerique} hoverColor="yellow"
                                     name={t('step2.model.digital.name')} desc={t('step2.model.digital.desc')}
                                     badge={t('step2.badge.digital')} tagline={t('step2.badge.pro')} icon={Star}
-                                    subtitle={t('step2.model.digital.tagline')} // Injection
+                                    subtitle={t('step2.model.digital.tagline')}
                                     onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="numerique" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     priceDisplayType={priceDisplayType}
                                 />
-                                {/* CineBooth 150 */}
+                            )}
+
+                            {/* CineBooth 150 : UNIQUEMENT POUR LES CLIENTS CLASSIQUES */}
+                            {!isPartnerClient && (
                                 <ModelCard
                                     t={t} id="150" image={machineImages['150']} hoverColor="yellow"
                                     name={t('step2.model.150.name')} desc={t('step2.model.150.desc')}
                                     badge={t('step2.badge.150prints')}
-                                    subtitle={t('step2.model.150.tagline')} // Injection
+                                    subtitle={t('step2.model.150.tagline')}
                                     onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="150" />}
                                     extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                     priceDisplayType={priceDisplayType}
                                 />
-                                {/* CineBooth Illimité */}
-                                <ModelCard
-                                    t={t} id="illimite" image={machineImages.illimite} hoverColor="yellow" isUnlimited
-                                    name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
-                                    tagline={t('step2.badge.pro')} icon={Star}
-                                    subtitle={t('step2.model.illimite.tagline')} // Injection
-                                    onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="illimite" />}
-                                    extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
-                                    priceDisplayType={priceDisplayType}
-                                />
-                            </div>
-                        </section>
-                    )}
+                            )}
+
+                            {/* CineBooth Illimité : AFFICHÉ POUR TOUT LE MONDE (Clients ET Partenaires) */}
+                            <ModelCard
+                                t={t} id="illimite" image={machineImages.illimite} hoverColor="yellow" isUnlimited
+                                name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
+                                tagline={t('step2.badge.pro')} icon={Star}
+                                subtitle={t('step2.model.illimite.tagline')}
+                                onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="illimite" />}
+                                extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
+                                priceDisplayType={priceDisplayType}
+                            />
+                        </div>
+                    </section>
 
                     {/* SECTION PRESTIGE (2 Colonnes avec Signature et 360) */}
                     <section>

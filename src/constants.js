@@ -78,26 +78,42 @@ export const TEMPLATE_TOOL_PRO_PRICE_HT = 25;
 // Tarifs négociés
 export const COMPANY_SPECIFIC_PRICING = {
     "29821892": { // FUGA FAMILY
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
         template: 0
     },
     "36829130": { // MAMA SHELTER
-        'Signature': {
-            priceHT: 440,
-            floorPriceHT: 440,
-        },
-        'illimite': {        
-            priceHT: 412.50,     
+        'illimite': {
+            priceHT: 412.50,
             floorPriceHT: 412.50
         },
-        template: 0    
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
+        template: 0
     },
     "24606699": { // LE MARCOUNET
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
         template: 0
     },
     "29441860": {  // LE NIDA
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
         template: 0
     },
     "24977719": { // FOOD SOCIETY
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },   
         template: 0
     }
 };
