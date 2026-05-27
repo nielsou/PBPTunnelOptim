@@ -222,6 +222,7 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                             onAddressSelect={addr => setFormData(p => ({
                                 ...p,
                                 billingFullAddress: addr.fullAddress,
+                                billingStreet: addr.street,
                                 billingZipCode: addr.postal,
                                 billingCity: addr.city,
                                 billingCountry: addr.country
@@ -258,6 +259,7 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                             onAddressSelect={addr => setFormData(p => ({
                                 ...p,
                                 deliveryFullAddress: addr.fullAddress,
+                                billingStreet: addr.street,
                                 deliveryLat: addr.lat,
                                 deliveryLng: addr.lng,
                                 deliveryZipCode: addr.postal,
