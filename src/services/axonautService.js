@@ -266,9 +266,24 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
     }
 
     if (templateInclus && nomBorne !== name360) {
-        const tName = prixTemplate > 0 ? t('axonaut.opt.template', lang) : `${t('axonaut.opt.template', lang)} ${t('axonaut.opt.template_free', lang)}`;
+        const isTemplateFree = prixTemplate === 0;
         const tDesc = `<ul><li><p>${t('axonaut.opt.template_desc1', lang)}</p></li><li><p>${t('axonaut.opt.template_desc2', lang)}</p></li><li><p>${t('axonaut.opt.template_desc3', lang)}</p></li></ul><p><em>${t('axonaut.opt.template_warn', lang)}</em></p>`;
-        productsArray.push({ "product_code": "P-TEMPLATE", "name": tName, "price": Math.round(100 * prixTemplate) / 100, "tax_rate": TVA_RATE_DEC, "quantity": 1, "description": tDesc });
+
+        const templateProduct = {
+            "product_code": "P-TEMPLATE",
+            "name": t('axonaut.opt.template', lang), // On n'ajoute plus le "(OFFERT)" dans le titre pour laisser parler la remise
+            "price": isTemplateFree ? TEMPLATE_TOOL_PRO_PRICE_HT : Math.round(100 * prixTemplate) / 100,
+            "tax_rate": TVA_RATE_DEC,
+            "quantity": 1,
+            "description": tDesc
+        };
+
+        // Si le template est censé être à 0, on lui applique la remise forfaitaire
+        if (isTemplateFree) {
+            templateProduct.discount_flat = TEMPLATE_TOOL_PRO_PRICE_HT;
+        }
+
+        productsArray.push(templateProduct);
     }
 
     if (supplementImpression > 0) {

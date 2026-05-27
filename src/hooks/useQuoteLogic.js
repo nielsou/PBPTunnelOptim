@@ -292,16 +292,16 @@ export const useQuoteLogic = () => {
 
             // TEMPLATETOOL
             if (formData.templateTool) {
-
-                let templateDisplay = (price_template > 0)
-                    ? `${priceTransformer(price_template).toFixed(0)}${suffix}`
-                    : t('common.included');
+                const isFree = price_template === 0;
+                const originalTemplatePrice = TEMPLATE_TOOL_PRO_PRICE_HT;
 
                 details.push({
                     label: t('price.detail.template'),
                     priceHT: price_template,
                     daily: false,
-                    displayPrice: templateDisplay
+                    // Si c'est gratuit, on affiche le prix d'origine barré
+                    originalDisplayPrice: isFree ? `${priceTransformer(originalTemplatePrice).toFixed(0)}${suffix}` : null,
+                    displayPrice: isFree ? t('common.included') : `${priceTransformer(price_template).toFixed(0)}${suffix}`
                 });
                 totalHT += price_template;
             }
