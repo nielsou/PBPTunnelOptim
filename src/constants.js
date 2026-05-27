@@ -85,6 +85,10 @@ export const COMPANY_SPECIFIC_PRICING = {
             priceHT: 440,
             floorPriceHT: 440,
         },
+        'illimite': {        
+            priceHT: 412.50,     
+            floorPriceHT: 412.50
+        },
         template: 0    
     },
     "24606699": { // LE MARCOUNET
