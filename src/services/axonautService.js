@@ -4,7 +4,8 @@ import {
     AXONAUT_THEMES_MAPPING,
     AXONAUT_FIXED_DEFAULTS,
     N8N_PROXY_URL,
-    PRICING_STRATEGY
+    PRICING_STRATEGY,
+    TEMPLATE_TOOL_PRO_PRICE_HT
 } from '../constants';
 
 import { locales } from '../locales';
