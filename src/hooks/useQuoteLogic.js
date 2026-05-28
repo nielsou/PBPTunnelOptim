@@ -644,6 +644,14 @@ export const useQuoteLogic = () => {
 
     const handlePrev = () => {
         const minStep = (formData.isPartnerMode || formData.isCalculatorMode) ? 0 : 1;
+
+        // --- GESTION DU SAUT ARRIÈRE EN MODE CALCULETTE/PARTENAIRE ---
+        // Si on fait "Retour" depuis le récapitulatif (étape 4), on doit retomber sur la configuration (étape 2)
+        if ((formData.isCalculatorMode || formData.isPartnerMode) && currentStep === 4) {
+            setCurrentStep(2);
+            return;
+        }
+
         if (currentStep > minStep) {
             setCurrentStep(currentStep - 1);
         }
@@ -737,9 +745,9 @@ export const useQuoteLogic = () => {
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
 
-            const addressContactName = formData.isPro ? formData.companyName : formData.fullName; 
+            const addressContactName = formData.isPro ? formData.companyName : formData.fullName;
 
-            
+
             // 2. LOGIQUE D'UPDATE ADRESSES
             if (formData.billingSameAsEvent && formData.saveNewDeliveryAddress) {
                 // Créer UNE SEULE adresse combinée
