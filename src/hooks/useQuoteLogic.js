@@ -737,35 +737,83 @@ export const useQuoteLogic = () => {
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
 
-            // 2. LOGIQUE D'UPDATE 
-            try {
-                await AxonautService.createAxonautEmployee(companyId, formData);
-            } catch (err) {
-                console.warn("Contact déjà existant.");
-            }
-
-            const addressContactName = formData.isPro ? formData.companyName : formData.fullName;
-
-            if (formData.saveNewBillingAddress || formData.billingSameAsEvent) {
-                const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
-                    name: formData.newBillingAddressName || "Facturation",
+            // 2. LOGIQUE D'UPDATE ADRESSES
+            if (formData.billingSameAsEvent && formData.saveNewDeliveryAddress) {
+                // Créer UNE SEULE adresse combinée
+                const newAddr = await AxonautService.createAxonautAddress(companyId, {
+                    name: formData.newDeliveryAddressName || "Lieu & Facturation",
                     contactName: addressContactName,
-                    street: formData.billingStreet,
-                    zip: formData.billingZipCode,
-                    city: formData.billingCity,
-                    country: formData.billingCountry
-                }, 'billing');
-                if (newBillAddr?.id) billingAddressId = newBillAddr.id;
-            }
-
-            if (formData.saveNewDeliveryAddress) {
-                await AxonautService.createAxonautAddress(companyId, {
-                    name: formData.newDeliveryAddressName || "Lieu Événement",
-                    fullAddress: formData.deliveryFullAddress,
                     street: formData.deliveryStreet,
                     zip: formData.deliveryZipCode,
-                    city: formData.deliveryCity
-                }, 'delivery');
+                    city: formData.deliveryCity,
+                    country: formData.deliveryCountry || "France"
+                }, 'both');
+
+                if (newAddr?.id) {
+                    billingAddressId = newAddr.id;
+                    // --- AJOUT : Mécanique anti-doublon ---
+                    setFormData(prev => ({
+                        ...prev,
+                        billingAddressId: newAddr.id,
+                        deliveryAddressId: newAddr.id,
+                        saveNewBillingAddress: false, // On désactive la création pour le prochain clic
+                        saveNewDeliveryAddress: false,
+                        savedClientData: prev.savedClientData ? {
+                            ...prev.savedClientData,
+                            billingAddresses: [...(prev.savedClientData.billingAddresses || []), { id: newAddr.id, label: formData.newDeliveryAddressName || "Lieu & Facturation", address: formData.deliveryFullAddress, zip: formData.deliveryZipCode, city: formData.deliveryCity }],
+                            deliveryAddresses: [...(prev.savedClientData.deliveryAddresses || []), { id: newAddr.id, label: formData.newDeliveryAddressName || "Lieu & Facturation", address: formData.deliveryFullAddress, zip: formData.deliveryZipCode, city: formData.deliveryCity }]
+                        } : prev.savedClientData
+                    }));
+                }
+            } else {
+                // Logique classique séparée
+                if (formData.saveNewBillingAddress) {
+                    const newBillAddr = await AxonautService.createAxonautAddress(companyId, {
+                        name: formData.newBillingAddressName || "Facturation",
+                        contactName: addressContactName,
+                        street: formData.billingStreet,
+                        zip: formData.billingZipCode,
+                        city: formData.billingCity,
+                        country: formData.billingCountry || "France"
+                    }, 'billing');
+
+                    if (newBillAddr?.id) {
+                        billingAddressId = newBillAddr.id;
+                        // --- AJOUT : Mécanique anti-doublon ---
+                        setFormData(prev => ({
+                            ...prev,
+                            billingAddressId: newBillAddr.id,
+                            saveNewBillingAddress: false, // On désactive la création
+                            savedClientData: prev.savedClientData ? {
+                                ...prev.savedClientData,
+                                billingAddresses: [...(prev.savedClientData.billingAddresses || []), { id: newBillAddr.id, label: formData.newBillingAddressName || "Facturation", address: formData.billingFullAddress, zip: formData.billingZipCode, city: formData.billingCity }]
+                            } : prev.savedClientData
+                        }));
+                    }
+                }
+
+                if (formData.saveNewDeliveryAddress) {
+                    const newDelivAddr = await AxonautService.createAxonautAddress(companyId, {
+                        name: formData.newDeliveryAddressName || "Lieu Événement",
+                        fullAddress: formData.deliveryFullAddress,
+                        street: formData.deliveryStreet,
+                        zip: formData.deliveryZipCode,
+                        city: formData.deliveryCity
+                    }, 'delivery');
+
+                    if (newDelivAddr?.id) {
+                        // --- AJOUT : Mécanique anti-doublon ---
+                        setFormData(prev => ({
+                            ...prev,
+                            deliveryAddressId: newDelivAddr.id,
+                            saveNewDeliveryAddress: false, // On désactive la création
+                            savedClientData: prev.savedClientData ? {
+                                ...prev.savedClientData,
+                                deliveryAddresses: [...(prev.savedClientData.deliveryAddresses || []), { id: newDelivAddr.id, label: formData.newDeliveryAddressName || "Lieu Événement", address: formData.deliveryFullAddress, zip: formData.deliveryZipCode, city: formData.deliveryCity }]
+                            } : prev.savedClientData
+                        }));
+                    }
+                }
             }
 
             // 🔍 PARTENAIRE VIP

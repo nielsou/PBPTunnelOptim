@@ -200,7 +200,11 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
             <div className='bg-indigo-50 p-6 rounded-2xl border border-indigo-100'>
                 <label className='block text-lg font-bold text-gray-900 mb-3'>Adresse de Facturation</label>
                 {!isNewBillingAddress ? (
-                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'billing')}>
+                    <select
+                        value={formData.billingFullAddress || "new"}
+                        className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium'
+                        onChange={(e) => handleAddressDropdownChange(e, 'billing')}
+                    >
                         {clientData.billingAddresses.map((addr, i) => (
                             <option key={`bill-${i}`} value={addr.address}>
                                 📄 {addr.label} | {addr.address}
@@ -221,6 +225,7 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                             required
                             onAddressSelect={addr => setFormData(p => ({
                                 ...p,
+                                billingAddressId: null,
                                 billingFullAddress: addr.fullAddress,
                                 billingStreet: addr.street,
                                 billingZipCode: addr.postal,
@@ -238,7 +243,10 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
             <div className='bg-gray-50 p-6 rounded-2xl border border-gray-200'>
                 <label className='block text-lg font-bold text-gray-900 mb-3'>Lieu de livraison (Événement)</label>
                 {!isNewDeliveryAddress ? (
-                    <select className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium' onChange={(e) => handleAddressDropdownChange(e, 'delivery')}>
+                    <select value={formData.deliveryFullAddress || "new"}
+                        className='w-full p-3 border border-gray-300 rounded-xl bg-white font-medium'
+                        onChange={(e) => handleAddressDropdownChange(e, 'delivery')}
+                    >
                         {clientData.deliveryAddresses.map((addr, i) => (
                             <option key={`del-${i}`} value={addr.address}>
                                 🚚 {addr.label} | {addr.address}
@@ -258,8 +266,9 @@ export const Step1AxonautDetails = ({ formData, setFormData, customColor = '#BE2
                             required
                             onAddressSelect={addr => setFormData(p => ({
                                 ...p,
+                                deliveryAddressId: null,
                                 deliveryFullAddress: addr.fullAddress,
-                                billingStreet: addr.street,
+                                deliveryStreet: addr.street,
                                 deliveryLat: addr.lat,
                                 deliveryLng: addr.lng,
                                 deliveryZipCode: addr.postal,

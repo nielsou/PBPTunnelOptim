@@ -29,6 +29,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
     const handleBillingAddressSelect = (addr) => {
         setFormData(prev => ({
             ...prev,
+            billingAddressId: null,
             billingFullAddress: addr.fullAddress,
             billingLat: addr.lat,
             billingLng: addr.lng,

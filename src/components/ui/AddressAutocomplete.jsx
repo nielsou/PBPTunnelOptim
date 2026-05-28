@@ -95,9 +95,15 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
         const addr = results[0];
         const getComp = (type) => addr.address_components.find(c => c.types.includes(type))?.long_name || "";
 
+        let safeStreet = `${getComp('street_number')} ${getComp('route')}`.trim();
+        if (!safeStreet && addr.formatted_address) {
+          // Si Google est capricieux et ne donne pas de rue (ex: "Mairie"), on prend le début de l'adresse formatée
+          safeStreet = addr.formatted_address.split(',')[0].trim();
+        }
+
         const result = {
           fullAddress: addr.formatted_address,
-          street: `${getComp('street_number')} ${getComp('route')}`.trim(),
+          street: safeStreet,
           city: getComp('locality'),
           postal: getComp('postal_code'),
           country: getComp('country'), 

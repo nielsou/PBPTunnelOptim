@@ -21,6 +21,7 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
     const handleAddressSelect = (addr) => {
         setFormData(prev => ({
             ...prev,
+            deliveryAddressId: null,
             deliveryFullAddress: addr.fullAddress,
             deliveryLat: addr.lat,
             deliveryLng: addr.lng,
