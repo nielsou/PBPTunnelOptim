@@ -737,6 +737,8 @@ export const useQuoteLogic = () => {
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
 
+            const addressContactName = formData.isPro ? formData.companyName : formData.fullName;
+
             // 2. LOGIQUE D'UPDATE ADRESSES
             if (formData.billingSameAsEvent && formData.saveNewDeliveryAddress) {
                 // Créer UNE SEULE adresse combinée
