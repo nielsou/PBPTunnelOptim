@@ -741,6 +741,11 @@ export const useQuoteLogic = () => {
                 console.log("Création du tiers...");
                 const { companyId: newId } = await AxonautService.createAxonautThirdParty(formData, lang);
                 companyId = newId;
+
+                if (formData.isPro) {
+                    console.log("Création explicite du contact pour l'entreprise...");
+                    await AxonautService.createAxonautEmployee(companyId, formData);
+                }
             }
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
