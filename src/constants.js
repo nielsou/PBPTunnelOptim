@@ -84,7 +84,21 @@ export const COMPANY_SPECIFIC_PRICING = {
         },
         template: 0
     },
-    "36829130": { // MAMA SHELTER
+    "36829130": { // MAMA SHELTER PARIS EAST
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
+        template: 0
+    },
+    "30984022": { // MAMA PARIS WEST
+        'illimite': {
+            priceHT: 412.50,
+            floorPriceHT: 412.50
+        },
+        template: 0
+    },
+    "28339720": { // MAMA PARIS LA DEFENSE
         'illimite': {
             priceHT: 412.50,
             floorPriceHT: 412.50
@@ -109,7 +123,7 @@ export const COMPANY_SPECIFIC_PRICING = {
         'illimite': {
             priceHT: 412.50,
             floorPriceHT: 412.50
-        },   
+        },
         template: 0
     }
 };

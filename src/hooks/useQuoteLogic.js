@@ -242,8 +242,10 @@ export const useQuoteLogic = () => {
         const modelData = PRICING_STRATEGY[formData.model];
         const nomBorne = modelData.name;
 
-        let base_price_prestation = modelData.priceHT * NbJours;
-        let price_prestation = (modelData.priceHT - modelData.floorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + modelData.floorPriceHT * NbJours;
+        const effectivePriceHT = getEffectivePrice(formData.model, modelData.priceHT);
+        const effectiveFloorPriceHT = partnerDeals[formData.model]?.floorPriceHT ?? modelData.floorPriceHT;
+        let base_price_prestation = effectivePriceHT * NbJours;
+        let price_prestation = (effectivePriceHT - effectiveFloorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + effectiveFloorPriceHT * NbJours;
         let discount_prestation = base_price_prestation - price_prestation;
 
         let price_livraison = modelData.delivery;
@@ -745,7 +747,7 @@ export const useQuoteLogic = () => {
                 if (formData.isPro) {
                     console.log("Création explicite du contact pour l'entreprise...");
                     await AxonautService.createAxonautEmployee(companyId, formData);
-                }
+                } 
             }
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);
