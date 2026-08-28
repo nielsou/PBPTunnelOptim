@@ -240,6 +240,15 @@ export const locales = {
     "step3.placeholder.email": { fr: "jean@exemple.com", en: "john@example.com" },
     "step3.placeholder.phone": { fr: "06 12 34 56 78", en: "+44 7911 123456" },
 
+    "step3.company.siren": { fr: "N° SIREN", en: "Company registration no." },
+    "step3.placeholder.siren": { fr: "9 chiffres — ex. 732 829 320", en: "9 digits — e.g. 732 829 320" },
+    "step3.siren.hint": { fr: "Obligatoire pour la facturation électronique.", en: "Required for electronic invoicing." },
+    "step3.siren.hint_foreign": { fr: "Optionnel pour une société hors de France.", en: "Optional for companies outside France." },
+    "step3.siren.error.required": { fr: "Le n° SIREN est obligatoire pour facturer une société française.", en: "The SIREN number is required to invoice a French company." },
+    "step3.siren.error.length": { fr: "Le SIREN comporte exactement 9 chiffres.", en: "A SIREN number is exactly 9 digits." },
+    "step3.siren.error.siret": { fr: "Vous avez saisi un SIRET (14 chiffres). Ne conservez que les 9 premiers : c'est le SIREN.", en: "You entered a SIRET (14 digits). Keep only the first 9 — that's the SIREN." },
+    "step3.siren.error.checksum": { fr: "Ce n° SIREN est invalide, vérifiez votre saisie.", en: "This SIREN number is invalid, please check your entry." },
+
     // --- STEP 4: ECRAN FINAL ---
     "success.title": { fr: "Merci !", en: "Thank you!" },
     "success.subtitle": { fr: "Votre devis a été généré avec succès. Vous pouvez le consulter et le signer en ligne dès maintenant.", en: "Your quote has been successfully generated. You can view and sign it online now." },

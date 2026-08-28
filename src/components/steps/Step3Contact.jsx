@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, Phone, Building2, CheckCircle2, ShieldCheck, Receipt } from 'lucide-react';
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
+import { getSirenError, isSirenRequired, sanitizeSiren } from '../../services/siren';
 
 export const Step3Contact = ({ formData, setFormData, t }) => {
+
+    const [sirenTouched, setSirenTouched] = useState(false);
 
     const handleChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -24,6 +27,14 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
         if (formData.fullName) {
             handleChange('fullName', formatName(formData.fullName));
         }
+    };
+
+    // --- SIREN (facturation électronique) ---
+    const sirenRequired = isSirenRequired(formData);
+    const sirenError = sirenTouched ? getSirenError(formData.siren, { required: sirenRequired }) : null;
+
+    const handleSirenChange = (e) => {
+        handleChange('siren', sanitizeSiren(e.target.value));
     };
 
     const handleBillingAddressSelect = (addr) => {
@@ -95,8 +106,8 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
 
             {/* 2. OPTION RAPPEL */}
             <div className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-4 ${formData.wantsCallback
-                    ? 'border-[#BE2A55] bg-pink-50/30'
-                    : 'border-gray-100 bg-gray-50/50'
+                ? 'border-[#BE2A55] bg-pink-50/30'
+                : 'border-gray-100 bg-gray-50/50'
                 }`}
                 onClick={() => handleChange('wantsCallback', !formData.wantsCallback)}
             >
@@ -121,9 +132,9 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                     {t('step3.billing.title')}
                 </h3>
 
-                {/* Champ Société : Visible UNIQUEMENT si Pro */}
+                {/* Société + SIREN : visibles UNIQUEMENT si Pro */}
                 {formData.isPro && (
-                    <div className="animate-in fade-in slide-in-from-top-2">
+                    <div className='animate-in fade-in slide-in-from-top-2 grid grid-cols-1 md:grid-cols-2 gap-4'>
                         <InputField
                             label={t('step3.company.name')}
                             placeholder={t('step3.placeholder.company')}
@@ -131,6 +142,29 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                             onChange={e => handleChange('companyName', e.target.value)}
                             required={true}
                         />
+
+                        <div>
+                            <InputField
+                                label={t('step3.company.siren')}
+                                placeholder={t('step3.placeholder.siren')}
+                                value={formData.siren}
+                                onChange={handleSirenChange}
+                                onBlur={() => setSirenTouched(true)}
+                                inputMode='numeric'
+                                autoComplete='off'
+                                required={sirenRequired}
+                            />
+                            {sirenError ? (
+                                <p className='mt-1.5 text-xs font-semibold text-[#BE2A55] flex items-start gap-1.5'>
+                                    <Building2 className='w-3.5 h-3.5 shrink-0 mt-px' />
+                                    {t(`step3.siren.error.${sirenError}`)}
+                                </p>
+                            ) : (
+                                <p className='mt-1.5 text-xs text-gray-500 font-medium'>
+                                    {sirenRequired ? t('step3.siren.hint') : t('step3.siren.hint_foreign')}
+                                </p>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -143,8 +177,8 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                         <button
                             onClick={() => handleChange('billingSameAsEvent', true)}
                             className={`p-4 rounded-xl border-2 text-left transition-all ${formData.billingSameAsEvent
-                                    ? 'border-blue-600 bg-blue-50'
-                                    : 'border-gray-200 hover:border-blue-300'
+                                ? 'border-blue-600 bg-blue-50'
+                                : 'border-gray-200 hover:border-blue-300'
                                 }`}
                         >
                             <div className='flex items-center gap-3 mb-2'>
@@ -163,8 +197,8 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                         <button
                             onClick={switchToOtherAddress}
                             className={`p-4 rounded-xl border-2 text-left transition-all ${!formData.billingSameAsEvent
-                                    ? 'border-blue-600 bg-blue-50'
-                                    : 'border-gray-200 hover:border-blue-300'
+                                ? 'border-blue-600 bg-blue-50'
+                                : 'border-gray-200 hover:border-blue-300'
                                 }`}
                         >
                             <div className='flex items-center gap-3 mb-2'>

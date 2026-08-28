@@ -24,21 +24,21 @@ export const PRICING_STRATEGY = {
         name: 'CineBooth Digital',
         priceHT: 239.17,
         floorPriceHT: 10.00,
-        delivery: 50,
+        delivery: 60,
         animation_hour: 45
     },
     '150': {
         name: 'CineBooth 150',
         priceHT: 290.83,
         floorPriceHT: 39.00,
-        delivery: 50,
+        delivery: 60,
         animation_hour: 45
     },
     '300': {
         name: 'CineBooth 300',
         priceHT: 370.83,
         floorPriceHT: 68.00,
-        delivery: 50,
+        delivery: 60,
         animation_hour: 45
     },
     'illimite': {

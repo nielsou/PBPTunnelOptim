@@ -9,7 +9,7 @@ import {
 } from '../constants';
 
 import { locales } from '../locales';
-
+import { buildFrenchVatNumber } from './siren';
 
 
 /**
@@ -50,6 +50,16 @@ export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
 
     if (isPro) {
         thirdPartyBody.address_contact_name = formData.fullName;
+
+        if (formData.siren) {
+            thirdPartyBody.siret = formData.siren;
+
+            const vatNumber = buildFrenchVatNumber(formData.siren);
+            if (vatNumber) {
+                thirdPartyBody.intracommunity_number = vatNumber;
+            }
+        }
+
     } else {
         thirdPartyBody.employees = [
             {
