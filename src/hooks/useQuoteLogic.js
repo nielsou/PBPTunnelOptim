@@ -1,10 +1,10 @@
 // src/hooks/useQuoteLogic.js
 
-import { useState, useMemo, useEffect } from 'react'; // <--- N'oubliez pas d'importer useEffect
+import { useState, useMemo, useEffect } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import { pushToDataLayer } from '../services/gtmService';
-import { locales } from '../locales'; // Import manquant ajouté ici
+import { locales } from '../locales';
 
 import {
     TVA_RATE,
@@ -16,7 +16,8 @@ import {
     OPTION_FONDIA_HT,
     OPTION_RGPD_HT,
     TEMPLATE_TOOL_PRO_PRICE_HT,
-    ENABLE_WEBHOOK_STEP_1, ENABLE_WEBHOOK_STEP_2, ENABLE_WEBHOOK_STEP_3, ENABLE_WEBHOOK_STEP_4
+    ENABLE_WEBHOOK_STEP_1, ENABLE_WEBHOOK_STEP_2, ENABLE_WEBHOOK_STEP_3, ENABLE_WEBHOOK_STEP_4,
+    SEASONAL_SURCHARGE
 } from '../constants';
 
 
@@ -242,7 +243,15 @@ export const useQuoteLogic = () => {
         const modelData = PRICING_STRATEGY[formData.model];
         const nomBorne = modelData.name;
 
-        const effectivePriceHT = getEffectivePrice(formData.model, modelData.priceHT);
+        //const effectivePriceHT = getEffectivePrice(formData.model, modelData.priceHT);
+        const eventMonth = formData.eventDate.slice(0, 7);
+        const surcharge = isPartnerClient ? 0 : (SEASONAL_SURCHARGE[eventMonth] || 0);
+
+        const effectivePriceHT = Math.round(
+            getEffectivePrice(formData.model, modelData.priceHT) * (1 + surcharge) * 100
+        ) / 100;
+
+
         const effectiveFloorPriceHT = partnerDeals[formData.model]?.floorPriceHT ?? modelData.floorPriceHT;
         let base_price_prestation = effectivePriceHT * NbJours;
         let price_prestation = (effectivePriceHT - effectiveFloorPriceHT) * 10 * (1 - Math.pow(0.9, NbJours)) + effectiveFloorPriceHT * NbJours;
@@ -747,7 +756,7 @@ export const useQuoteLogic = () => {
                 if (formData.isPro) {
                     console.log("Création explicite du contact pour l'entreprise...");
                     await AxonautService.createAxonautEmployee(companyId, formData);
-                } 
+                }
             }
 
             setAxonautProspectLink(`https://axonaut.com/business/company/show/${companyId}`);

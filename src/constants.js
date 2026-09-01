@@ -24,7 +24,7 @@ export const PRICING_STRATEGY = {
         name: 'CineBooth Digital',
         priceHT: 239.17,
         floorPriceHT: 10.00,
-        delivery: 60,
+        delivery: 40,
         animation_hour: 45
     },
     '150': {
@@ -45,7 +45,7 @@ export const PRICING_STRATEGY = {
         name: 'CineBooth Illimité',
         priceHT: 354.17,
         floorPriceHT: 57.00,
-        delivery: 70,
+        delivery: 60,
         animation_hour: 45
     },
     'Signature': {
@@ -63,6 +63,11 @@ export const PRICING_STRATEGY = {
         animation_hour: 70,
         speaker: 50
     },
+};
+
+
+export const SEASONAL_SURCHARGE = {
+    '2026-09': 15/100, // 15% de surcharge pour septembre 2026
 };
 
 export const OPTION_FONDIA_HT = 80;
