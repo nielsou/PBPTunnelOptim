@@ -67,7 +67,7 @@ export const PRICING_STRATEGY = {
 
 
 export const SEASONAL_SURCHARGE = {
-    '2026-09': 15/100, // 15% de surcharge pour septembre 2026
+    '2026-09': 5/100, // 15% de surcharge pour septembre 2026
 };
 
 export const OPTION_FONDIA_HT = 80;
