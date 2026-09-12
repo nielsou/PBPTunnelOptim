@@ -1,8 +1,10 @@
 // src/components/steps/Step5SalesTeam.jsx
 import React from 'react';
 import { Check, ExternalLink, ArrowLeft, RefreshCw } from 'lucide-react';
+import { SALES_REPS } from '../../constants';
 
 export const Step5SalesTeam = ({ formData, onReset, onBack }) => {
+    const salesRep = SALES_REPS[formData.salesRep] || null;
     return (
         <div className="text-center py-16 animate-in zoom-in duration-500 font-sans">
             <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
@@ -15,6 +17,11 @@ export const Step5SalesTeam = ({ formData, onReset, onBack }) => {
             
             <p className="text-xl text-gray-600 mb-10 leading-relaxed">
                 Le devis est prêt dans Axonaut (aucun email n'a été envoyé au client).
+                {salesRep && (
+                    <span className="block mt-2 text-base text-gray-500">
+                        Commercial : <strong>{salesRep.name}</strong> ({salesRep.email})
+                    </span>
+                )}
             </p>
             
             {/* BOUTONS D'ACTION */}

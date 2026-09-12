@@ -149,6 +149,13 @@ export const AXONAUT_FIXED_DEFAULTS = {
     nombreMachine: 1,
 };
 
+// Commerciaux (mode calculette : /calculette/<slug>)
+// L'API Axonaut attend l'email du user dans `business_manager` ; l'id est indicatif.
+export const SALES_REPS = {
+    heloise: { name: 'Héloïse', email: 'contact@photobooth-paris.fr', axonautUserId: 563192 },
+    cedric: { name: 'Cédric', email: 'cedric@photobooth-paris.fr', axonautUserId: 588692 },
+};
+
 // URL Zapier (Webhook pour le suivi)
 // export const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/22419571/ufzj95x/';
 

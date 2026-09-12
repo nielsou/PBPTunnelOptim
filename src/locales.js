@@ -6,6 +6,8 @@ export const locales = {
     "form.title.default": { fr: "Devis Express Photobooth", en: "Express Photobooth Quote" },
     "form.title.partner": { fr: "Devis Partenaires", en: "Partner Quote" },
     "form.title.calc": { fr: "Bonjour Héloïse et Cédric !", en: "Hello Héloïse and Cédric!" },
+    "form.title.calc_named": { fr: "Bonjour {name} !", en: "Hello {name}!" },
+    "form.calc.sales_note": { fr: "Les devis seront créés au nom de {name} ({email})", en: "Quotes will be created under {name} ({email})" },
 
     // --- NAVIGATION BARRE ---
     "nav.step1": { fr: "Événement", en: "Event" },
@@ -50,6 +52,8 @@ export const locales = {
     "step1.type.private": { fr: "Evénement privée", en: "Private event" },
     "step1.type.other": { fr: "Autre", en: "Other" },
     "step1.isPro": { fr: "Je suis une société (prix HT et accès aux options pro)", en: "I am a company (excl. VAT prices & pro options)" },
+    "step1.isPro.notice_title": { fr: "Important pour la facturation électronique :", en: "Important for e-invoicing:" },
+    "step1.isPro.notice": { fr: "un devis établi à titre particulier ne pourra pas donner lieu à une facture au nom d'une entreprise.", en: "a quote issued to a private individual cannot be invoiced to a company." },
     "step1.date.label": { fr: "Date de l'événement", en: "Event Date" },
     "step1.duration.label": { fr: "Durée (jours)", en: "Duration (days)" },
     "step1.venue.label": { fr: "Nom du lieu (Hôtel, Restaurant, Particulier...)", en: "Venue Name (Hotel, Restaurant, Private...)" },

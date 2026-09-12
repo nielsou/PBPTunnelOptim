@@ -10,7 +10,7 @@ import {
     TVA_RATE,
     PARIS_LAT, PARIS_LNG,
     AXONAUT_FIXED_DEFAULTS,
-    PRICING_STRATEGY, COMPANY_SPECIFIC_PRICING,
+    PRICING_STRATEGY, COMPANY_SPECIFIC_PRICING, SALES_REPS,
     OPTION_IMPRESSION_BASE_HT,
     OPTION_IMPRESSION_PLANCHER_HT,
     OPTION_FONDIA_HT,
@@ -51,9 +51,12 @@ export const useQuoteLogic = () => {
             const path = window.location.pathname;
             const isPartner = path.includes('/partenaires') || path.includes('/calculette');
             const isCalc = path.includes('/calculette');
+            // /calculette/<slug> → commercial associé (SALES_REPS), sinon ''
+            const salesSlug = isCalc ? (path.split('/calculette/')[1] || '').split('/')[0].toLowerCase() : '';
+            const salesRep = SALES_REPS[salesSlug] ? salesSlug : '';
 
             setFormData(prev => {
-                if (prev.isPartnerMode === isPartner && prev.isCalculatorMode === isCalc) {
+                if (prev.isPartnerMode === isPartner && prev.isCalculatorMode === isCalc && prev.salesRep === salesRep) {
                     return prev;
                 }
                 return {
@@ -62,7 +65,8 @@ export const useQuoteLogic = () => {
                     utm_medium,
                     utm_campaign,
                     isPartnerMode: isPartner,
-                    isCalculatorMode: isCalc
+                    isCalculatorMode: isCalc,
+                    salesRep
                 };
             });
         }
@@ -133,6 +137,7 @@ export const useQuoteLogic = () => {
         saveNewDeliveryAddress: true,
         isPartnerMode: false,
         isCalculatorMode: false,
+        salesRep: '',
         utm_source: '',
         utm_medium: '',
         utm_campaign: ''
@@ -681,7 +686,8 @@ export const useQuoteLogic = () => {
         setFormData({
             ...initialFormState,
             isPartnerMode: formData.isPartnerMode,
-            isCalculatorMode: formData.isCalculatorMode
+            isCalculatorMode: formData.isCalculatorMode,
+            salesRep: formData.salesRep
         });
 
         // Si on est en mode calculette ou partenaire, on retourne à l'étape 0 (Login)
@@ -874,9 +880,13 @@ export const useQuoteLogic = () => {
             // ------------------------------------------------
 
             // 3. CRÉATION DU DEVIS
+            // Commercial du devis (business_manager Axonaut) : celui de la calculette, sinon contact@
+            const salesRep = SALES_REPS[formData.salesRep];
+
             const inputsForAxonaut = {
                 ...pricing.axonautData,
                 ...AXONAUT_FIXED_DEFAULTS,
+                ...(salesRep && { commercial: salesRep.email }),
                 dateEvenement: formData.eventDate,
                 adresseLivraisonComplete: formData.newDeliveryAddressName
                     ? `${formData.newDeliveryAddressName} - ${formData.deliveryFullAddress}`

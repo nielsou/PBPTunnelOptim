@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronRight, ChevronLeft, Loader2, Check } from 'lucide-react';
 import { useQuoteLogic } from './hooks/useQuoteLogic';
-import { customColor } from './constants';
+import { customColor, SALES_REPS } from './constants';
 
 // Import des Steps
 import { Step0Auth } from './components/steps/Step0Auth';
@@ -105,10 +105,7 @@ export default function PhotoboothQuoteForm() {
     });
 
     const pricingData = calculatePrice;
-
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [currentStep]);
+    const salesRep = SALES_REPS[formData.salesRep] || null;
 
     // Navigation intelligente avec écran de chargement
     const handleNavigationNext = async () => {
@@ -164,9 +161,18 @@ export default function PhotoboothQuoteForm() {
 
             <div className='max-w-4xl mx-auto'>
                 {(isCalculatorMode || isPartnerMode) && (
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-8 text-center">
-                        {isCalculatorMode ? t('form.title.calc') : t('form.title.partner')}
-                    </h1>
+                    <div className="mb-8 text-center">
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+                            {isCalculatorMode
+                                ? (salesRep ? t('form.title.calc_named', { name: salesRep.name }) : t('form.title.calc'))
+                                : t('form.title.partner')}
+                        </h1>
+                        {isCalculatorMode && salesRep && (
+                            <p className="mt-2 text-sm font-medium text-gray-500">
+                                {t('form.calc.sales_note', { name: salesRep.name, email: salesRep.email })}
+                            </p>
+                        )}
+                    </div>
                 )}
                 <div className='bg-white rounded-[2.5rem] shadow-2xl p-4 sm:p-10 border border-gray-100'>
 

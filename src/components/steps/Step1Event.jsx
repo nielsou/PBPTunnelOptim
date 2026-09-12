@@ -116,17 +116,22 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
             </div>
 
             {/* 2. CASE SOCIÉTÉ */}
-            <div className='flex items-center space-x-3 bg-blue-50 p-5 rounded-2xl border border-blue-200 shadow-sm'>
-                <input
-                    type='checkbox'
-                    id='isPro'
-                    checked={formData.isPro}
-                    onChange={e => handleChange('isPro', e.target.checked)}
-                    className='w-6 h-6 text-blue-600 rounded-lg cursor-pointer border-gray-300'
-                />
-                <label htmlFor='isPro' className='flex items-center gap-2 text-sm font-bold text-blue-900 cursor-pointer select-none'>
-                    <Building2 className="w-5 h-5" /> {t('step1.isPro')}
-                </label>
+            <div className='bg-blue-50 p-5 rounded-2xl border border-blue-200 shadow-sm'>
+                <div className='flex items-center space-x-3'>
+                    <input
+                        type='checkbox'
+                        id='isPro'
+                        checked={formData.isPro}
+                        onChange={e => handleChange('isPro', e.target.checked)}
+                        className='w-6 h-6 text-blue-600 rounded-lg cursor-pointer border-gray-300'
+                    />
+                    <label htmlFor='isPro' className='flex items-center gap-2 text-sm font-bold text-blue-900 cursor-pointer select-none'>
+                        <Building2 className="w-5 h-5" /> {t('step1.isPro')}
+                    </label>
+                </div>
+                <p className='mt-2 pl-9 text-xs text-blue-800/70 font-medium'>
+                    <strong className='text-blue-900'>{t('step1.isPro.notice_title')}</strong> {t('step1.isPro.notice')}
+                </p>
             </div>
 
             <div className='bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-6'>
