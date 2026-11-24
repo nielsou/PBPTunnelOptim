@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse...", restrictToFrance = true, countries = null, loadingPlaceholder = "Connexion à Google Maps en cours..." }) => {
+export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse...", restrictToFrance = true, countries = null, language = null, loadingPlaceholder = "Connexion à Google Maps en cours..." }) => {
   const [inputValue, setInputValue] = useState(defaultValue || "");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -68,6 +68,8 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
     if (restriction) {
       request.componentRestrictions = { country: restriction };
     }
+    // Suggestions dans la langue du tunnel (sinon Google prend celle du navigateur)
+    if (language) request.language = language;
 
     serviceRef.current.getPredictions(request, (predictions) => {
       setSuggestions(predictions || []);
@@ -91,7 +93,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
 
     // Utilisation du Geocoder classique (plus robuste avec les vieilles versions de WP)
     const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ placeId: prediction.place_id }, (results, status) => {
+    geocoder.geocode({ placeId: prediction.place_id, ...(language && { language }) }, (results, status) => {
       if (status === "OK" && results[0]) {
         const addr = results[0];
         const getComp = (type) => addr.address_components.find(c => c.types.includes(type))?.long_name || "";

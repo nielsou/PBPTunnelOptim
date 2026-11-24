@@ -4,7 +4,7 @@ import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 import { getSirenError, isSirenRequired, sanitizeSiren } from '../../services/siren';
 
-export const Step3Contact = ({ formData, setFormData, t, site }) => {
+export const Step3Contact = ({ formData, setFormData, t, site, lang }) => {
     const usesNip = site.companyIdField === 'nip';
 
     const [sirenTouched, setSirenTouched] = useState(false);
@@ -251,6 +251,7 @@ export const Step3Contact = ({ formData, setFormData, t, site }) => {
                                 defaultValue={formData.billingFullAddress}
                                 onAddressSelect={handleBillingAddressSelect}
                                 restrictToFrance={false}
+                                language={lang}
                             />
                         </div>
                     )}

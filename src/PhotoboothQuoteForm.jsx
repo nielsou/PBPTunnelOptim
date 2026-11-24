@@ -238,7 +238,7 @@ export default function PhotoboothQuoteForm() {
                         <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} site={site} />
                     )}
 
-                    {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} site={site} />}
+                    {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} site={site} lang={lang} />}
 
                     {/* STEP 4 : MAINTENANT C'EST LA FINALE */}
                     {currentStep === 4 && (

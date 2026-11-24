@@ -178,6 +178,7 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t, site }) =>
                         defaultValue={formData.deliveryFullAddress}
                         onAddressSelect={handleAddressSelect}
                         countries={site.addressCountries}
+                        language={lang}
                     />
                     {formData.deliveryFullAddress && !formData.deliveryLat && (
                         <p className='text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg'>

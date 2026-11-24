@@ -11,7 +11,7 @@
 const LUHN_EXCEPTIONS = ['356000000'];
 
 // Valeurs possibles renvoyées par l'autocomplete d'adresse pour la France.
-const FRANCE_LABELS = ['france', 'fr', 'fra'];
+const FRANCE_LABELS = ['france', 'fr', 'fra', 'francja']; // 'francja' : autocomplete en polonais
 
 /** Le pays fourni correspond-il à la France ? */
 export const isFranceCountry = (country) =>
