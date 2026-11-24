@@ -4,7 +4,8 @@ import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 import { getSirenError, isSirenRequired, sanitizeSiren } from '../../services/siren';
 
-export const Step3Contact = ({ formData, setFormData, t }) => {
+export const Step3Contact = ({ formData, setFormData, t, site }) => {
+    const usesNip = site.companyIdField === 'nip';
 
     const [sirenTouched, setSirenTouched] = useState(false);
 
@@ -30,7 +31,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
     };
 
     // --- SIREN (facturation électronique) ---
-    const sirenRequired = isSirenRequired(formData);
+    const sirenRequired = !usesNip && isSirenRequired(formData);
     const sirenError = sirenTouched ? getSirenError(formData.siren, { required: sirenRequired }) : null;
 
     const handleSirenChange = (e) => {
@@ -143,6 +144,19 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                             required={true}
                         />
 
+                        {usesNip ? (
+                        <div>
+                            <InputField
+                                label={t('step3.company.nip')}
+                                placeholder={t('step3.placeholder.nip')}
+                                value={formData.nip || ''}
+                                onChange={e => handleChange('nip', e.target.value.replace(/[^\d-]/g, '').slice(0, 13))}
+                                inputMode='numeric'
+                                autoComplete='off'
+                            />
+                            <p className='mt-1.5 text-xs text-gray-500 font-medium'>{t('step3.nip.hint')}</p>
+                        </div>
+                        ) : (
                         <div>
                             <InputField
                                 label={t('step3.company.siren')}
@@ -165,6 +179,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
                                 </p>
                             )}
                         </div>
+                        )}
                     </div>
                 )}
 
@@ -229,6 +244,7 @@ export const Step3Contact = ({ formData, setFormData, t }) => {
 
                             {/* 2. RECHERCHE D'ADRESSE (CORRIGÉ : Pas d'étoile dans le label, t() utilisé) */}
                             <AddressAutocomplete
+                                loadingPlaceholder={t('address.loading_maps')}
                                 label={t('step3.billing.search')}
                                 placeholder={t('step3.billing.search')}
                                 required={true}

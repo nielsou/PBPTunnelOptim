@@ -1,7 +1,7 @@
 // src/components/steps/Step2Config.jsx
 import React, { useEffect, useRef } from 'react';
-import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer, Package } from 'lucide-react';
-import { TVA_RATE, PRICING_STRATEGY } from '../../constants';
+import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer, Package, Clock } from 'lucide-react';
+import { formatMoney } from '../../sites';
 
 /**
  * Composant générique pour une carte de modèle de borne
@@ -79,7 +79,9 @@ const ModelCard = ({
     );
 };
 
-export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, priceDisplayType, t }) => {
+export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, priceDisplayType, t, site }) => {
+    const models = site.models;
+    const opts = site.options;
     const configSectionRef = useRef(null);
 
     useEffect(() => {
@@ -93,10 +95,11 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
     }
 
     const { priceSuffix, unitaryPrices } = pricingData;
-    const priceTransformer = (priceHT) => (priceSuffix === 'TTC' ? (priceHT * TVA_RATE) : priceHT);
+    const priceTransformer = (priceHT) => (priceSuffix === 'TTC' ? (priceHT * site.vatRate) : priceHT);
+    const money = (priceHT) => formatMoney(site, priceTransformer(priceHT));
 
     const PriceDisplay = ({ modelId }) => {
-        const modelData = PRICING_STRATEGY[modelId];
+        const modelData = models[modelId];
         if (!modelData) return null;
         const isPrestige = modelId === 'Signature' || modelId === '360';
 
@@ -110,11 +113,11 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
             return (
                 <div className='flex flex-col'>
                     <span className='text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-2'>
-                        Tarif par jour {isPrestige && t('step2.delivery.incl')}
+                        {t('step2.price_per_day')} {isPrestige && t('step2.delivery.incl')}
                     </span>
                     <div className='flex items-baseline text-gray-900'>
-                        <span className='text-3xl font-black'>{totalBase.toFixed(0)}€</span>
-                        <span className='ml-2 text-xl font-bold'>{priceSuffix}</span>
+                        <span className='text-3xl font-black'>{formatMoney(site, totalBase)}</span>
+                        <span className='ml-2 text-xl font-bold'>{t(`price.suffix.${priceSuffix}`)}</span>
                     </div>
                 </div>
             );
@@ -131,10 +134,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                 </span>
                 <div className='flex items-baseline text-gray-900'>
                     <span className='font-light text-lg mr-2'>{t('common.between')}</span>
-                    <span className='text-3xl font-black'>{min}€</span>
+                    <span className='text-3xl font-black'>{formatMoney(site, min)}</span>
                     <span className='font-light text-lg mx-2'>{t('common.and')}</span>
-                    <span className='text-3xl font-black'>{max}€</span>
-                    <span className='ml-2 text-xl font-bold'>{priceSuffix}</span>
+                    <span className='text-3xl font-black'>{formatMoney(site, max)}</span>
+                    <span className='ml-2 text-xl font-bold'>{t(`price.suffix.${priceSuffix}`)}</span>
                 </div>
             </div>
         );
@@ -191,6 +194,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
     const is360 = formData.model === '360';
     const isMultiDay = formData.eventDuration > 1;
 
+    // Nombre de cartes CineBooth affichées (partenaires : Illimité seul) → nombre de colonnes
+    const essentialCount = isPartnerClient ? 1 : ['numerique', '150', 'illimite'].filter(id => models[id]).length;
+    const GRID_COLS = { 1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3' };
+
     const machineImages = {
         numerique: '/images/machines/PAYSAGE_CineBooth_Digital-min.jpg',
         150: '/images/machines/PAYSAGE_CineBooth_2-min.png',
@@ -203,8 +210,15 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
         <div className='space-y-12 animate-in fade-in duration-500'>
             {!formData.model ? (
                 <div className='text-center'>
-                    <h2 className='text-3xl font-black text-gray-900 mb-2'>{t('step2.header.title')}</h2>
+                    <h2 className='text-3xl font-black text-gray-900 mb-2'>{t('step2.header.title', { brand: site.brand })}</h2>
                     <p className='text-gray-500'>{t('step2.header.desc')}</p>
+                    <div className='mt-6 inline-flex items-start gap-3 text-left bg-pink-50 border-2 border-[#BE2A55]/20 rounded-2xl px-5 py-4 max-w-2xl'>
+                        <Clock className='w-6 h-6 text-[#BE2A55] shrink-0 mt-0.5' />
+                        <div>
+                            <p className='font-black text-gray-900'>{t('promo.no_time_limit.title')}</p>
+                            <p className='text-sm text-gray-600'>{t('promo.no_time_limit.text')}</p>
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className='flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-0 z-10'>
@@ -212,7 +226,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         <div className='bg-green-100 p-2 rounded-full'><Check className='w-5 h-5 text-green-600' /></div>
                         <div>
                             <span className='text-[10px] font-black text-gray-400 uppercase tracking-widest'>{t('step2.model.selection')}</span>
-                            <h3 className='font-black text-gray-900 leading-tight'>{PRICING_STRATEGY[formData.model]?.name}</h3>
+                            <h3 className='font-black text-gray-900 leading-tight'>{models[formData.model]?.name}</h3>
                         </div>
                     </div>
                     <button onClick={() => handleChange('model', '')} className='flex items-center text-sm font-bold text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl'>
@@ -230,10 +244,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             <Zap className='text-yellow-600' /> {t('step2.collection.essential')}
                         </h3>
                         {/* Petite astuce : on adapte les colonnes s'il n'y a qu'une seule carte pour les partenaires */}
-                        <div className={`grid grid-cols-1 ${!isPartnerClient ? 'md:grid-cols-3' : 'md:grid-cols-1'} gap-6`}>
+                        <div className={`grid grid-cols-1 ${GRID_COLS[essentialCount] || 'md:grid-cols-3'} gap-6`}>
 
                             {/* CineBooth Digital : UNIQUEMENT POUR LES CLIENTS CLASSIQUES */}
-                            {!isPartnerClient && (
+                            {!isPartnerClient && models.numerique && (
                                 <ModelCard
                                     t={t} id="numerique" image={machineImages.numerique} hoverColor="yellow"
                                     name={t('step2.model.digital.name')} desc={t('step2.model.digital.desc')}
@@ -246,7 +260,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             )}
 
                             {/* CineBooth 150 : UNIQUEMENT POUR LES CLIENTS CLASSIQUES */}
-                            {!isPartnerClient && (
+                            {!isPartnerClient && models['150'] && (
                                 <ModelCard
                                     t={t} id="150" image={machineImages['150']} hoverColor="yellow"
                                     name={t('step2.model.150.name')} desc={t('step2.model.150.desc')}
@@ -259,7 +273,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             )}
 
                             {/* CineBooth Illimité : AFFICHÉ POUR TOUT LE MONDE (Clients ET Partenaires) */}
-                            <ModelCard
+                            {models.illimite && <ModelCard
                                 t={t} id="illimite" image={machineImages.illimite} hoverColor="yellow" isUnlimited
                                 name={t('step2.model.starbooth.name')} desc={t('step2.model.starbooth.desc')}
                                 tagline={t('step2.badge.pro')} icon={Star}
@@ -267,18 +281,18 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="illimite" />}
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                 priceDisplayType={priceDisplayType}
-                            />
+                            />}
                         </div>
                     </section>
 
-                    {/* SECTION PRESTIGE (2 Colonnes avec Signature et 360) */}
-                    <section>
+                    {/* SECTION PRESTIGE (2 Colonnes avec Signature et 360) — seulement si le site les propose */}
+                    {(models.Signature || models['360']) && <section>
                         <h3 className='text-xl font-black text-gray-800 mb-6 flex items-center gap-3'>
                             <Gem className='text-blue-600' /> {t('step2.collection.prestige')}
                         </h3>
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                             {/* Modèle Signature */}
-                            <ModelCard
+                            {models.Signature && <ModelCard
                                 t={t} id="Signature" image={machineImages.Signature} hoverColor="purple" isUnlimited
                                 name={t('step2.model.signature.name')} desc={t('step2.model.signature.desc')}
                                 tagline={t('step2.model.signature.badge')} icon={Star}
@@ -286,10 +300,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 onSelect={handleModelSelect} priceContent={<PriceDisplay modelId="Signature" />}
                                 extraInfo={<><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.degressive')}</span><span className='text-[11px] text-gray-400 font-medium mt-1'>{t('step2.dynamic_pricing')}</span></>}
                                 priceDisplayType={priceDisplayType}
-                            />
+                            />}
 
                             {/* Modèle 360 (Gère toujours le blocage multi-jours) */}
-                            {isMultiDay ? (
+                            {!models['360'] ? null : isMultiDay ? (
                                 <div className='p-6 border-2 border-gray-200 bg-gray-50 rounded-3xl flex items-center gap-4 opacity-70 grayscale'>
                                     <Ban className='text-gray-400' />
                                     <p className='text-sm font-bold text-gray-500'>{t('step2.error.360_multiday')}</p>
@@ -306,7 +320,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 />
                             )}
                         </div>
-                    </section>
+                    </section>}
 
                     {/* On retire totalement la section Immersive qui était en dessous */}
                 </div>
@@ -327,20 +341,34 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
 
                                         {pricingData.axonautData?.supplementKilometrique > 0 ? (
                                             <p className='text-[11px] text-purple-800 font-medium italic mt-1'>
-                                                {t('step2.logistics.prestige_km', { price: priceTransformer(pricingData.axonautData.supplementKilometrique).toFixed(0) })}
+                                                {t('step2.logistics.prestige_km', { price: money(pricingData.axonautData.supplementKilometrique) })}
                                             </p>
                                         ) : (
                                             <p className='text-[10px] text-purple-700 font-black uppercase tracking-widest mt-1'>
                                                 {t('step2.logistics.pro_badge')}
                                             </p>
                                         )}
+                                        {isSignature && (
+                                            <p className='text-[11px] text-purple-800 font-bold mt-1 flex items-center gap-1'>
+                                                <Clock className='w-3 h-3' /> {t('step2.logistics.next_day_pickup')}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <span className='font-black text-purple-700 text-lg'>
                                     {pricingData.axonautData?.supplementKilometrique > 0
-                                        ? `+${priceTransformer(pricingData.axonautData.supplementKilometrique).toFixed(0)}€`
+                                        ? `+${money(pricingData.axonautData.supplementKilometrique)}`
                                         : t('common.included')}
                                 </span>
+                            </div>
+                        ) : !site.delivery.allowPickup ? (
+                            <div className='bg-blue-50 border-2 border-blue-600 p-6 rounded-[2rem] flex items-center gap-4'>
+                                <Truck className='w-8 h-8 text-blue-600 shrink-0' />
+                                <div>
+                                    <p className='font-black text-gray-800 text-lg'>{t('step2.logistics.delivery')}</p>
+                                    <p className='text-blue-600 font-bold text-sm mt-1'>{t('step2.logistics.included_radius', { km: site.delivery.freeRadiusKm })}</p>
+                                    <p className='text-gray-600 font-medium text-xs mt-1 flex items-center gap-1'><Clock className='w-3 h-3' /> {t('step2.logistics.next_day_pickup')}</p>
+                                </div>
                             </div>
                         ) : (
                             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -364,6 +392,9 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     <span className='block text-blue-600 font-black mt-1'>
                                         {t('step2.logistics.delivery_variable')}
                                     </span>
+                                    <span className='block text-gray-500 text-xs font-medium mt-1'>
+                                        {t('step2.logistics.next_day_pickup')}
+                                    </span>
                                 </button>
                             </div>
                         )}
@@ -376,7 +407,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 <div className='flex-1'>
                                     <div className='flex justify-between items-center mb-1'>
                                         <h4 className='font-black text-gray-900'>{t('step2.option.template.name')}</h4>
-                                        <span className={`text-[10px] font-black px-2 py-1 rounded-full ${isFreeTemplate ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>{isFreeTemplate ? t('common.included') : `+${priceTransformer(unitaryPrices.template).toFixed(0)}€`}</span>
+                                        <span className={`text-[10px] font-black px-2 py-1 rounded-full ${isFreeTemplate ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'}`}>{isFreeTemplate ? t('common.included') : `+${money(unitaryPrices.template)}`}</span>
                                     </div>
                                     <p className='text-xs text-gray-500'>{t('step2.option.template.desc')}</p>
                                 </div>
@@ -387,14 +418,14 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             </div>
                         </div>
 
-                        {formData.model !== '360' && (
+                        {formData.model !== '360' && opts.aiBackgroundHT != null && (
                             <div className='p-6 rounded-[2rem] border-2 border-gray-100 bg-white shadow-sm flex flex-col justify-between'>
                                 <div className='flex gap-5'>
                                     <img src="/images/options/option_IA_avant_apres.webp" className='w-24 h-24 object-cover rounded-2xl' alt="IA" />
                                     <div className='flex-1'>
                                         <div className='flex justify-between items-center mb-1'>
                                             <h4 className='font-black text-gray-900'>{t('step2.option.ia.name')}</h4>
-                                            <span className='text-[10px] font-black px-2 py-1 rounded-full bg-blue-100 text-blue-700'>+{priceTransformer(unitaryPrices.ia).toFixed(0)}€</span>
+                                            <span className='text-[10px] font-black px-2 py-1 rounded-full bg-blue-100 text-blue-700'>+{money(unitaryPrices.ia)}</span>
                                         </div>
                                         <p className='text-xs text-gray-500'>{t('step2.option.ia.desc')}</p>
                                     </div>
@@ -407,7 +438,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         )}
                     </div>
 
-                    {formData.model !== '360' && (
+                    {formData.model !== '360' && opts.extraPrintHT != null && (
                         <div className='bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-6'>
                             <div className='flex gap-4'>
                                 <div className='bg-white p-3 rounded-xl shadow-sm'><Printer className='text-indigo-600' /></div>
@@ -415,13 +446,13 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                             </div>
                             <select value={formData.proImpressions} onChange={(e) => handleChange('proImpressions', parseInt(e.target.value))} className='w-full md:w-auto px-4 py-3 rounded-xl bg-white font-bold'>
                                 <option value={1}>{t('step2.option.prints.1print')}</option>
-                                {[2, 3, 4, 5].map(n => <option key={n} value={n}>{t('step2.option.prints.nprints', { n, p: priceTransformer(unitaryPrices.impressionSup * (n - 1)).toFixed(0), s: priceSuffix })}</option>)}
+                                {[2, 3, 4, 5].map(n => <option key={n} value={n}>{t('step2.option.prints.nprints', { n, p: money(unitaryPrices.impressionSup * (n - 1)), s: t(`price.suffix.${priceSuffix}`) })}</option>)}
                             </select>
                         </div>
                     )}
 
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                        {formData.delivery && (
+                        {formData.delivery && opts.animation && (
                             <div className='bg-gray-50 p-6 rounded-[2rem]'>
                                 <label className='block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4'>{t('step2.option.anim.label')}</label>
                                 {isMultiDay ? (
@@ -430,10 +461,10 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     <select value={formData.proAnimationHours} onChange={e => handleChange('proAnimationHours', e.target.value)} className='w-full px-4 py-4 border-none rounded-2xl bg-white shadow-sm font-bold text-gray-900 text-sm'>
                                         {is360 ? (
                                             <><option value={3}>{t('step2.option.anim.360_3h')}</option>
-                                                {[4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer((h - 3) * 90).toFixed(0), s: priceSuffix })}</option>)}</>
+                                                {[4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: money((h - 3) * 90), s: t(`price.suffix.${priceSuffix}`) })}</option>)}</>
                                         ) : (
                                             <><option value='none'>{t('step2.option.anim.none')}</option>
-                                                {[1, 2, 3, 4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: priceTransformer(h * 45).toFixed(0), s: priceSuffix })}</option>)}</>
+                                                {[1, 2, 3, 4, 5, 6, 7, 8].map(h => <option key={h} value={h}>{t('step2.option.anim.nh', { h, p: money(h * 45), s: t(`price.suffix.${priceSuffix}`) })}</option>)}</>
                                         )}
                                     </select>
                                 )}
@@ -442,13 +473,13 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                         {is360 ? (
                             <div className='flex items-center justify-between bg-pink-50 p-6 rounded-[2rem] border border-pink-100'>
                                 <div><div className='flex items-center gap-3 mb-1'><Music className='text-pink-600' /><span className='font-bold text-sm'>{t('step2.option.speaker.name')}</span></div><p className='text-[10px] text-pink-800 ml-8 max-w-[200px]'>{t('step2.option.speaker.desc')}</p></div>
-                                <div className='flex items-center gap-3'><span className='font-black text-pink-600 text-sm'>+{priceTransformer(unitaryPrices.speaker).toFixed(0)}€</span><input type='checkbox' checked={formData.optionSpeaker} onChange={(e) => handleChange('optionSpeaker', e.target.checked)} className='w-7 h-7 rounded-lg text-pink-600' /></div>
+                                <div className='flex items-center gap-3'><span className='font-black text-pink-600 text-sm'>+{money(unitaryPrices.speaker)}</span><input type='checkbox' checked={formData.optionSpeaker} onChange={(e) => handleChange('optionSpeaker', e.target.checked)} className='w-7 h-7 rounded-lg text-pink-600' /></div>
                             </div>
                         ) : (
-                            formData.isPro && (
+                            formData.isPro && opts.rgpdHT != null && (
                                 <div className='flex items-center justify-between bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100'>
                                     <div><div className='flex items-center gap-3 mb-1'><Star className='text-indigo-600 fill-current' /><span className='font-bold text-sm text-indigo-900'>{t('step2.option.rgpd.name')}</span></div><p className='text-[10px] text-indigo-800 ml-8 max-w-[200px]'>{t('step2.option.rgpd.desc')}</p></div>
-                                    <div className='flex items-center gap-3'><span className='font-black text-indigo-600 text-sm'>+{priceTransformer(unitaryPrices.rgpd).toFixed(0)}€</span><input type='checkbox' checked={formData.proRGPD} onChange={(e) => handleChange('proRGPD', e.target.checked)} className='w-7 h-7 rounded-lg text-indigo-600' /></div>
+                                    <div className='flex items-center gap-3'><span className='font-black text-indigo-600 text-sm'>+{money(unitaryPrices.rgpd)}</span><input type='checkbox' checked={formData.proRGPD} onChange={(e) => handleChange('proRGPD', e.target.checked)} className='w-7 h-7 rounded-lg text-indigo-600' /></div>
                                 </div>
                             )
                         )}

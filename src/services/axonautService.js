@@ -43,7 +43,8 @@ export function generateAxonautThirdPartyBody(formData, lang = 'fr') {
         is_customer: false,
         isB2C: !isPro,
         currency: "EUR",
-        language: lang,
+        // Axonaut ne propose pas le polonais pour ses modèles de documents : en-têtes du devis en anglais, lignes en polonais
+        language: lang === 'pl' ? 'en' : lang,
         business_manager: AXONAUT_FIXED_DEFAULTS.commercial,
         categories: ["PHOTOBOOTH PARIS"],
     };
@@ -224,7 +225,7 @@ export function generateAxonautQuotationBody(inputs, companyId, lang = 'fr') {
 
     const baseProduct = {
         "product_code": "P-BASE",
-        "name": `${lang === 'fr' ? 'Prestation' : 'Service'} ${nomBorne}`,
+        "name": `${t('axonaut.quote.service_prefix', lang)} ${nomBorne}`,
         "price": unitPriceBase, // On envoie le prix BRUT unitaire
         "tax_rate": TVA_RATE_DEC,
         "quantity": quantiteBase,

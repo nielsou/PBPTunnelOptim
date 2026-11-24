@@ -3,16 +3,13 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Loader2, Info, Check, Calculator, Percent } from 'lucide-react';
 import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
 import { COMPANY_SPECIFIC_PRICING } from '../../constants';
+import { INTL_LOCALE } from '../../locales';
+import { formatMoneyExact } from '../../sites';
 
-const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-    }).format(amount);
-};
 
-export const Step4Recap = ({ formData, setFormData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage }) => {
+export const Step4Recap = ({ formData, setFormData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage, lang = 'fr', site }) => {
+    const formatCurrency = (amount) => formatMoneyExact(site, amount);
+    const isLead = site.endAction === 'lead';
 
     const getAddressSummary = (fullAddressString) => {
         if (!fullAddressString || typeof fullAddressString !== 'string') return t('step4.address_not_specified');
@@ -26,7 +23,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
     const pollingTimeout = useRef(null);
 
     // --- DÉBUT LOGIQUE CALCULETTE ---
-    const TVA_RATE = 1.20;
+    const TVA_RATE = site.vatRate;
     const baseTotalTTC = pricingData?.totalHT ? pricingData.totalHT * TVA_RATE : 0;
 
     const initialDiscount = formData.discountPercent || 0;
@@ -102,11 +99,11 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
 
         if (!paymentWindow) {
             setLoadingPayment(false);
-            alert("Votre navigateur a bloqué la page de paiement. Veuillez autoriser les pop-ups pour ce site.");
+            alert(t('step4.popup_blocked'));
             return;
         }
 
-        paymentWindow.document.write("<div style='font-family: sans-serif; text-align: center; margin-top: 20%; color: #BE2A55;'>Redirection vers le paiement sécurisé en cours...</div>");
+        paymentWindow.document.write(`<div style='font-family: sans-serif; text-align: center; margin-top: 20%; color: #BE2A55;'>${t('step4.redirecting_payment')}</div>`);
 
         const result = await getStripePaymentUrl(formData.quotationUrl);
 
@@ -200,7 +197,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                         <div className='flex justify-between border-b border-gray-200 pb-2'>
                             <span className='font-semibold'>{t('step4.label.date')}</span>
                             <span className='text-right text-gray-600'>
-                                {new Date(formData.eventDate).toLocaleDateString('fr-FR')} ({formData.eventDuration} jours)
+                                {new Date(formData.eventDate).toLocaleDateString(INTL_LOCALE[lang] || 'fr-FR')} ({formData.eventDuration} {Number(formData.eventDuration) === 1 ? t('axonaut.label.day') : t('step4.days_suffix')})
                             </span>
                         </div>
                     </div>
@@ -214,7 +211,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                 <div className='flex flex-col gap-8'>
                     <div className='bg-white p-8 rounded-2xl shadow-xl border border-gray-100'>
                         <h3 className='text-xl font-bold mb-6 text-gray-900'>
-                            {t('step4.order_title')} <span className='text-sm font-normal text-gray-500'>({priceSuffix})</span>
+                            {t('step4.order_title')} <span className='text-sm font-normal text-gray-500'>({t(`price.suffix.${priceSuffix}`)})</span>
                         </h3>
 
                         <div className='space-y-4 mb-6'>
@@ -272,7 +269,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                     </div>
                                 )
                             ) : (
-                                isFullPayment && (
+                                isFullPayment && !isLead && (
                                     <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
                                         <div className="bg-amber-100 p-1.5 rounded-lg mt-0.5">
                                             <Info className="w-4 h-4 text-amber-700" />
@@ -284,7 +281,19 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                 )
                             )}
 
-                            {!(isPartnerMode || isCalculatorMode) ? (
+                            {isLead ? (
+                                <div className="w-full bg-green-50 border-2 border-green-500 rounded-xl p-5 text-center">
+                                    <p className="text-green-700 font-black text-lg flex items-center justify-center gap-2">
+                                        <Check className="w-6 h-6" /> {t('lead.sent.title')}
+                                    </p>
+                                    <p className="text-sm text-green-800 mt-2 font-medium">{t('lead.sent.text')}</p>
+                                    {(site.contact.phone || site.contact.email) && (
+                                        <p className="text-xs text-gray-500 mt-3">
+                                            {t('lead.contact', { contact: [site.contact.phone, site.contact.email].filter(Boolean).join(' · ') })}
+                                        </p>
+                                    )}
+                                </div>
+                            ) : !(isPartnerMode || isCalculatorMode) ? (
                                 <button
                                     onClick={() => handlePaymentClick('block')}
                                     disabled={isSubmitting || loadingPayment || isCheckingPayment}
@@ -349,7 +358,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                                 </button>
                             )}
 
-                            {!isFullPayment && (
+                            {!isFullPayment && !isLead && (
                                 <p className="text-xs text-gray-400 text-center mt-3">
                                     {t('step4.balance_notice')}
                                 </p>
@@ -449,20 +458,21 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                 {/* COLONNE DROITE : ET APRÈS ? (STICKY) */}
                 <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm lg:sticky lg:top-6">
                     <h3 className="font-black text-gray-900 text-xl mb-6 text-center">
-                        {t('success.step2.title')}
+                        {t(isLead ? 'lead.next.title' : 'success.step2.title')}
                     </h3>
                     <div className="flex flex-col gap-4">
                         {[1, 2, 3].map((num) => {
-                            const emojis = { 1: '🚚', 2: '🎨', 3: '💳' };
+                            const emojis = isLead ? { 1: '📞', 2: '🎨', 3: '🎉' } : { 1: '🚚', 2: '🎨', 3: '💳' };
+                            const prefix = isLead ? 'lead.next' : 'success.step2';
                             return (
                                 <div key={num} className="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex items-start text-left gap-4">
                                     <div className="text-3xl mt-1">{emojis[num]}</div>
                                     <div>
                                         <span className="font-black text-gray-900 text-base block mb-2">
-                                            {t(`success.step2.item${num}.title`)}
+                                            {t(`${prefix}.item${num}.title`)}
                                         </span>
                                         <p className="text-gray-600 leading-relaxed font-medium text-sm">
-                                            {t(`success.step2.item${num}.text`)}
+                                            {t(`${prefix}.item${num}.text`)}
                                         </p>
                                     </div>
                                 </div>
@@ -483,7 +493,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                     <span>{t('step4.edit')}</span>
                 </button>
 
-                <button
+                {!isLead && <button
                     onClick={async () => {
                         try {
                             if (isCalculatorMode) {
@@ -513,7 +523,7 @@ export const Step4Recap = ({ formData, setFormData, customColor, pricingData, ha
                             <span>{isCalculatorMode ? "Générer le devis" : isPartnerMode ? "Valider la commande" : (isFullPayment ? t('step4.payment.btn_full') : t('step4.payment.btn_deposit'))}</span>
                         </>
                     )}
-                </button>
+                </button>}
             </div>
         </div>
     );

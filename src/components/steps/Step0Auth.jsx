@@ -1,5 +1,8 @@
 // src/components/steps/Step0Auth.jsx
 import React, { useState } from 'react';
+import { SUPPORTED_LANGS } from '../../locales';
+
+const LANG_FLAGS = { fr: '🇫🇷', en: '🇬🇧', pl: '🇵🇱' };
 import { Loader2, ChevronRight } from 'lucide-react';
 import { getAxonautCompanyDetails } from '../../services/axonautService';
 
@@ -40,11 +43,11 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
                 if (onNext) onNext();
             } else {
                 // CORRECTION : Le numéro n'est pas trouvé par l'API
-                setError("Numéro client introuvable");
+                setError(t('step0.error.not_found'));
             }
         } catch (err) {
             // CORRECTION : S'il y a un autre problème inattendu
-            setError("Numéro client introuvable");
+            setError(t('step0.error.not_found'));
         } finally {
             setIsLoading(false);
         }
@@ -55,26 +58,19 @@ export const Step0Auth = ({ formData, setFormData, isCalculatorMode, t, lang, se
 
             {/* --- SÉLECTEUR DE LANGUE --- */}
             <div className="flex justify-center gap-3 mb-8">
-                <button
-                    onClick={() => setLang('fr')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'fr'
-                        ? 'border-[#BE2A55] bg-pink-50'
-                        : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
-                        }`}
-                >
-                    <span className="text-xl">🇫🇷</span>
-                    <span className="text-sm font-black">FR</span>
-                </button>
-                <button
-                    onClick={() => setLang('en')}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'en'
-                        ? 'border-[#BE2A55] bg-pink-50'
-                        : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
-                        }`}
-                >
-                    <span className="text-xl">🇬🇧</span>
-                    <span className="text-sm font-black">EN</span>
-                </button>
+                {SUPPORTED_LANGS.map((code) => (
+                    <button
+                        key={code}
+                        onClick={() => setLang(code)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === code
+                            ? 'border-[#BE2A55] bg-pink-50'
+                            : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                            }`}
+                    >
+                        <span className="text-xl">{LANG_FLAGS[code]}</span>
+                        <span className="text-sm font-black">{code.toUpperCase()}</span>
+                    </button>
+                ))}
             </div>
 
             <div className="w-full max-w-2xl bg-white border border-gray-100 shadow-xl rounded-3xl p-8">

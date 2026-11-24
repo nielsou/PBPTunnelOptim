@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { SUPPORTED_LANGS } from '../../locales';
+
+const LANG_FLAGS = { fr: '🇫🇷', en: '🇬🇧', pl: '🇵🇱' };
 import { Calendar, MapPin, Clock, Info, Mail, Phone, ChevronDown, Building2 } from 'lucide-react';
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
-export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
+export const Step1Event = ({ formData, setFormData, lang, setLang, t, site }) => {
     const [dateError, setDateError] = useState('');
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -68,28 +71,28 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                     </span>
                 </h2>
 
+                {/* Argument : sans limite d'heures */}
+                <div className="flex justify-center -mt-3 mb-5">
+                    <span className="inline-flex items-center gap-2 bg-pink-50 border border-[#BE2A55]/30 text-[#BE2A55] text-xs md:text-sm font-black uppercase tracking-wide px-4 py-2 rounded-full">
+                        <Clock className="w-4 h-4" /> {t('promo.no_time_limit.badge')}
+                    </span>
+                </div>
+
                 {/* Sélecteur de langue centré juste en dessous */}
                 <div className="flex justify-center gap-3">
-                    <button
-                        onClick={() => setLang('fr')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'fr'
-                            ? 'border-[#BE2A55] bg-pink-50'
-                            : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
-                            }`}
-                    >
-                        <span className="text-xl">🇫🇷</span>
-                        <span className="text-sm font-black">FR</span>
-                    </button>
-                    <button
-                        onClick={() => setLang('en')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === 'en'
-                            ? 'border-[#BE2A55] bg-pink-50'
-                            : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
-                            }`}
-                    >
-                        <span className="text-xl">🇬🇧</span>
-                        <span className="text-sm font-black">EN</span>
-                    </button>
+                    {SUPPORTED_LANGS.map((code) => (
+                        <button
+                            key={code}
+                            onClick={() => setLang(code)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all hover:scale-105 active:scale-95 shadow-sm ${lang === code
+                                ? 'border-[#BE2A55] bg-pink-50'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-[#BE2A55]/50'
+                                }`}
+                        >
+                            <span className="text-xl">{LANG_FLAGS[code]}</span>
+                            <span className="text-sm font-black">{code.toUpperCase()}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -129,9 +132,11 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                         <Building2 className="w-5 h-5" /> {t('step1.isPro')}
                     </label>
                 </div>
-                <p className='mt-2 pl-9 text-xs text-blue-800/70 font-medium'>
-                    <strong className='text-blue-900'>{t('step1.isPro.notice_title')}</strong> {t('step1.isPro.notice')}
-                </p>
+                {site.showEInvoiceNotice && (
+                    <p className='mt-2 pl-9 text-xs text-blue-800/70 font-medium'>
+                        <strong className='text-blue-900'>{t('step1.isPro.notice_title')}</strong> {t('step1.isPro.notice')}
+                    </p>
+                )}
             </div>
 
             <div className='bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-6'>
@@ -166,11 +171,13 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                         required
                     />
                     <AddressAutocomplete
+                        loadingPlaceholder={t('address.loading_maps')}
                         label={t('step1.address.label')}
                         placeholder={t('step1.address.placeholder')}
                         required
                         defaultValue={formData.deliveryFullAddress}
                         onAddressSelect={handleAddressSelect}
+                        countries={site.addressCountries}
                     />
                     {formData.deliveryFullAddress && !formData.deliveryLat && (
                         <p className='text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg'>
@@ -189,12 +196,16 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t }) => {
                             <h3 className='font-bold text-lg'>{t('step1.today.title')}</h3>
                             <p className='mb-4'>{t('step1.today.subtitle')}</p>
                             <div className='flex flex-col sm:flex-row gap-4'>
-                                <a href="tel:0142865424" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
-                                    <Phone className='w-4 h-4 mr-2' /> 01 42 86 54 24
-                                </a>
-                                <a href="mailto:contact@photobooth-paris.fr" className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
-                                    <Mail className='w-4 h-4 mr-2' /> contact@photobooth-paris.fr
-                                </a>
+                                {site.contact.phone && (
+                                    <a href={site.contact.phoneHref} className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
+                                        <Phone className='w-4 h-4 mr-2' /> {site.contact.phone}
+                                    </a>
+                                )}
+                                {site.contact.email && (
+                                    <a href={`mailto:${site.contact.email}`} className='flex items-center justify-center px-4 py-2 bg-white border border-red-300 rounded-lg font-bold'>
+                                        <Mail className='w-4 h-4 mr-2' /> {site.contact.email}
+                                    </a>
+                                )}
                             </div>
                         </div>
                     </div>

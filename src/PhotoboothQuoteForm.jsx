@@ -34,7 +34,7 @@ export default function PhotoboothQuoteForm() {
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
         handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
-        triggerWebhook, handleSubmit, resetForm
+        triggerWebhook, handleSubmit, resetForm, site
     } = useQuoteLogic();
 
     // À placer à l'intérieur de votre composant PhotoboothQuoteForm
@@ -141,12 +141,12 @@ export default function PhotoboothQuoteForm() {
                     <Loader2 className="w-16 h-16 text-[#BE2A55] animate-spin mx-auto" />
                     <div>
                         <h3 className="text-2xl font-black text-gray-900">
-                            {processingType === 'stock' ? t('step2.check.availability') : t('loading.quote_generation.title')}
+                            {processingType === 'stock' ? t('step2.check.availability') : t(site.endAction === 'lead' ? 'loading.lead.title' : 'loading.quote_generation.title')}
                         </h3>
                         <p className="text-gray-500 font-medium italic">
                             {processingType === 'stock'
                                 ? t('step2.check.analysis', { date: formData.eventDate?.split('-').reverse().join('/') })
-                                : t('loading.quote_generation.subtitle')}
+                                : t(site.endAction === 'lead' ? 'loading.lead.subtitle' : 'loading.quote_generation.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -231,14 +231,14 @@ export default function PhotoboothQuoteForm() {
                     {currentStep === 1 && (
                         (isPartnerMode || isCalculatorMode) ?
                             <Step1AxonautDetails formData={formData} setFormData={setFormData} customColor={customColor} t={t} /> :
-                            <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} />
+                            <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} site={site} />
                     )}
 
                     {currentStep === 2 && (
-                        <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} />
+                        <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} site={site} />
                     )}
 
-                    {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} />}
+                    {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} site={site} />}
 
                     {/* STEP 4 : MAINTENANT C'EST LA FINALE */}
                     {currentStep === 4 && (
@@ -256,6 +256,8 @@ export default function PhotoboothQuoteForm() {
                             isCalculatorMode={isCalculatorMode}
                             handleSubmit={handleSubmit}
                             showMessage={showMessage}
+                            lang={lang}
+                            site={site}
                         />
                     )}
 

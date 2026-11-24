@@ -1,4 +1,5 @@
 // src/locales.js
+import { pl } from './locales.pl.js';
 
 export const locales = {
 
@@ -79,7 +80,7 @@ export const locales = {
     "step2.dynamic_pricing": { fr: "Tarification dynamique selon la période", en: "Dynamic pricing depending on the period" },
 
     // Header Step 2 (Version Longue restaurée)
-    "step2.header.title": { fr: "Choisir Photobooth Paris", en: "Choose Photobooth Paris" },
+    "step2.header.title": { fr: "Choisir {brand}", en: "Choose {brand}" },
     "step2.header.desc": {
         fr: "C'est choisir une technologie exclusive, un rendu sans égal. Conçues en France, chacune de nos bornes intègre optique haut de gamme et une imprimante professionnelle. Notre innovation ? Un système propriétaire d'éclairage LED intelligent qui ne s'active que pendant la prise de vue. Résultat : des photos studio parfaites en préservant votre ambiance. La qualité avant tout.",
         en: "It's choosing exclusive technology and unparalleled results. Designed in France, each of our booths integrates high-end optics and a professional printer. Our innovation? A proprietary intelligent LED lighting system that only activates during the shot. Result: perfect studio photos while preserving your ambiance. Quality above all."
@@ -90,8 +91,8 @@ export const locales = {
     "step2.collection.immersive": { fr: "Expérience Immersive", en: "Immersive Experience" },
     "step2.logistics.distance_notice": { fr: "Tarif ajusté selon l'adresse de votre événement", en: "Rate adjusted based on your event location" },
     "step2.logistics.prestige_km": {
-        fr: "Votre lieu de réception étant éloigné de Paris, un ajustement logistique de {price}€ s'applique.",
-        en: "As your venue is far from Paris, a logistics adjustment of {price}€ applies."
+        fr: "Votre lieu de réception étant éloigné de Paris, un ajustement logistique de {price} s'applique.",
+        en: "As your venue is far from Paris, a logistics adjustment of {price} applies."
     },
     "step2.logistics.pro_badge_km": { fr: "Livraison de base incluse", en: "Base delivery included" },
     // Badges & Modèles (Descriptions Longues restaurées)
@@ -161,12 +162,12 @@ export const locales = {
     "step2.option.prints.name": { fr: "Impressions par photo", en: "Prints per photo" },
     "step2.option.prints.desc": { fr: "Par défaut, la borne imprime 1 exemplaire par prise de vue. Augmentez le nombre de \"prints\" pour que chaque invité sur la photo reparte avec son souvenir.", en: "By default, the booth prints 1 copy per shot. Increase the number of \"prints\" so that each guest in the photo leaves with their souvenir." },
     "step2.option.prints.1print": { fr: "1 print / photo (Inclus)", en: "1 print / photo (Included)" },
-    "step2.option.prints.nprints": { fr: "{n} prints (+{p}€ {s} / jour)", en: "{n} prints (+{p}€ {s} / day)" },
+    "step2.option.prints.nprints": { fr: "{n} prints (+{p} {s} / jour)", en: "{n} prints (+{p} {s} / day)" },
 
     "step2.option.anim.label": { fr: "Animation sur place", en: "On-site hostess" },
     "step2.option.anim.none": { fr: "Sans animateur (Borne autonome)", en: "No assistant (Self-service)" },
     "step2.option.anim.360_3h": { fr: "3h d'animation (Inclus)", en: "3h assistance (Included)" },
-    "step2.option.anim.nh": { fr: "{h}h (+{p}€ {s})", en: "{h}h (+{p}€ {s})" },
+    "step2.option.anim.nh": { fr: "{h}h (+{p} {s})", en: "{h}h (+{p} {s})" },
 
     "step2.option.speaker.name": { fr: "Enceinte & Musique", en: "Speaker & Music" },
     "step2.option.speaker.desc": { fr: "Une ambiance musicale pour ambiancer vos invités et booster le fun !", en: "A musical atmosphere to hype up your guests and boost the fun!" },
@@ -576,5 +577,52 @@ export const locales = {
     "success.footer.disclaimer": {
         fr: "⚠️ Disponibilité garantie uniquement après règlement de l'acompte.",
         en: "⚠️ Availability guaranteed only upon receipt of the deposit."
-    }
+    },
+
+    // --- TEXTES ANCIENNEMENT CODÉS EN DUR ---
+    "step4.days_suffix": { fr: "jours", en: "days" },
+    "step4.popup_blocked": { fr: "Votre navigateur a bloqué la page de paiement. Veuillez autoriser les pop-ups pour ce site.", en: "Your browser blocked the payment page. Please allow pop-ups for this site." },
+    "step4.redirecting_payment": { fr: "Redirection vers le paiement sécurisé en cours...", en: "Redirecting to secure payment..." },
+    "address.loading_maps": { fr: "Connexion à Google Maps en cours...", en: "Connecting to Google Maps..." },
+    "step0.error.not_found": { fr: "Numéro client introuvable", en: "Client number not found" },
+    "axonaut.quote.service_prefix": { fr: "Prestation", en: "Service" },
+    "step2.price_per_day": { fr: "Tarif par jour", en: "Price per day" },
+    "price.suffix.TTC": { fr: "TTC", en: "TTC" },
+    "price.suffix.HT": { fr: "HT", en: "HT" },
+
+    // --- SITES HORS PARIS (config src/sites/*) ---
+    "step2.logistics.included_radius": { fr: "Livraison et installation incluses jusqu'à {km} km", en: "Delivery and setup included up to {km} km" },
+    "step3.company.nip": { fr: "N° NIP", en: "NIP (tax ID)" },
+    "step3.placeholder.nip": { fr: "10 chiffres — ex. 123-456-32-18", en: "10 digits — e.g. 123-456-32-18" },
+    "step3.nip.hint": { fr: "Optionnel, pour la facture.", en: "Optional, for the invoice." },
+    "loading.lead.title": { fr: "Envoi de votre demande...", en: "Sending your request..." },
+    "loading.lead.subtitle": { fr: "Calcul de votre prix en cours...", en: "Calculating your price..." },
+    "lead.sent.title": { fr: "Demande envoyée !", en: "Request sent!" },
+    "lead.sent.text": { fr: "Nous vérifions la disponibilité de la borne et vous recontactons sous 24 h pour confirmer votre réservation.", en: "We are checking availability and will get back to you within 24 hours to confirm your booking." },
+    "lead.next.title": { fr: "Et ensuite ?", en: "What's next?" },
+    "lead.next.item1.title": { fr: "Confirmation", en: "Confirmation" },
+    "lead.next.item1.text": { fr: "Un conseiller vous contacte pour confirmer la date, le lieu et les horaires de livraison.", en: "An advisor contacts you to confirm the date, venue and delivery times." },
+    "lead.next.item2.title": { fr: "Votre cadre photo", en: "Your photo frame" },
+    "lead.next.item2.text": { fr: "Après confirmation, vous recevez l'accès à l'outil pour créer votre cadre photo personnalisé.", en: "Once confirmed, you get access to the tool to design your custom photo frame." },
+    "lead.next.item3.title": { fr: "Le jour J", en: "On the day" },
+    "lead.next.item3.text": { fr: "Nous livrons et installons la borne, vos invités s'amusent toute la soirée, nous la reprenons le lendemain.", en: "We deliver and set up the booth, your guests have fun all evening, and we collect it the next day." },
+
+    // --- ARGUMENT : SANS LIMITE D'HEURES (bornes photo, pas le Videobooth 360) ---
+    "promo.no_time_limit.badge": { fr: "Sans limite d'heures · reprise le lendemain", en: "No time limit · collected the next day" },
+    "promo.no_time_limit.title": { fr: "Sans limite d'heures", en: "No time limit" },
+    "promo.no_time_limit.text": { fr: "Nos bornes photo ne se louent pas à l'heure : elles restent toute la soirée, livrées avant votre événement et reprises le lendemain.", en: "Our photo booths aren't rented by the hour: they stay all evening, delivered before your event and collected the next day." },
+    "step2.logistics.next_day_pickup": { fr: "Reprise le lendemain, sans limite d'heures", en: "Collected the next day, no time limit" },
+    "price.detail.no_time_limit": { fr: "Durée : toute la soirée, sans limite d'heures", en: "Duration: all evening, no time limit" },
+    "lead.contact": { fr: "Une question ? {contact}", en: "Any question? {contact}" },
 };
+
+// --- POLONAIS : fusionné depuis src/locales.pl.js ---
+Object.entries(pl).forEach(([key, text]) => {
+    if (locales[key]) locales[key].pl = text;
+});
+
+// Langues proposées dans le tunnel (ordre des boutons)
+export const SUPPORTED_LANGS = ['fr', 'en', 'pl'];
+
+// Locale Intl pour les dates et les montants
+export const INTL_LOCALE = { fr: 'fr-FR', en: 'en-GB', pl: 'pl-PL' };

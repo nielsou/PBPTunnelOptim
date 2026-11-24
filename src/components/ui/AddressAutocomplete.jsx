@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse...", restrictToFrance = true }) => {
+export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, required = false, placeholder = "Entrez une adresse...", restrictToFrance = true, countries = null, loadingPlaceholder = "Connexion à Google Maps en cours..." }) => {
   const [inputValue, setInputValue] = useState(defaultValue || "");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -63,9 +63,10 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
       types: ["address"]
     };
 
-    // La restriction s'applique uniquement si restrictToFrance est true
-    if (restrictToFrance) {
-      request.componentRestrictions = { country: "fr" };
+    // Restriction par pays : `countries` (config du site) sinon France si restrictToFrance
+    const restriction = countries || (restrictToFrance ? ["fr"] : null);
+    if (restriction) {
+      request.componentRestrictions = { country: restriction };
     }
 
     serviceRef.current.getPredictions(request, (predictions) => {
@@ -128,7 +129,7 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
         onChange={handleInputChange}
         onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
         // Indication visuelle si ça mouline
-        placeholder={isGoogleReady ? placeholder : "Connexion à Google Maps en cours..."}
+        placeholder={isGoogleReady ? placeholder : loadingPlaceholder}
         className={`w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition text-gray-900 ${!isGoogleReady ? 'bg-gray-100 cursor-wait opacity-70' : ''}`}
         required={required}
         disabled={!isGoogleReady} // On empêche de taper dans le vide

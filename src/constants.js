@@ -13,6 +13,12 @@ export const TVA_RATE_DECIMAL = 20.0; // Pour le payload Axonaut
 export const PARIS_LAT = 48.8517;
 export const PARIS_LNG = 2.3570;
 
+// Supplément kilométrique (distance à vol d'oiseau depuis PARIS_LAT/LNG)
+// Gratuit jusqu'à DELIVERY_FREE_RADIUS_KM, puis (distance - rayon) × allers-retours × coût/km
+export const DELIVERY_FREE_RADIUS_KM = 15;
+export const DELIVERY_TRIPS = 4;          // dépose + reprise = 4 trajets
+export const DELIVERY_COST_PER_KM_HT = 0.45;
+
 
 // ======================================================================
 // PRIX & LOGIQUE DÉGRESSIVITÉ
