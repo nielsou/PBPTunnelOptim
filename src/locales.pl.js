@@ -390,13 +390,13 @@ export const pl = {
     "lead.next.item2.title": "Twoja ramka",
     "lead.next.item2.text": "Po potwierdzeniu otrzymasz dostęp do narzędzia, w którym zaprojektujesz własną ramkę zdjęcia.",
     "lead.next.item3.title": "W dniu wydarzenia",
-    "lead.next.item3.text": "Dostarczamy i ustawiamy fotobudkę, goście bawią się przez całą imprezę, a my odbieramy ją następnego dnia.",
+    "lead.next.item3.text": "Dostarczamy i ustawiamy fotobudkę, goście bawią się przez całą imprezę, a my odbieramy ją o wybranej przez Ciebie godzinie.",
 
     // --- BEZ LIMITU GODZIN ---
-    "promo.no_time_limit.badge": "Bez limitu godzin · odbiór następnego dnia",
+    "promo.no_time_limit.badge": "Bez limitu godzin · dostawa i odbiór, kiedy chcesz",
     "promo.no_time_limit.title": "Bez limitu godzin",
-    "promo.no_time_limit.text": "Nie wynajmujemy fotobudek na godziny: zostają na całą imprezę — dostarczamy je przed wydarzeniem i odbieramy następnego dnia.",
-    "step2.logistics.next_day_pickup": "Odbiór następnego dnia, bez limitu godzin",
+    "promo.no_time_limit.text": "Nie wynajmujemy fotobudek na godziny: zostają na całą imprezę. Ty wybierasz godzinę dostawy i odbioru — tego samego wieczoru lub następnego dnia.",
+    "step2.logistics.flexible_times": "Dostawa i odbiór o wybranej godzinie, bez limitu godzin",
     "price.detail.no_time_limit": "Czas: cała impreza, bez limitu godzin",
     "lead.contact": "Masz pytanie? {contact}",
 };

@@ -559,7 +559,7 @@ export const locales = {
     },
     "success.step2.item1.title": { fr: "Installation Flexible", en: "Flexible Setup" },
     "success.step2.item1.text": {
-        fr: "Installation flexbile : dépose la veille et reprise le lendemain possible pour plus de sérénité.",
+        fr: "Installation flexible : dépose la veille et reprise le lendemain possible pour plus de sérénité.",
         en: "Flexible delivery: early drop-off and late pickup available for total peace of mind."
     },
 
@@ -605,13 +605,13 @@ export const locales = {
     "lead.next.item2.title": { fr: "Votre cadre photo", en: "Your photo frame" },
     "lead.next.item2.text": { fr: "Après confirmation, vous recevez l'accès à l'outil pour créer votre cadre photo personnalisé.", en: "Once confirmed, you get access to the tool to design your custom photo frame." },
     "lead.next.item3.title": { fr: "Le jour J", en: "On the day" },
-    "lead.next.item3.text": { fr: "Nous livrons et installons la borne, vos invités s'amusent toute la soirée, nous la reprenons le lendemain.", en: "We deliver and set up the booth, your guests have fun all evening, and we collect it the next day." },
+    "lead.next.item3.text": { fr: "Nous livrons et installons la borne, vos invités s'amusent toute la soirée, puis nous la reprenons à l'heure que vous avez choisie.", en: "We deliver and set up the booth, your guests have fun all evening, then we collect it at the time you chose." },
 
     // --- ARGUMENT : SANS LIMITE D'HEURES (bornes photo, pas le Videobooth 360) ---
-    "promo.no_time_limit.badge": { fr: "Sans limite d'heures · reprise le lendemain", en: "No time limit · collected the next day" },
+    "promo.no_time_limit.badge": { fr: "Sans limite d'heures · dépose et reprise à votre choix", en: "No time limit · drop-off and pickup when you choose" },
     "promo.no_time_limit.title": { fr: "Sans limite d'heures", en: "No time limit" },
-    "promo.no_time_limit.text": { fr: "Nos bornes photo ne se louent pas à l'heure : elles restent toute la soirée, livrées avant votre événement et reprises le lendemain.", en: "Our photo booths aren't rented by the hour: they stay all evening, delivered before your event and collected the next day." },
-    "step2.logistics.next_day_pickup": { fr: "Reprise le lendemain, sans limite d'heures", en: "Collected the next day, no time limit" },
+    "promo.no_time_limit.text": { fr: "Nos bornes photo ne se louent pas à l'heure : elles restent toute la soirée. Vous choisissez l'heure de dépose et de reprise, le soir même ou le lendemain.", en: "Our photo booths aren't rented by the hour: they stay all evening. You choose when we drop off and pick up, the same evening or the next day." },
+    "step2.logistics.flexible_times": { fr: "Dépose et reprise à l'heure de votre choix, sans limite d'heures", en: "Drop-off and pickup at the time you choose, no time limit" },
     "price.detail.no_time_limit": { fr: "Durée : toute la soirée, sans limite d'heures", en: "Duration: all evening, no time limit" },
     "lead.contact": { fr: "Une question ? {contact}", en: "Any question? {contact}" },
 };

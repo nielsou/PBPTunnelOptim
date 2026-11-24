@@ -350,7 +350,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                         )}
                                         {isSignature && (
                                             <p className='text-[11px] text-purple-800 font-bold mt-1 flex items-center gap-1'>
-                                                <Clock className='w-3 h-3' /> {t('step2.logistics.next_day_pickup')}
+                                                <Clock className='w-3 h-3' /> {t('step2.logistics.flexible_times')}
                                             </p>
                                         )}
                                     </div>
@@ -367,7 +367,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                 <div>
                                     <p className='font-black text-gray-800 text-lg'>{t('step2.logistics.delivery')}</p>
                                     <p className='text-blue-600 font-bold text-sm mt-1'>{t('step2.logistics.included_radius', { km: site.delivery.freeRadiusKm })}</p>
-                                    <p className='text-gray-600 font-medium text-xs mt-1 flex items-center gap-1'><Clock className='w-3 h-3' /> {t('step2.logistics.next_day_pickup')}</p>
+                                    <p className='text-gray-600 font-medium text-xs mt-1 flex items-center gap-1'><Clock className='w-3 h-3' /> {t('step2.logistics.flexible_times')}</p>
                                 </div>
                             </div>
                         ) : (
@@ -393,7 +393,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                         {t('step2.logistics.delivery_variable')}
                                     </span>
                                     <span className='block text-gray-500 text-xs font-medium mt-1'>
-                                        {t('step2.logistics.next_day_pickup')}
+                                        {t('step2.logistics.flexible_times')}
                                     </span>
                                 </button>
                             </div>
