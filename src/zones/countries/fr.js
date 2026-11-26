@@ -6,7 +6,10 @@ import { TVA_RATE } from '../../constants';
 const fr = {
     code: 'fr',
     lang: 'fr',                   // langue utilisée pour les liens de test ?depot=…
-    region: 'FR',                 // Sheet régional où arrivent les demandes
+    // Où arrivent les demandes : Paris → webhook n8n historique (URL dans pages/api/webhook-n8n.js)
+    // → workflow n8n « TunnelOptim » → Google Sheet « Photobooth Paris - Prod », onglet TZapOptim.
+    // Une nouvelle région (ex. 'IT') = un workflow n8n + un Sheet + la variable Vercel N8N_WEBHOOK_URL_IT.
+    region: 'FR',
     brand: 'Photobooth Paris',
     intlLocale: 'fr-FR',
 
