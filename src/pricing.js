@@ -1,23 +1,9 @@
 // src/pricing.js
-// Calcul du prix complet, à partir du formulaire et de la config du site (src/sites/*).
+// Calcul du prix complet, à partir du formulaire et de la config du dépôt (src/zones/*).
 // Fonction pure (sans React) : useQuoteLogic l'appelle dans un useMemo.
 
 import { COMPANY_SPECIFIC_PRICING } from './constants';
-import { formatMoney } from './sites';
-
-// Distance à vol d'oiseau (km) entre le point de départ du site et le lieu
-export function haversineKm(origin, lat2, lon2) {
-    const lat1 = origin.lat;
-    const lon1 = origin.lng;
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-}
+import { formatMoney, haversineKm } from './zones';
 
 export function computePrice({ formData, site, t, isPartnerClient, quoteId }) {
     const models = site.models;
@@ -190,7 +176,7 @@ export function computePrice({ formData, site, t, isPartnerClient, quoteId }) {
 
         } else {
             details.push({
-                label: t('price.detail.pickup'),
+                label: t('price.detail.pickup', { place: site.pickup?.shortPlace || '' }),
                 priceHT: 0,
                 daily: false,
                 displayPrice: t('common.free')

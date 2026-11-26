@@ -1,34 +1,35 @@
-// src/sites/paris.js
-// Config du site Paris (photobooth-paris.fr). Reprend les valeurs de src/constants.js,
-// qui restent la source pour Paris (Axonaut, calculette et partenaires s'en servent aussi).
+// src/zones/depots/paris.js
+// Dépôt de Paris (Arcueil). Pays : src/zones/countries/fr.js
+// Reprend les valeurs de src/constants.js, qui restent la source pour Paris
+// (Axonaut, calculette et partenaires s'en servent aussi).
 
 import {
-    TVA_RATE,
     PARIS_LAT, PARIS_LNG,
     DELIVERY_FREE_RADIUS_KM, DELIVERY_TRIPS, DELIVERY_COST_PER_KM_HT,
     PRICING_STRATEGY, SEASONAL_SURCHARGE,
     OPTION_FONDIA_HT, OPTION_RGPD_HT,
     OPTION_IMPRESSION_BASE_HT, OPTION_IMPRESSION_PLANCHER_HT,
     TEMPLATE_TOOL_PRO_PRICE_HT,
-} from '../constants';
+} from '../../constants';
 
 const paris = {
     id: 'paris',
-    region: 'FR',                 // Sheet régional où arrivent les demandes
-    brand: 'Photobooth Paris',
-    defaultLang: 'fr',
-    intlLocale: 'fr-FR',
+    country: 'fr',
+    name: 'Paris',
 
-    currency: { code: 'EUR', symbol: '€', spaceBefore: false },
-    vatRate: TVA_RATE,            // 1.20
-
-    // Livraison : point de départ, zone gratuite, supplément au km
+    // Point de départ du calcul de distance (centre de Paris)
     origin: { lat: PARIS_LAT, lng: PARIS_LNG },
     delivery: {
         freeRadiusKm: DELIVERY_FREE_RADIUS_KM,
         trips: DELIVERY_TRIPS,
         costPerKmHT: DELIVERY_COST_PER_KM_HT,
-        allowPickup: true,        // retrait au dépôt d'Arcueil
+        maxKm: 150,               // au-delà, on ne livre plus (retrait au dépôt proposé)
+    },
+    // Retrait au dépôt (null = pas de retrait possible)
+    pickup: {
+        place: 'Arcueil (94)',    // affiché dans le tunnel
+        shortPlace: 'Arcueil',    // affiché dans le récapitulatif
+        // Proposé à tout événement en France hors zone de livraison, quelle que soit la distance (rare, mais ça arrive)
     },
 
     // Machines proposées (clé = id du modèle) et leurs prix
@@ -45,22 +46,11 @@ const paris = {
     },
     seasonalSurcharge: SEASONAL_SURCHARGE,
 
-    // Adresses
-    addressCountries: ['fr'],
-    defaultCountry: 'France',
-
-    // Facturation
-    companyIdField: 'siren',      // 'siren' (France) | 'nip' (Pologne)
-    showEInvoiceNotice: true,
-
     contact: {
         phone: '01 42 86 54 24',
         phoneHref: 'tel:0142865424',
         email: 'contact@photobooth-paris.fr',
     },
-
-    // Fin du tunnel : 'axonaut' = devis Axonaut + acompte Stripe ; 'lead' = demande envoyée, sans devis ni paiement
-    endAction: 'axonaut',
 };
 
 export default paris;

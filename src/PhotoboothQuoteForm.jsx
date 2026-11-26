@@ -34,7 +34,7 @@ export default function PhotoboothQuoteForm() {
     const {
         formData, setFormData, currentStep, setCurrentStep, calculatePrice,
         handleNext, handlePrev, isStepValid, isSubmitting, isPartnerClient, lang, setLang, t,
-        triggerWebhook, handleSubmit, resetForm, site
+        triggerWebhook, handleSubmit, resetForm, site, zone
     } = useQuoteLogic();
 
     // À placer à l'intérieur de votre composant PhotoboothQuoteForm
@@ -231,11 +231,11 @@ export default function PhotoboothQuoteForm() {
                     {currentStep === 1 && (
                         (isPartnerMode || isCalculatorMode) ?
                             <Step1AxonautDetails formData={formData} setFormData={setFormData} customColor={customColor} t={t} /> :
-                            <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} site={site} />
+                            <Step1Event formData={formData} setFormData={setFormData} lang={lang} setLang={setLang} t={t} site={site} zone={zone} />
                     )}
 
                     {currentStep === 2 && (
-                        <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} site={site} />
+                        <Step2Config formData={formData} setFormData={setFormData} pricingData={pricingData} isPartnerClient={isPartnerClient} priceDisplayType={(isPartnerMode || isCalculatorMode) ? "RealPrice" : "None"} t={t} site={site} zone={zone} />
                     )}
 
                     {currentStep === 3 && <Step3Contact formData={formData} setFormData={setFormData} t={t} site={site} lang={lang} />}

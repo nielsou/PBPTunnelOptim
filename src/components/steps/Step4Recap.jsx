@@ -4,7 +4,7 @@ import { ChevronLeft, Loader2, Info, Check, Calculator, Percent } from 'lucide-r
 import { getStripePaymentUrl, checkPaymentStatus } from '../../services/axonautService';
 import { COMPANY_SPECIFIC_PRICING } from '../../constants';
 import { INTL_LOCALE } from '../../locales';
-import { formatMoneyExact } from '../../sites';
+import { formatMoneyExact } from '../../zones';
 
 
 export const Step4Recap = ({ formData, setFormData, customColor, pricingData, handleEditRequest, isSubmitting, onValidate, t, triggerWebhook, isPartnerMode, isCalculatorMode, handleSubmit, showMessage, lang = 'fr', site }) => {

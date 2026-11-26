@@ -1,6 +1,6 @@
 // src/hooks/useQuoteLogic.js
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { nanoid } from 'nanoid';
 import * as AxonautService from '../services/axonautService';
 import { pushToDataLayer } from '../services/gtmService';
@@ -11,7 +11,7 @@ import {
     COMPANY_SPECIFIC_PRICING, SALES_REPS,
     ENABLE_WEBHOOK_STEP_1, ENABLE_WEBHOOK_STEP_2, ENABLE_WEBHOOK_STEP_3, ENABLE_WEBHOOK_STEP_4,
 } from '../constants';
-import { getSiteFromUrl } from '../sites';
+import { getForcedDepotFromUrl, resolveZone, DEPOTS, COUNTRIES } from '../zones';
 import { computePrice } from '../pricing';
 
 
@@ -52,17 +52,19 @@ export const useQuoteLogic = () => {
         }
     }, []);
 
-    // --- SITE (ville) : src/sites/*, choisi par ?site= ---
-    const [site] = useState(getSiteFromUrl);
+    // --- DÉPÔT FORCÉ (calculette/partenaires = Paris ; liens de test ?depot=) ---
+    const [forcedDepot] = useState(getForcedDepotFromUrl);
 
-    // --- GESTION LANGUE ---
+    // --- GESTION LANGUE : seule information portée par l'URL (?lang=), français par défaut ---
     const [lang, setLang] = useState(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const urlLang = params.get('lang');
-            return SUPPORTED_LANGS.includes(urlLang) ? urlLang : site.defaultLang;
+            if (SUPPORTED_LANGS.includes(urlLang)) return urlLang;
+            // Lien de test ?depot=krakow : langue du pays du dépôt
+            if (forcedDepot && !forcedDepot.internal) return COUNTRIES[DEPOTS[forcedDepot.id].country].lang;
         }
-        return site.defaultLang;
+        return 'fr';
     });
 
     useEffect(() => {
@@ -119,7 +121,7 @@ export const useQuoteLogic = () => {
         billingZipCode: '',
         billingCity: '',
         billingCountry: '',
-        deliveryCountry: site.defaultCountry,
+        deliveryCountry: '',     // renseigné d'après le dépôt (voir l'effet plus bas)
         billingSameAsEvent: true,
         saveNewBillingAddress: false,
         saveNewDeliveryAddress: true,
@@ -165,6 +167,32 @@ export const useQuoteLogic = () => {
         return Object.keys(COMPANY_SPECIFIC_PRICING).includes(formData.companyId.toString());
     }, [formData.companyId]);
 
+    // --- DÉPÔT : choisi d'après l'adresse de l'événement (src/zones) ---
+    const zone = useMemo(
+        () => resolveZone({ lat: formData.deliveryLat, lng: formData.deliveryLng, countryCode: formData.deliveryCountryCode, lang, forced: forcedDepot }),
+        [formData.deliveryLat, formData.deliveryLng, formData.deliveryCountryCode, lang, forcedDepot]
+    );
+    const site = zone.site;
+
+    // Garde le formulaire cohérent avec le dépôt : machine proposée, livraison possible, pays
+    const prevZoneStatus = useRef(zone.status);
+    useEffect(() => {
+        const leftPickupOnly = prevZoneStatus.current === 'pickup_only' && zone.status !== 'pickup_only';
+        prevZoneStatus.current = zone.status;
+        setFormData(prev => {
+            const next = { ...prev };
+            let changed = false;
+            const set = (k, v) => { if (prev[k] !== v) { next[k] = v; changed = true; } };
+            const pickupOnly = zone.status === 'pickup_only';
+            if (prev.model && (!site.models[prev.model] || (pickupOnly && ['Signature', '360'].includes(prev.model)))) set('model', '');
+            if (pickupOnly) set('delivery', false);
+            // Adresse corrigée (retour dans la zone de livraison) ou dépôt sans retrait : livraison par défaut, comme avant
+            else if (leftPickupOnly || (!site.delivery.allowPickup && prev.delivery === false)) set('delivery', true);
+            set('deliveryCountry', site.defaultCountry);
+            return changed ? next : prev;
+        });
+    }, [site.id, zone.status, formData.deliveryCountry]);
+
     // --- CALCUL DE PRIX COMPLET ---
     const calculatePrice = useMemo(
         () => computePrice({ formData, site, t, isPartnerClient, quoteId }),
@@ -187,6 +215,7 @@ export const useQuoteLogic = () => {
                     formData.newDeliveryAddressName !== '' &&
                     formData.deliveryFullAddress !== '' &&
                     formData.deliveryLat !== null &&
+                    zone.status !== 'out_of_area' &&
                     (!formData.isPartnerMode && !formData.isCalculatorMode ? formData.eventType !== '' : true)
                 );
             case 2: // MODÈLE
@@ -289,7 +318,7 @@ export const useQuoteLogic = () => {
             const companyUrl = `https://axonaut.com/business/company/show/${companyId}`;
             const clientName = formData.isPro ? formData.companyName : formData.fullName;
             // Restauration des Hyperliens pour Excel/Google Sheets (pas de fiche Axonaut en mode demande)
-            payload.client = companyId ? `=HYPERLINK("${companyUrl}";"${clientName}")` : clientName;
+            payload.client = site.endAction === 'lead' ? clientName : `=HYPERLINK("${companyUrl}";"${clientName}")`;
 
             payload.contact = formData.fullName;
 
@@ -705,6 +734,7 @@ export const useQuoteLogic = () => {
         t,
         isPartnerClient,
         triggerWebhook,
-        site
+        site,
+        zone
     };
 };

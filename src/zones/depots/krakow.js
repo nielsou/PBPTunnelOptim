@@ -1,6 +1,6 @@
-// src/sites/krakow.js
-// Config du site Cracovie (pilote Flash Society, novembre 2026).
-// Lien : https://<tunnel>/?site=krakow  (langue polonaise par défaut, ?lang=en possible)
+// src/zones/depots/krakow.js
+// Dépôt de Cracovie (pilote Flash Society, novembre 2026). Pays : src/zones/countries/pl.js
+// Sert toute adresse à moins de delivery.maxKm de Rynek Główny (s'il est le dépôt le plus proche).
 //
 // Prix fixés le 24/11/2026 après étude des concurrents de Cracovie :
 //  - le marché local loue à l'heure avec assistant (2 h 650–900 zł, 4 h 950–1 200 zł, +150–250 zł/h) ;
@@ -11,13 +11,8 @@
 
 const krakow = {
     id: 'krakow',
-    region: 'PL',
-    brand: 'Flash Society',
-    defaultLang: 'pl',
-    intlLocale: 'pl-PL',
-
-    currency: { code: 'PLN', symbol: 'zł', spaceBefore: true },
-    vatRate: 1.23,                // TVA polonaise 23 %
+    country: 'pl',
+    name: 'Kraków',
 
     // Rynek Główny (centre de Cracovie)
     origin: { lat: 50.0617, lng: 19.9373 },
@@ -25,8 +20,9 @@ const krakow = {
         freeRadiusKm: 30,         // concurrents : 20 à 40 km offerts autour de Cracovie
         trips: 4,
         costPerKmHT: 1,           // 4 trajets × 1 zł = 4 zł HT par km au-delà (concurrents ≈ 2 zł/km par aller-retour)
-        allowPickup: false,       // pas de dépôt : livraison uniquement
+        maxKm: 150,               // au-delà, on ne livre plus depuis Cracovie
     },
+    pickup: null,                 // pas de dépôt ouvert au public : livraison uniquement
 
     // Gamme en 3 paliers (CineBooth uniquement). Prix HT par événement (toute la soirée, sans limite d'heures),
     // livraison comprise dans la zone gratuite. Prix HT choisis pour tomber sur un brutto rond (particuliers).
@@ -70,20 +66,11 @@ const krakow = {
     },
     seasonalSurcharge: {},
 
-    addressCountries: ['pl'],
-    defaultCountry: 'Polska',
-
-    companyIdField: 'nip',
-    showEInvoiceNotice: false,
-
     contact: {
         phone: null,              // À COMPLÉTER : ex. '+48 12 345 67 89'
         phoneHref: null,          // ex. 'tel:+48123456789'
         email: null,              // À COMPLÉTER : ex. 'krakow@flash-society.com'
     },
-
-    // Pas de devis ni de paiement tant que la facturation polonaise n'est pas tranchée
-    endAction: 'lead',
 };
 
 export default krakow;

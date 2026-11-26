@@ -6,7 +6,7 @@ import { Calendar, MapPin, Clock, Info, Mail, Phone, ChevronDown, Building2 } fr
 import { InputField } from '../ui/InputField';
 import { AddressAutocomplete } from '../ui/AddressAutocomplete';
 
-export const Step1Event = ({ formData, setFormData, lang, setLang, t, site }) => {
+export const Step1Event = ({ formData, setFormData, lang, setLang, t, site, zone }) => {
     const [dateError, setDateError] = useState('');
     const todayStr = new Date().toISOString().split('T')[0];
 
@@ -31,6 +31,7 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t, site }) =>
             deliveryStreet: addr.street,
             deliveryZipCode: addr.postal,
             deliveryCity: addr.city,
+            deliveryCountryCode: addr.countryCode,
             saveNewDeliveryAddress: true
         }));
     };
@@ -177,13 +178,35 @@ export const Step1Event = ({ formData, setFormData, lang, setLang, t, site }) =>
                         required
                         defaultValue={formData.deliveryFullAddress}
                         onAddressSelect={handleAddressSelect}
-                        countries={site.addressCountries}
+                        countries={zone.addressCountries}
                         language={lang}
                     />
                     {formData.deliveryFullAddress && !formData.deliveryLat && (
                         <p className='text-red-500 text-xs font-bold text-center bg-red-50 p-2 rounded-lg'>
                             ⚠️ {t('step1.error.select_address')}
                         </p>
+                    )}
+
+                    {/* Adresse trop loin pour livrer : retrait au dépôt */}
+                    {formData.deliveryLat && zone.status === 'pickup_only' && (
+                        <div className='p-4 bg-amber-50 border-2 border-amber-200 rounded-2xl text-amber-900 text-sm flex gap-3'>
+                            <MapPin className='w-5 h-5 shrink-0 mt-0.5' />
+                            <div>
+                                <p className='font-black'>{t('zone.pickup_only.title')}</p>
+                                <p>{t('zone.pickup_only.text', { km: Math.round(zone.distanceKm), place: site.pickup?.place })}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Trop loin pour livrer et pas de retrait possible dans ce pays : tunnel bloqué */}
+                    {formData.deliveryLat && zone.status === 'out_of_area' && (
+                        <div className='p-5 bg-gray-100 border-2 border-gray-200 rounded-2xl text-gray-800 text-sm flex gap-3'>
+                            <MapPin className='w-5 h-5 shrink-0 mt-0.5 text-gray-500' />
+                            <div>
+                                <p className='font-black'>{t('zone.out_of_area.title')}</p>
+                                <p>{t('zone.out_of_area.text', { km: site.delivery.maxKm })}</p>
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>

@@ -1,7 +1,7 @@
 // src/components/steps/Step2Config.jsx
 import React, { useEffect, useRef } from 'react';
 import { Truck, Video, Zap, Gem, Ban, Music, RefreshCcw, Star, Check, Printer, Package, Clock } from 'lucide-react';
-import { formatMoney } from '../../sites';
+import { formatMoney } from '../../zones';
 
 /**
  * Composant générique pour une carte de modèle de borne
@@ -79,8 +79,12 @@ const ModelCard = ({
     );
 };
 
-export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, priceDisplayType, t, site }) => {
-    const models = site.models;
+export const Step2Config = ({ formData, setFormData, customColor, pricingData, isPartnerClient, priceDisplayType, t, site, zone }) => {
+    // Hors zone de livraison (retrait seulement) : pas de Signature ni de 360, livrés et installés par nos soins
+    const pickupOnly = zone?.status === 'pickup_only';
+    const models = pickupOnly
+        ? Object.fromEntries(Object.entries(site.models).filter(([id]) => id !== 'Signature' && id !== '360'))
+        : site.models;
     const opts = site.options;
     const configSectionRef = useRef(null);
 
@@ -361,6 +365,14 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                         : t('common.included')}
                                 </span>
                             </div>
+                        ) : pickupOnly ? (
+                            <div className='bg-green-50 border-2 border-green-600 p-6 rounded-[2rem] flex items-center gap-4'>
+                                <Package className='w-8 h-8 text-green-600 shrink-0' />
+                                <div>
+                                    <p className='font-black text-gray-800 text-lg'>{t('step2.logistics.pickup', { place: site.pickup?.place })}</p>
+                                    <p className='text-gray-600 font-medium text-xs mt-1'>{t('zone.pickup_only.text', { km: Math.round(zone.distanceKm), place: site.pickup?.place })}</p>
+                                </div>
+                            </div>
                         ) : !site.delivery.allowPickup ? (
                             <div className='bg-blue-50 border-2 border-blue-600 p-6 rounded-[2rem] flex items-center gap-4'>
                                 <Truck className='w-8 h-8 text-blue-600 shrink-0' />
@@ -378,7 +390,7 @@ export const Step2Config = ({ formData, setFormData, customColor, pricingData, i
                                     className={`p-6 border-2 rounded-[2rem] flex flex-col items-center justify-center text-center transition-all ${!formData.delivery ? 'border-green-600 bg-green-50 scale-[1.02] shadow-sm' : 'border-gray-50 bg-gray-50 hover:border-green-200'}`}
                                 >
                                     <Package className={`w-8 h-8 mb-2 ${!formData.delivery ? 'text-green-600' : 'text-gray-400'}`} />
-                                    <span className='font-black text-gray-800 text-lg'>{t('step2.logistics.pickup')}</span>
+                                    <span className='font-black text-gray-800 text-lg'>{t('step2.logistics.pickup', { place: site.pickup?.place })}</span>
                                     <span className='block text-green-600 font-black mt-1'>{t('common.free')}</span>
                                 </button>
 

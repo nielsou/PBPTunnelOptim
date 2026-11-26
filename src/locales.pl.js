@@ -107,7 +107,7 @@ export const pl = {
     "step2.logistics.title": "Logistyka i uruchomienie",
     "step2.logistics.pro_setup": "Dostawa i montaż przez technika",
     "step2.logistics.pro_badge": "W cenie pakietu Prestige",
-    "step2.logistics.pickup": "Odbiór osobisty w magazynie w Arcueil (94)",
+    "step2.logistics.pickup": "Odbiór osobisty w magazynie: {place}",
     "step2.logistics.delivery": "Fotobudka dostarczona i uruchomiona",
 
     "step2.option.template.name": "Ramka zdjęcia",
@@ -155,7 +155,7 @@ export const pl = {
     "price.detail.template": "Profesjonalne narzędzie do szablonów",
     "price.detail.delivery": "Dostawa, montaż i odbiór",
     "price.detail.km_extra": "Dopłata za dojazd ({km} km)",
-    "price.detail.pickup": "Odbiór osobisty (Arcueil)",
+    "price.detail.pickup": "Odbiór osobisty ({place})",
     "price.detail.prints": "{qty}x dopłata za wydruki",
     "price.detail.ai_bg": "Tło AI (personalizowane)",
     "price.detail.rgpd": "Zgodność z RODO",
@@ -391,6 +391,12 @@ export const pl = {
     "lead.next.item2.text": "Po potwierdzeniu otrzymasz dostęp do narzędzia, w którym zaprojektujesz własną ramkę zdjęcia.",
     "lead.next.item3.title": "W dniu wydarzenia",
     "lead.next.item3.text": "Dostarczamy i ustawiamy fotobudkę, goście bawią się przez całą imprezę, a my odbieramy ją o wybranej przez Ciebie godzinie.",
+
+    // --- STREFA (src/zones) ---
+    "zone.pickup_only.title": "Nie dowozimy pod ten adres",
+    "zone.pickup_only.text": "Twoje wydarzenie jest {km} km od naszego magazynu. Możesz odebrać i oddać fotobudkę w: {place}.",
+    "zone.out_of_area.title": "Nie działamy jeszcze w Twoim regionie",
+    "zone.out_of_area.text": "Dowozimy do {km} km od naszych magazynów.",
 
     // --- BEZ LIMITU GODZIN ---
     "promo.no_time_limit.badge": "Bez limitu godzin · dostawa i odbiór, kiedy chcesz",

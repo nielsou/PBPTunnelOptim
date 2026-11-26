@@ -109,7 +109,8 @@ export const AddressAutocomplete = ({ label, onAddressSelect, defaultValue, requ
           street: safeStreet,
           city: getComp('locality'),
           postal: getComp('postal_code'),
-          country: getComp('country'), 
+          country: getComp('country'),
+          countryCode: (addr.address_components.find(c => c.types.includes('country'))?.short_name || '').toLowerCase(),
           lat: addr.geometry.location.lat(),
           lng: addr.geometry.location.lng()
         };

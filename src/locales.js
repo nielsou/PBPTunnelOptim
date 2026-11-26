@@ -144,7 +144,7 @@ export const locales = {
     "step2.logistics.title": { fr: "Logistique & Mise en service", en: "Logistics & Setup" },
     "step2.logistics.pro_setup": { fr: "Livraison & Installation par technicien", en: "Delivery & Installation by technician" },
     "step2.logistics.pro_badge": { fr: "Inclus dans votre pack prestige", en: "Included in your prestige pack" },
-    "step2.logistics.pickup": { fr: "Retrait au dépot à Arcueil (94)", en: "Pick-up in Arcueil (94)" },
+    "step2.logistics.pickup": { fr: "Retrait au dépôt à {place}", en: "Pick-up in {place}" },
     "step2.logistics.delivery": { fr: "Borne livrée & mise en service", en: "Photobooth delivered & set up" },
 
     "step2.option.template.name": { fr: "Cadre Photo", en: "Photo Frame" },
@@ -195,7 +195,7 @@ export const locales = {
     "price.detail.template": { fr: "Outil Template Professionnel", en: "Professional Template Tool" },
     "price.detail.delivery": { fr: "Livraison, installation et reprise", en: "Delivery, setup and collection" },
     "price.detail.km_extra": { fr: "Supplément Kilométrique ({km} km)", en: "Mileage Surcharge ({km} km)" },
-    "price.detail.pickup": { fr: "Retrait (Arcueil)", en: "Pick-up (Arcueil)" },
+    "price.detail.pickup": { fr: "Retrait ({place})", en: "Pick-up ({place})" },
     "price.detail.prints": { fr: "{qty}x supplément d'impression", en: "{qty}x printing supplement" },
     "price.detail.ai_bg": { fr: "Fond IA (personnalisé)", en: "AI Background (custom)" },
     "price.detail.rgpd": { fr: "Conformité RGPD", en: "GDPR Compliance" },
@@ -606,6 +606,12 @@ export const locales = {
     "lead.next.item2.text": { fr: "Après confirmation, vous recevez l'accès à l'outil pour créer votre cadre photo personnalisé.", en: "Once confirmed, you get access to the tool to design your custom photo frame." },
     "lead.next.item3.title": { fr: "Le jour J", en: "On the day" },
     "lead.next.item3.text": { fr: "Nous livrons et installons la borne, vos invités s'amusent toute la soirée, puis nous la reprenons à l'heure que vous avez choisie.", en: "We deliver and set up the booth, your guests have fun all evening, then we collect it at the time you chose." },
+
+    // --- ZONE : adresse trop loin d'un dépôt (src/zones) ---
+    "zone.pickup_only.title": { fr: "Nous ne livrons pas à cette adresse", en: "We don't deliver to this address" },
+    "zone.pickup_only.text": { fr: "Votre événement est à {km} km de notre dépôt. Vous pouvez venir chercher la borne et la rapporter à {place}.", en: "Your event is {km} km from our depot. You can pick up and return the booth in {place}." },
+    "zone.out_of_area.title": { fr: "Nous n'intervenons pas encore dans votre région", en: "We don't operate in your area yet" },
+    "zone.out_of_area.text": { fr: "Nous livrons jusqu'à {km} km autour de nos dépôts.", en: "We deliver up to {km} km around our depots." },
 
     // --- ARGUMENT : SANS LIMITE D'HEURES (bornes photo, pas le Videobooth 360) ---
     "promo.no_time_limit.badge": { fr: "Sans limite d'heures · dépose et reprise à votre choix", en: "No time limit · drop-off and pickup when you choose" },
